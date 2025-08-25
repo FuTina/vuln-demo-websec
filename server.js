@@ -1,8 +1,9 @@
 // Minimal demo server for SQLi & XSS (intentionally vulnerable endpoints)
-// Run locally only. Do NOT expose to the internet.
+// For demo/education only.
 
 import express from "express";
 import sqlite3 from "sqlite3";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -15,29 +16,58 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 sqlite3.verbose();
-const db = new sqlite3.Database(":memory:");
 
-// --- Seed in-memory database ---
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE users (
-      id INTEGER PRIMARY KEY,
-      name TEXT,
-      email TEXT,
-      phone TEXT,
-      address TEXT
-    )
-  `);
-  const u = db.prepare("INSERT INTO users (name, email, phone, address) VALUES (?, ?, ?, ?)");
-  [
-    ["Alice", "alice@example.com", "+49 151 000000", "Dresden"],
-    ["Bob", "bob@example.com", "+49 160 111111", "Leipzig"],
-    ["Charlie", "charlie@example.com", "+49 171 222222", "Berlin"]
-  ].forEach(([n, e, p, a]) => u.run(n, e, p, a));
-  u.finalize();
+// --- Use a file-backed DB for cloud stability (works locally, too)
+const DB_FILE = process.env.SQLITE_FILE || path.join(__dirname, "data.db");
+// ensure directory exists if SQLITE_FILE points into a subfolder
+try {
+  const dir = path.dirname(DB_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+} catch (_) {}
 
-  db.run("CREATE TABLE comments (id INTEGER PRIMARY KEY, text TEXT)");
-});
+const db = new sqlite3.Database(DB_FILE);
+
+// --- Create tables (idempotent) & seed if empty
+function initDb() {
+  db.serialize(() => {
+    db.run(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        name TEXT,
+        email TEXT,
+        phone TEXT,
+        address TEXT
+      )
+    `);
+    db.run(`
+      CREATE TABLE IF NOT EXISTS comments (
+        id INTEGER PRIMARY KEY,
+        text TEXT
+      )
+    `);
+
+    // Seed users only if table is empty
+    db.get(`SELECT COUNT(*) AS cnt FROM users`, (err, row) => {
+      if (err) {
+        console.error("DB count error:", err);
+        return;
+      }
+      if ((row?.cnt ?? 0) === 0) {
+        const u = db.prepare(
+          "INSERT INTO users (name, email, phone, address) VALUES (?, ?, ?, ?)"
+        );
+        [
+          ["Alice", "alice@example.com", "+49 151 000000", "Dresden"],
+          ["Bob", "bob@example.com", "+49 160 111111", "Leipzig"],
+          ["Charlie", "charlie@example.com", "+49 171 222222", "Berlin"],
+        ].forEach(([n, e, p, a]) => u.run(n, e, p, a));
+        u.finalize();
+        console.log("Seeded users table.");
+      }
+    });
+  });
+}
+initDb();
 
 // --- Helpers ---
 function maskEmail(email) {
@@ -66,11 +96,18 @@ function previewSQL(sql, params = []) {
 // Role switch via env for demo purposes: "user" (default) or "admin"
 const DEMO_ROLE = process.env.DEMO_ROLE || "user";
 
+// --- Health (for Render debugging) ---
+app.get("/healthz", (_req, res) => {
+  db.get("SELECT 1 as ok", (err, row) => {
+    if (err) return res.status(500).json({ ok: false, error: String(err) });
+    res.json({ ok: true, db: row?.ok === 1 });
+  });
+});
+
 // --- SQLi DEMO ---
-// UNSAFE: string concatenation (educational only)
+// UNSAFE: string concatenation (educational only) – exact match with "="
 app.get("/api/sqli/vuln", (req, res) => {
   const name = (req.query.name ?? "").toString();
-  // Exakte Abfrage mit "=" (absichtlich unsicher)
   const sql = `SELECT id, name, email FROM users WHERE name = '${name}'`;
   db.all(sql, (err, rows) => {
     if (err) return res.status(500).json({ error: String(err), sql });
@@ -88,19 +125,18 @@ app.get("/api/sqli/safe", (req, res) => {
     if (err) {
       return res.status(500).json({
         error: String(err),
-        sql: previewSQL(sql, params)
+        sql: previewSQL(sql, params),
       });
     }
     res.json({
       mode: "safe",
       sql: previewSQL(sql, params), // shown in UI
-      rows: rows ?? []
+      rows: rows ?? [],
     });
   });
 });
 
 // --- XSS DEMO ---
-// Vulnerable flow stores raw text; frontend renders with innerHTML (unsafe)
 app.post("/api/xss/vuln", (req, res) => {
   const { text = "" } = req.body;
   db.run("INSERT INTO comments (text) VALUES (?)", [text], function (err) {
@@ -131,19 +167,18 @@ app.get("/api/xss/safe-list", (_req, res) => {
 });
 
 // --- Users (safe) with masking & role-based view ---
-// (nur EINMAL definieren – vorher doppelt in deiner Datei)
 app.get("/api/users/safe", (_req, res) => {
   db.all("SELECT id, name, email, phone, address FROM users ORDER BY id", (err, rows) => {
     if (err) return res.status(500).json({ error: String(err) });
 
     let out = rows ?? [];
     if (DEMO_ROLE !== "admin") {
-      out = out.map(r => ({
+      out = out.map((r) => ({
         id: r.id,
         name: r.name,
         email: maskEmail(r.email),
         phone: maskPhone(r.phone),
-        address: r.address
+        address: r.address,
       }));
     }
     res.json({ role: DEMO_ROLE, rows: out });
@@ -154,5 +189,11 @@ app.get("/api/users/safe", (_req, res) => {
 const PORT = process.env.PORT || 5173;
 app.listen(PORT, () => {
   console.log(`Vuln demo running on http://localhost:${PORT}`);
-  console.log("⚠️  Run locally/isolated only. Do NOT expose to the internet.");
+  console.log("⚠️  Demo/education only. Do NOT expose to the internet for production use.");
+});
+
+// Graceful shutdown (Render sends SIGTERM on redeploy)
+process.on("SIGTERM", () => {
+  console.log("Shutting down...");
+  db.close(() => process.exit(0));
 });

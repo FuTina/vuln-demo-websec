@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>XSS Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100">
+    <main class="max-w-3xl mx-auto p-6 space-y-6">
+        <a href="/" class="text-sm underline">← Zurück</a>
+        <h1 class="text-2xl font-bold">Cross-Site Scripting (XSS)</h1>
+
+        <p class="text-slate-300 text-sm">
+            <strong>Links:</strong> unsicher mit <code>innerHTML</code> (Eingaben als HTML interpretiert).
+            <strong>Rechts:</strong> sicher mit <code>textContent</code> (Eingaben als Text).
+            ⚠️ Hinweis: Dynamisch via <code>innerHTML</code> eingefügte <code>&lt;script&gt;</code>-Tags werden vom
+            Browser nicht ausgeführt.
+        </p>
+
+        <!-- Eingabe -->
+        <form id="form" class="flex gap-2" method="post">
+            <label for="text" class="sr-only">Kommentar</label>
+            <input id="text" name="text" class="flex-1 bg-slate-900 border border-slate-800 rounded px-3 py-2"
+                placeholder="Kommentar eingeben …" />
+            <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-slate-200"
+                title="Kommentar absenden">
+                Kommentar posten
+            </button>
+        </form>
+
+        <!-- Zwei Feeds nebeneinander -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <section>
+                <h2 class="font-semibold mb-2">Unsicherer Feed (innerHTML)</h2>
+                <div id="list-vuln" class="space-y-2 text-sm"></div>
+            </section>
+            <section>
+                <h2 class="font-semibold mb-2">Sicherer Feed (textContent)</h2>
+                <div id="list-safe" class="space-y-2 text-sm"></div>
+            </section>
+        </div>
+
+        <details class="bg-slate-900 border border-slate-800 rounded p-3 text-sm">
+            <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
+            <ul class="list-disc pl-5 mt-2 text-slate-300">
+                <li><strong>Unsicher:</strong> Kommentare werden mit <code>innerHTML</code> eingefügt – HTML-Tags
+                    wirken.</li>
+                <li><strong>Sicher:</strong> Kommentare werden mit <code>textContent</code> eingefügt – HTML bleibt als
+                    Text.</li>
+                <li><strong>Praxis:</strong> Kein unkontrolliertes <code>innerHTML</code>. Immer Escaping, sichere
+                    Templates &amp; CSP nutzen.</li>
+            </ul>
+        </details>
+    </main>
+
+    <script>
+        const form = document.getElementById('form');
+        const textInput = document.getElementById('text');
+        const vEl = document.getElementById('list-vuln');
+        const sEl = document.getElementById('list-safe');
+
+        function renderUnsafe(container, text) {
+            const div = document.createElement('div');
+            div.className = 'p-3 bg-slate-900 border border-slate-800 rounded';
+            div.innerHTML = text; // absichtlich unsicher
+            container.appendChild(div);
+        }
+        function renderSafe(container, text) {
+            const div = document.createElement('div');
+            div.className = 'p-3 bg-slate-900 border border-slate-800 rounded';
+            div.textContent = text; // sicher
+            container.appendChild(div);
+        }
+
+        async function loadFeeds() {
+            const [vuln, safe] = await Promise.all([
+                fetch('/api/xss/vuln-list').then(r => r.json()),
+                fetch('/api/xss/safe-list').then(r => r.json())
+            ]);
+            vEl.innerHTML = '';
+            sEl.innerHTML = '';
+            vuln.forEach(c => renderUnsafe(vEl, c.text));
+            safe.forEach(c => renderSafe(sEl, c.text));
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = textInput.value;
+
+            // Kommentar nur einmal speichern (z. B. in "vuln")
+            await fetch('/api/xss/vuln', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+
+            textInput.value = '';
+            loadFeeds();
+        });
+
+
+        // Initial laden
+        loadFeeds();
+    </script>
+</body>
+
+</html>

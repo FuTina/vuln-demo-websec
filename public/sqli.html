@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SQLi Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <main class="max-w-3xl mx-auto p-6 space-y-6">
+    <a href="/" class="text-sm underline">← Zurück</a>
+    <h1 class="text-2xl font-bold">SQL Injection (SQLi)</h1>
+
+    <p class="text-slate-300 text-sm">
+      Vergleich von <strong>unsicherer</strong> String‑Konkatenation mit <strong>sicheren</strong> parametrisierten Abfragen.
+      Diese Seite ist nur für Demonstrationszwecke und darf nicht öffentlich betrieben werden.
+    </p>
+
+    <!-- Eingabe + zwei Buttons -->
+    <form id="form" class="flex flex-col gap-2 sm:flex-row sm:items-center" method="get">
+      <label for="name" class="sr-only">Name</label>
+      <input id="name" name="name"
+             class="flex-1 bg-slate-900 border border-slate-800 rounded px-3 py-2"
+             placeholder="Name eingeben (z. B. Alice, Bob, Charlie)" />
+      <div class="flex gap-2">
+        <button type="submit" data-mode="vuln"
+                class="bg-red-200 text-black px-3 py-2 rounded hover:bg-red-300"
+                title="Unsichere Abfrage (String-Konkatenation)">
+          Unsicher abfragen
+        </button>
+        <button type="submit" data-mode="safe"
+                class="bg-emerald-200 text-black px-3 py-2 rounded hover:bg-emerald-300"
+                title="Sichere Abfrage (parametrisiert)">
+          Sicher abfragen
+        </button>
+      </div>
+    </form>
+
+    <!-- Erklärung -->
+    <details class="bg-slate-900 border border-slate-800 rounded p-3 text-sm">
+      <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
+      <ul class="list-disc pl-5 mt-2 text-slate-300 space-y-1">
+        <li><strong>Unsicher:</strong> Die Eingabe wird in den SQL‑String eingefügt. Die WHERE‑Bedingung kann dadurch verändert werden.</li>
+        <li><strong>Sicher:</strong> Die Abfrage nutzt Parameter (<code>?</code>). Die Eingabe wird als Wert gebunden, nicht als Code.</li>
+        <li><strong>Praxis:</strong> Immer <em>Prepared Statements</em> verwenden – niemals String‑Konkatenation.</li>
+      </ul>
+    </details>
+
+    <!-- Query-Preview -->
+    <section>
+      <h2 class="font-semibold mb-2">Abfrage (Vorschau)</h2>
+      <pre id="sql" class="bg-slate-900 border border-slate-800 rounded p-3 text-xs overflow-auto"></pre>
+    </section>
+
+    <!-- Ergebnis-Tabelle -->
+    <section>
+      <h2 class="font-semibold mb-2">Ergebnis</h2>
+      <table class="w-full text-sm">
+        <thead class="text-slate-400">
+          <tr>
+            <th class="text-left">ID</th>
+            <th class="text-left">Name</th>
+            <th class="text-left">E‑Mail</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('form');
+    const rowsEl = document.getElementById('rows');
+    const sqlEl = document.getElementById('sql');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitter = e.submitter; // Button, der das Submit ausgelöst hat
+      const mode = submitter?.dataset?.mode || 'safe';
+      const name = document.getElementById('name').value;
+
+      rowsEl.innerHTML = '';
+      sqlEl.textContent = '';
+
+      const url = `/api/sqli/${mode}?name=${encodeURIComponent(name)}`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        // Query anzeigen
+        sqlEl.textContent = data.sql || '';
+
+        // Ergebnisse anzeigen
+        (data.rows || []).forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="py-1">${r.id}</td>
+            <td>${r.name}</td>
+            <td>${r.email}</td>
+          `;
+          rowsEl.appendChild(tr);
+        });
+
+        // Kein Ergebnis?
+        if (!data.rows || data.rows.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td colspan="3" class="py-2 text-slate-400">Keine Treffer.</td>`;
+          rowsEl.appendChild(tr);
+        }
+      } catch (err) {
+        sqlEl.textContent = 'Fehler beim Laden.';
+      }
+    });
+  </script>
+</body>
+</html>

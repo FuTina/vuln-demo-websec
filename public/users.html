@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Users (Rollen & Maskierung)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <main class="max-w-4xl mx-auto p-6 space-y-6">
+    <a href="/" class="text-sm underline">← Zurück</a>
+    <header class="flex items-center justify-between gap-4">
+      <h1 class="text-2xl font-bold">Users (rollenbasierte Ansicht)</h1>
+      <span id="role-badge" class="text-xs px-2 py-1 rounded border border-slate-700 bg-slate-900">Rolle: …</span>
+    </header>
+
+    <div id="admin-hint" class="bg-slate-900 border border-slate-800 rounded p-3 text-sm hidden">
+      <p class="mb-2">Du siehst aktuell die <strong>User‑Sicht</strong> (maskierte Daten).
+        Für die <strong>Admin‑Sicht</strong> (volle Felder) starte den Server so neu:</p>
+      <div class="grid sm:grid-cols-3 gap-2">
+        <div>
+          <p class="text-slate-400 mb-1">macOS/Linux</p>
+          <pre class="bg-slate-950 border border-slate-800 rounded p-2 text-xs">DEMO_ROLE=admin npm start</pre>
+          <button class="copy btn-copy mt-1 text-xs underline" data-cmd="DEMO_ROLE=admin npm start">Kopieren</button>
+        </div>
+        <div>
+          <p class="text-slate-400 mb-1">Windows PowerShell</p>
+          <pre class="bg-slate-950 border border-slate-800 rounded p-2 text-xs">$env:DEMO_ROLE="admin"; npm start</pre>
+          <button class="copy btn-copy mt-1 text-xs underline" data-cmd="$env:DEMO_ROLE=&quot;admin&quot;; npm start">Kopieren</button>
+        </div>
+        <div>
+          <p class="text-slate-400 mb-1">Windows CMD</p>
+          <pre class="bg-slate-950 border border-slate-800 rounded p-2 text-xs">set DEMO_ROLE=admin && npm start</pre>
+          <button class="copy btn-copy mt-1 text-xs underline" data-cmd="set DEMO_ROLE=admin && npm start">Kopieren</button>
+        </div>
+      </div>
+    </div>
+
+    <details class="bg-slate-900 border border-slate-800 rounded p-3 text-sm">
+      <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
+      <ul class="list-disc pl-5 mt-2 text-slate-300">
+        <li><strong>User‑Rolle:</strong> E‑Mail &amp; Telefon sind maskiert (Privacy by Default).</li>
+        <li><strong>Admin‑Rolle:</strong> Volle Felder sichtbar (Need‑to‑Know).</li>
+        <li><strong>Praxis:</strong> Zugriff auf sensible Daten wird über <em>Rollen &amp; Rechte</em> gesteuert – nicht über Schwachstellen.</li>
+      </ul>
+    </details>
+
+    <table class="w-full text-sm mt-2">
+      <thead class="text-slate-400">
+        <tr>
+          <th class="text-left">ID</th>
+          <th class="text-left">Name</th>
+          <th class="text-left">E‑Mail</th>
+          <th class="text-left">Telefon</th>
+          <th class="text-left">Adresse</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+
+    <p class="text-xs text-slate-400">
+      Legende: Maskierung von E‑Mails (z. B. <code>al***@example.com</code>) &amp; Telefonnummern (z. B. <code>••••••22</code>) in der User‑Sicht.
+    </p>
+  </main>
+
+  <script>
+    // --- Fallback-Masken (Client) ---
+    function maskPhoneClient(phone) {
+      // Maskiert alle Ziffern außer den letzten zwei, ignoriert Nicht-Ziffern
+      // z.B. "+49 151 000000" -> "•• ••• ••••00", "(030) 123-456" -> "(•••) •••-•56"
+      return String(phone).replace(/\d(?=(?:\D*\d){2}$)/g, "•");
+    }
+    function maskEmailClient(email) {
+      const s = String(email);
+      const at = s.indexOf("@");
+      if (at <= 1) return s; // zu kurz zum Maskieren
+      const user = s.slice(0, at);
+      const domain = s.slice(at + 1);
+      const head = user.slice(0, 2);
+      const maskedUser = head + "*".repeat(Math.max(1, user.length - 2));
+      return `${maskedUser}@${domain}`;
+    }
+
+    async function loadUsers() {
+      const res = await fetch("/api/users/safe");
+      const data = await res.json();
+
+      const badge = document.getElementById("role-badge");
+      const isAdmin = data.role === "admin";
+      badge.textContent = `Rolle: ${data.role}`;
+      if (!isAdmin) {
+        document.getElementById("admin-hint").classList.remove("hidden");
+        badge.className = "text-xs px-2 py-1 rounded border border-yellow-700 bg-yellow-900/30";
+      } else {
+        badge.className = "text-xs px-2 py-1 rounded border border-emerald-700 bg-emerald-900/30";
+      }
+
+      const tbody = document.getElementById("rows");
+      tbody.innerHTML = "";
+
+      data.rows.forEach(r => {
+        // Clientseitiger Fallschirm: wenn Backend nicht maskiert hat (oder anderes Format),
+        // maskieren wir in der User-Rolle hier noch einmal.
+        const email = isAdmin ? r.email : maskEmailClient(r.email);
+        const phone = isAdmin ? r.phone : maskPhoneClient(r.phone);
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="py-1">${r.id}</td>
+          <td>${r.name}</td>
+          <td>${email}</td>
+          <td>${phone}</td>
+          <td>${r.address}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Copy buttons
+    document.addEventListener('click', (e) => {
+      if (e.target.matches('.btn-copy')) {
+        const cmd = e.target.getAttribute('data-cmd');
+        navigator.clipboard.writeText(cmd).then(() => {
+          e.target.textContent = "Kopiert!";
+          setTimeout(() => (e.target.textContent = "Kopieren"), 1200);
+        });
+      }
+    });
+
+    loadUsers();
+  </script>
+</body>
+</html>

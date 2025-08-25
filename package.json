@@ -1,0 +1,13 @@
+{
+  "name": "vuln-demo-websec",
+  "version": "1.0.0",
+  "description": "Mini demo: SQLi & XSS (vulnerable vs safe) + role-based masking. For local educational use only.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "sqlite3": "^5.1.7"
+  }
+}

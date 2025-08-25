@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Web Security Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <main class="max-w-3xl mx-auto p-6 space-y-6">
+    <header class="space-y-2">
+      <h1 class="text-3xl font-bold">Web Security Demo</h1>
+      <p class="text-slate-300">
+        Vergleich von <strong>unsicheren</strong> und <strong>sicheren</strong> Implementierungen – mit Fokus auf
+        <em>SQL Injection</em>, <em>Cross‑Site Scripting</em> und <em>rollenbasierte Datenmaskierung</em>.
+      </p>
+      <p class="bg-yellow-900/30 border border-yellow-700 text-yellow-100 text-xs rounded px-3 py-2 inline-block">
+        ⚠️ Diese Demo enthält absichtlich verwundbare Endpunkte. Nur lokal/isoliert betreiben – nicht öffentlich deployen.
+      </p>
+    </header>
+
+    <section class="grid sm:grid-cols-2 gap-6">
+      <a href="/sqli.html" class="block rounded-xl border border-slate-800 p-5 hover:bg-slate-900 transition">
+        <h2 class="text-xl font-semibold">SQL Injection (SQLi) 🔎</h2>
+        <p class="text-sm text-slate-300 mt-2">
+          Unsichere String‑Konkatenation vs. sichere Parametrisierung (Prepared Statements).
+        </p>
+        <span class="inline-block mt-3 text-xs underline">Öffnen</span>
+      </a>
+
+      <a href="/xss.html" class="block rounded-xl border border-slate-800 p-5 hover:bg-slate-900 transition">
+        <h2 class="text-xl font-semibold">Cross‑Site Scripting (XSS) ✨</h2>
+        <p class="text-sm text-slate-300 mt-2">
+          Unsicheres <code>innerHTML</code> vs. sicheres <code>textContent</code> (Output‑Encoding).
+        </p>
+        <span class="inline-block mt-3 text-xs underline">Öffnen</span>
+      </a>
+
+      <a href="/users.html" class="block rounded-xl border border-slate-800 p-5 hover:bg-slate-900 transition">
+        <h2 class="text-xl font-semibold">Rollen &amp; Maskierung 🛡️</h2>
+        <p class="text-sm text-slate-300 mt-2">
+          User‑Sicht (maskiert) vs. Admin‑Sicht (volle Felder) – Privacy by Default &amp; Need‑to‑Know.
+        </p>
+        <span class="inline-block mt-3 text-xs underline">Öffnen</span>
+      </a>
+    </section>
+
+    <footer class="text-xs text-slate-500">
+      © Demo – zu Lehrzwecken. Keine Haftung. Hinweise &amp; Verbesserungen willkommen.
+    </footer>
+  </main>
+</body>
+</html>

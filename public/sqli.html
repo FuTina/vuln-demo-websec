@@ -5,66 +5,100 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SQLi Demo</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --blue:#2563eb; --ink:#0f172a; --muted:#475569; --border:rgba(15,23,42,.10);
+    }
+    a:focus, button:focus { outline:2px solid var(--blue); outline-offset:3px; }
+
+    .bg-hero{
+      position:fixed; inset:0; z-index:-1;
+      background:
+        linear-gradient(135deg, rgba(37,99,235,.12) 0%, transparent 40%),
+        linear-gradient(225deg, rgba(59,130,246,.12) 0%, transparent 40%),
+        linear-gradient(180deg, #e0e7ff 0%, #ffffff 70%);
+    }
+    .bg-hero::after{
+      content:""; position:absolute; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cpath d='M44 0H0v44' fill='none' stroke='%232563eb' stroke-opacity='.45' stroke-width='1'/%3E%3C/svg%3E");
+      background-size:44px 44px; filter:blur(2px); opacity:.6;
+    }
+    .surface{
+      background:rgba(255,255,255,.9);
+      -webkit-backdrop-filter:blur(8px) saturate(120%);
+      backdrop-filter:blur(8px) saturate(120%);
+      border:1px solid var(--border); border-radius:20px;
+      box-shadow:0 20px 40px rgba(2,6,23,.08), 0 4px 12px rgba(2,6,23,.04);
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-  <main class="max-w-3xl mx-auto p-6 space-y-6">
+<body class="text-[var(--ink)]">
+  <div class="bg-hero"></div>
+
+  <main class="max-w-5xl mx-auto px-5 py-10">
     <a href="/" class="text-sm underline">← Zurück</a>
-    <h1 class="text-2xl font-bold">SQL Injection (SQLi)</h1>
 
-    <p class="text-slate-300 text-sm">
-      Vergleich von <strong>unsicherer</strong> String‑Konkatenation mit <strong>sicheren</strong> parametrisierten Abfragen.
-      Diese Seite ist nur für Demonstrationszwecke und darf nicht öffentlich betrieben werden.
-    </p>
+    <section class="surface mt-6 p-6 md:p-10 space-y-6">
+      <header class="space-y-2">
+        <h1 class="text-3xl font-bold">SQL Injection (SQLi)</h1>
+        <p class="text-[var(--muted)] text-sm">
+          Vergleich von <strong>unsicherer</strong> String‑Konkatenation mit <strong>sicheren</strong> parametrisierten Abfragen.
+        </p>
+      </header>
 
-    <!-- Eingabe + zwei Buttons -->
-    <form id="form" class="flex flex-col gap-2 sm:flex-row sm:items-center" method="get">
-      <label for="name" class="sr-only">Name</label>
-      <input id="name" name="name"
-             class="flex-1 bg-slate-900 border border-slate-800 rounded px-3 py-2"
-             placeholder="Name eingeben (z. B. Alice, Bob, Charlie)" />
-      <div class="flex gap-2">
-        <button type="submit" data-mode="vuln"
-                class="bg-red-200 text-black px-3 py-2 rounded hover:bg-red-300"
-                title="Unsichere Abfrage (String-Konkatenation)">
-          Unsicher abfragen
-        </button>
-        <button type="submit" data-mode="safe"
-                class="bg-emerald-200 text-black px-3 py-2 rounded hover:bg-emerald-300"
-                title="Sichere Abfrage (parametrisiert)">
-          Sicher abfragen
-        </button>
-      </div>
-    </form>
+      <!-- Eingabe + zwei Buttons -->
+      <form id="form" class="flex flex-col gap-2 sm:flex-row sm:items-center" method="get">
+        <label for="name" class="sr-only">Name</label>
+        <input id="name" name="name"
+               class="flex-1 border border-slate-200 rounded px-3 py-2 bg-white"
+               placeholder="Name eingeben (z. B. Alice, Bob, Charlie)" />
+        <div class="flex gap-2">
+          <button type="submit" data-mode="vuln"
+                  class="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                  title="Unsichere Abfrage (String-Konkatenation)">
+            Unsicher abfragen
+          </button>
+          <button type="submit" data-mode="safe"
+                  class="px-3 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700"
+                  title="Sichere Abfrage (parametrisiert)">
+            Sicher abfragen
+          </button>
+        </div>
+      </form>
 
-    <!-- Erklärung -->
-    <details class="bg-slate-900 border border-slate-800 rounded p-3 text-sm">
-      <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
-      <ul class="list-disc pl-5 mt-2 text-slate-300 space-y-1">
-        <li><strong>Unsicher:</strong> Die Eingabe wird in den SQL‑String eingefügt. Die WHERE‑Bedingung kann dadurch verändert werden.</li>
-        <li><strong>Sicher:</strong> Die Abfrage nutzt Parameter (<code>?</code>). Die Eingabe wird als Wert gebunden, nicht als Code.</li>
-        <li><strong>Praxis:</strong> Immer <em>Prepared Statements</em> verwenden – niemals String‑Konkatenation.</li>
-      </ul>
-    </details>
+      <!-- Fehlerbanner -->
+      <div id="error" class="hidden rounded border border-red-200 bg-red-50 text-red-800 text-sm px-3 py-2"></div>
 
-    <!-- Query-Preview -->
-    <section>
-      <h2 class="font-semibold mb-2">Abfrage (Vorschau)</h2>
-      <pre id="sql" class="bg-slate-900 border border-slate-800 rounded p-3 text-xs overflow-auto"></pre>
-    </section>
+      <!-- Query-Preview -->
+      <section>
+        <h2 class="font-semibold mb-2">Abfrage (Vorschau)</h2>
+        <pre id="sql" class="border border-slate-200 rounded p-3 text-xs overflow-auto bg-white"></pre>
+      </section>
 
-    <!-- Ergebnis-Tabelle -->
-    <section>
-      <h2 class="font-semibold mb-2">Ergebnis</h2>
-      <table class="w-full text-sm">
-        <thead class="text-slate-400">
-          <tr>
-            <th class="text-left">ID</th>
-            <th class="text-left">Name</th>
-            <th class="text-left">E‑Mail</th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
+      <!-- Ergebnis-Tabelle -->
+      <section>
+        <h2 class="font-semibold mb-2">Ergebnis</h2>
+        <table class="w-full text-sm border border-slate-200 rounded overflow-hidden">
+          <thead class="text-slate-600 bg-slate-50">
+            <tr>
+              <th class="text-left px-3 py-2">ID</th>
+              <th class="text-left px-3 py-2">Name</th>
+              <th class="text-left px-3 py-2">E‑Mail</th>
+            </tr>
+          </thead>
+          <tbody id="rows" class="bg-white"></tbody>
+        </table>
+      </section>
+
+      <!-- Erklärung -->
+      <details class="border border-slate-200 rounded p-3 text-sm bg-white">
+        <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
+        <ul class="list-disc pl-5 mt-2 text-slate-600 space-y-1">
+          <li><strong>Unsicher:</strong> Die Eingabe wird in den SQL‑String eingefügt. Die WHERE‑Bedingung kann manipuliert werden.</li>
+          <li><strong>Sicher:</strong> Die Abfrage nutzt Parameter (<code>?</code>), Eingaben sind Werte – kein Code.</li>
+          <li><strong>Praxis:</strong> Immer <em>Prepared Statements</em> verwenden – niemals String‑Konkatenation.</li>
+        </ul>
+      </details>
     </section>
   </main>
 
@@ -72,6 +106,16 @@
     const form = document.getElementById('form');
     const rowsEl = document.getElementById('rows');
     const sqlEl = document.getElementById('sql');
+    const errorEl = document.getElementById('error');
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.classList.remove('hidden');
+    }
+    function clearError() {
+      errorEl.textContent = '';
+      errorEl.classList.add('hidden');
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -81,34 +125,39 @@
 
       rowsEl.innerHTML = '';
       sqlEl.textContent = '';
+      clearError();
 
       const url = `/api/sqli/${mode}?name=${encodeURIComponent(name)}`;
       try {
         const res = await fetch(url);
         const data = await res.json();
 
-        // Query anzeigen
+        if (!res.ok) {
+          // Fehler vom Backend anzeigen
+          showError(data?.error || 'Unbekannter Fehler.');
+        }
+
+        // Query anzeigen (kommt bei safe schon als Preview mit Werten)
         sqlEl.textContent = data.sql || '';
 
         // Ergebnisse anzeigen
         (data.rows || []).forEach(r => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td class="py-1">${r.id}</td>
-            <td>${r.name}</td>
-            <td>${r.email}</td>
+            <td class="px-3 py-2 border-t border-slate-100">${r.id}</td>
+            <td class="px-3 py-2 border-t border-slate-100">${r.name}</td>
+            <td class="px-3 py-2 border-t border-slate-100">${r.email}</td>
           `;
           rowsEl.appendChild(tr);
         });
 
-        // Kein Ergebnis?
         if (!data.rows || data.rows.length === 0) {
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td colspan="3" class="py-2 text-slate-400">Keine Treffer.</td>`;
+          tr.innerHTML = `<td colspan="3" class="px-3 py-3 text-slate-500 border-t border-slate-100">Keine Treffer.</td>`;
           rowsEl.appendChild(tr);
         }
       } catch (err) {
-        sqlEl.textContent = 'Fehler beim Laden.';
+        showError('Fehler beim Laden.');
       }
     });
   </script>

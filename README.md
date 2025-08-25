@@ -81,7 +81,7 @@ set DEMO_ROLE=admin && npm start
 3. **Cross-Site Scripting**  
    - Open `/xss.html`.  
    - Post a comment → left (vulnerable) interprets HTML, right (safe) shows plain text.  
-   - Test a html input: `<b>Wichtiger Text!</b><span style="color:red">Achtung</span>`
+   - Test a html input: `<b>Wichtiger Text!</b><span style="color:red">Achtung</span>` or: `<img src="x" onerror="alert('XSS')" alt="Bild nicht gefunden">` or: `<a href="https://example.com">Klick mich</a>`
    - `innerHTML` vs. `textContent`.
 
 ## ⚠️ Notes

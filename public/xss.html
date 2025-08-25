@@ -1,110 +1,167 @@
 <!doctype html>
 <html lang="de">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>XSS Demo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XSS Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{ --blue:#2563eb; --ink:#0f172a; --muted:#475569; --border:rgba(15,23,42,.10); }
+    a:focus, button:focus { outline:2px solid var(--blue); outline-offset:3px; }
+
+    /* Hintergrund (wie Startseite/SQLi) */
+    .bg-hero{
+      position:fixed; inset:0; z-index:-1;
+      background:
+        linear-gradient(135deg, rgba(37,99,235,.12) 0%, transparent 40%),
+        linear-gradient(225deg, rgba(59,130,246,.12) 0%, transparent 40%),
+        linear-gradient(180deg, #e0e7ff 0%, #ffffff 70%);
+    }
+    .bg-hero::after{
+      content:""; position:absolute; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cpath d='M44 0H0v44' fill='none' stroke='%232563eb' stroke-opacity='.45' stroke-width='1'/%3E%3C/svg%3E");
+      background-size:44px 44px; filter:blur(2px); opacity:.6;
+    }
+
+    /* Vordergrund-Surface */
+    .surface{
+      background:rgba(255,255,255,.9);
+      -webkit-backdrop-filter:blur(8px) saturate(120%);
+      backdrop-filter:blur(8px) saturate(120%);
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:0 20px 40px rgba(2,6,23,.08), 0 4px 12px rgba(2,6,23,.04);
+    }
+
+    /* Feed-Karten */
+    .feed{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+    }
+  </style>
 </head>
+<body class="text-[var(--ink)]">
+  <div class="bg-hero"></div>
 
-<body class="min-h-screen bg-slate-950 text-slate-100">
-    <main class="max-w-3xl mx-auto p-6 space-y-6">
-        <a href="/" class="text-sm underline">← Zurück</a>
-        <h1 class="text-2xl font-bold">Cross-Site Scripting (XSS)</h1>
+  <main class="max-w-5xl mx-auto px-5 py-10">
+    <a href="/" class="text-sm underline">← Zurück</a>
 
-        <p class="text-slate-300 text-sm">
-            <strong>Links:</strong> unsicher mit <code>innerHTML</code> (Eingaben als HTML interpretiert).
-            <strong>Rechts:</strong> sicher mit <code>textContent</code> (Eingaben als Text).
-            ⚠️ Hinweis: Dynamisch via <code>innerHTML</code> eingefügte <code>&lt;script&gt;</code>-Tags werden vom
-            Browser nicht ausgeführt.
+    <section class="surface mt-6 p-6 md:p-10 space-y-6">
+      <header class="space-y-2">
+        <h1 class="text-3xl font-bold">Cross‑Site Scripting (XSS)</h1>
+        <p class="text-[var(--muted)] text-sm">
+          <strong>Links:</strong> unsicher via <code>innerHTML</code> (HTML wird interpretiert). –
+          <strong>Rechts:</strong> sicher via <code>textContent</code> (nur Text).
+          Hinweis: Dynamisch per <code>innerHTML</code> eingefügte <code>&lt;script&gt;</code>-Tags werden von Browsern nicht ausgeführt.
         </p>
+      </header>
 
-        <!-- Eingabe -->
-        <form id="form" class="flex gap-2" method="post">
-            <label for="text" class="sr-only">Kommentar</label>
-            <input id="text" name="text" class="flex-1 bg-slate-900 border border-slate-800 rounded px-3 py-2"
-                placeholder="Kommentar eingeben …" />
-            <button type="submit" class="bg-white text-black px-4 py-2 rounded hover:bg-slate-200"
+      <!-- Eingabe -->
+      <form id="form" class="flex flex-col gap-2 sm:flex-row sm:items-center" method="post">
+        <label for="text" class="sr-only">Kommentar</label>
+        <input id="text" name="text"
+               class="flex-1 border border-slate-200 rounded px-3 py-2 bg-white"
+               placeholder="Kommentar eingeben … z. B. <b>Hallo</b> oder <img src=x onerror=&quot;alert('XSS')&quot;>" />
+        <button type="submit"
+                class="px-4 py-2 rounded bg-[var(--blue)] text-white hover:bg-blue-600"
                 title="Kommentar absenden">
-                Kommentar posten
-            </button>
-        </form>
+          Kommentar posten
+        </button>
+      </form>
 
-        <!-- Zwei Feeds nebeneinander -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <section>
-                <h2 class="font-semibold mb-2">Unsicherer Feed (innerHTML)</h2>
-                <div id="list-vuln" class="space-y-2 text-sm"></div>
-            </section>
-            <section>
-                <h2 class="font-semibold mb-2">Sicherer Feed (textContent)</h2>
-                <div id="list-safe" class="space-y-2 text-sm"></div>
-            </section>
-        </div>
+      <!-- Fehlerbanner -->
+      <div id="error" class="hidden rounded border border-red-200 bg-red-50 text-red-800 text-sm px-3 py-2"></div>
 
-        <details class="bg-slate-900 border border-slate-800 rounded p-3 text-sm">
-            <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
-            <ul class="list-disc pl-5 mt-2 text-slate-300">
-                <li><strong>Unsicher:</strong> Kommentare werden mit <code>innerHTML</code> eingefügt – HTML-Tags
-                    wirken.</li>
-                <li><strong>Sicher:</strong> Kommentare werden mit <code>textContent</code> eingefügt – HTML bleibt als
-                    Text.</li>
-                <li><strong>Praxis:</strong> Kein unkontrolliertes <code>innerHTML</code>. Immer Escaping, sichere
-                    Templates &amp; CSP nutzen.</li>
-            </ul>
-        </details>
-    </main>
+      <!-- Zwei Feeds nebeneinander -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section class="feed p-4">
+          <h2 class="font-semibold mb-2">Unsicherer Feed (<code>innerHTML</code>)</h2>
+          <div id="list-vuln" class="space-y-2 text-sm"></div>
+        </section>
+        <section class="feed p-4">
+          <h2 class="font-semibold mb-2">Sicherer Feed (<code>textContent</code>)</h2>
+          <div id="list-safe" class="space-y-2 text-sm"></div>
+        </section>
+      </div>
 
-    <script>
-        const form = document.getElementById('form');
-        const textInput = document.getElementById('text');
-        const vEl = document.getElementById('list-vuln');
-        const sEl = document.getElementById('list-safe');
+      <!-- Erklärung -->
+      <details class="border border-slate-200 rounded p-3 text-sm bg-white">
+        <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
+        <ul class="list-disc pl-5 mt-2 text-slate-600 space-y-1">
+          <li><strong>Unsicher:</strong> Rendering mit <code>innerHTML</code> – HTML‑Tags wirken (fett, Link, Bild …).</li>
+          <li><strong>Sicher:</strong> Rendering mit <code>textContent</code> – HTML bleibt als Text sichtbar.</li>
+          <li><strong>Praxis:</strong> Kein unkontrolliertes <code>innerHTML</code>; stattdessen Escaping/Encoding, Templates &amp; CSP.</li>
+        </ul>
+      </details>
+    </section>
+  </main>
 
-        function renderUnsafe(container, text) {
-            const div = document.createElement('div');
-            div.className = 'p-3 bg-slate-900 border border-slate-800 rounded';
-            div.innerHTML = text; // absichtlich unsicher
-            container.appendChild(div);
-        }
-        function renderSafe(container, text) {
-            const div = document.createElement('div');
-            div.className = 'p-3 bg-slate-900 border border-slate-800 rounded';
-            div.textContent = text; // sicher
-            container.appendChild(div);
-        }
+  <script>
+    const form = document.getElementById('form');
+    const textInput = document.getElementById('text');
+    const vEl = document.getElementById('list-vuln');
+    const sEl = document.getElementById('list-safe');
+    const errorEl = document.getElementById('error');
 
-        async function loadFeeds() {
-            const [vuln, safe] = await Promise.all([
-                fetch('/api/xss/vuln-list').then(r => r.json()),
-                fetch('/api/xss/safe-list').then(r => r.json())
-            ]);
-            vEl.innerHTML = '';
-            sEl.innerHTML = '';
-            vuln.forEach(c => renderUnsafe(vEl, c.text));
-            safe.forEach(c => renderSafe(sEl, c.text));
-        }
+    function showError(msg){ errorEl.textContent = msg; errorEl.classList.remove('hidden'); }
+    function clearError(){ errorEl.textContent = ''; errorEl.classList.add('hidden'); }
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const text = textInput.value;
+    function renderUnsafe(container, text) {
+      const div = document.createElement('div');
+      div.className = 'p-3 bg-white border border-slate-200 rounded';
+      div.innerHTML = text; // absichtlich unsicher
+      container.appendChild(div);
+    }
+    function renderSafe(container, text) {
+      const div = document.createElement('div');
+      div.className = 'p-3 bg-white border border-slate-200 rounded';
+      div.textContent = text; // sicher
+      container.appendChild(div);
+    }
 
-            // Kommentar nur einmal speichern (z. B. in "vuln")
-            await fetch('/api/xss/vuln', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text })
-            });
+    async function loadFeeds() {
+      const [vulnRes, safeRes] = await Promise.all([
+        fetch('/api/xss/vuln-list'),
+        fetch('/api/xss/safe-list')
+      ]);
 
-            textInput.value = '';
-            loadFeeds();
+      const [vuln, safe] = await Promise.all([vulnRes.json(), safeRes.json()]);
+      vEl.innerHTML = '';
+      sEl.innerHTML = '';
+
+      (vuln || []).forEach(c => renderUnsafe(vEl, c.text));
+      (safe || []).forEach(c => renderSafe(sEl, c.text));
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+      const text = textInput.value.trim();
+      if (!text) return;
+
+      try {
+        const res = await fetch('/api/xss/vuln', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
         });
 
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          showError(data?.error || 'Fehler beim Speichern.');
+          return;
+        }
 
-        // Initial laden
-        loadFeeds();
-    </script>
+        textInput.value = '';
+        await loadFeeds();
+      } catch {
+        showError('Netzwerkfehler.');
+      }
+    });
+
+    // Initial laden
+    loadFeeds();
+  </script>
 </body>
-
 </html>

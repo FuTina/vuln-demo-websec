@@ -39,59 +39,68 @@ db.serialize(() => {
   db.run("CREATE TABLE comments (id INTEGER PRIMARY KEY, text TEXT)");
 });
 
-// --- Helpers for masking PII (for non-admin view) ---
+// --- Helpers ---
 function maskEmail(email) {
-  const [user, domain] = email.split("@");
-  if (!domain) return email;
+  const [user, domain] = String(email).split("@");
+  if (!domain) return String(email);
   const head = user.slice(0, 2);
   const masked = head + "*".repeat(Math.max(1, user.length - 2));
   return `${masked}@${domain}`;
 }
-// server.js
+
 function maskPhone(phone) {
-  // Mask all digits except the last two, ignoring non-digits like +, spaces, dashes
-  // "+49 151 000000" -> "+•• ••• ••••00"
-  // "(030) 123-456"  -> "(•••) •••-•56"
+  // Mask all digits except the last two, ignoring non-digits (+, spaces, dashes)
   return String(phone).replace(/\d(?=(?:\D*\d){2,}\D*$)/g, "•");
 }
 
+// Build a readable preview of a parameterized SQL (only for UI display!)
+function previewSQL(sql, params = []) {
+  let i = 0;
+  return sql.replace(/\?/g, () => {
+    const v = params[i++];
+    const s = String(v ?? "").replace(/'/g, "''"); // naive escape for preview
+    return `'${s}'`;
+  });
+}
 
 // Role switch via env for demo purposes: "user" (default) or "admin"
 const DEMO_ROLE = process.env.DEMO_ROLE || "user";
 
 // --- SQLi DEMO ---
-// INTENTIONALLY VULNERABLE: string concatenation (educational only)
+// UNSAFE: string concatenation (educational only)
 app.get("/api/sqli/vuln", (req, res) => {
-  const name = req.query.name ?? "";
+  const name = (req.query.name ?? "").toString();
+  // Exakte Abfrage mit "=" (absichtlich unsicher)
   const sql = `SELECT id, name, email FROM users WHERE name = '${name}'`;
   db.all(sql, (err, rows) => {
-    if (err) return res.status(500).json({ error: String(err) });
-    res.json({ mode: "vuln", sql, rows });
+    if (err) return res.status(500).json({ error: String(err), sql });
+    res.json({ mode: "vuln", sql, rows: rows ?? [] });
   });
 });
 
-// SAFE: parameterized query (mitigation)
-app.get("/api/users/safe", (_req, res) => {
-  db.all("SELECT id, name, email, phone, address FROM users ORDER BY id", (err, rows) => {
-    if (err) return res.status(500).json({ error: String(err) });
+// SAFE: parameterized query with preview
+app.get("/api/sqli/safe", (req, res) => {
+  const name = (req.query.name ?? "").toString();
+  const sql = "SELECT id, name, email FROM users WHERE name = ?";
+  const params = [name];
 
-    let out = rows;
-    if (DEMO_ROLE !== "admin") {
-      out = rows.map(r => ({
-        id: r.id,
-        name: r.name,
-        email: maskEmail(r.email),
-        phone: maskPhone(r.phone),   // ← hier wird’s angewandt
-        address: r.address
-      }));
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      return res.status(500).json({
+        error: String(err),
+        sql: previewSQL(sql, params)
+      });
     }
-    res.json({ role: DEMO_ROLE, rows: out });
+    res.json({
+      mode: "safe",
+      sql: previewSQL(sql, params), // shown in UI
+      rows: rows ?? []
+    });
   });
 });
-
 
 // --- XSS DEMO ---
-// Vulnerable flow stores raw text and the frontend renders via innerHTML
+// Vulnerable flow stores raw text; frontend renders with innerHTML (unsafe)
 app.post("/api/xss/vuln", (req, res) => {
   const { text = "" } = req.body;
   db.run("INSERT INTO comments (text) VALUES (?)", [text], function (err) {
@@ -102,7 +111,7 @@ app.post("/api/xss/vuln", (req, res) => {
 app.get("/api/xss/vuln-list", (_req, res) => {
   db.all("SELECT id, text FROM comments ORDER BY id DESC", (err, rows) => {
     if (err) return res.status(500).json({ error: String(err) });
-    res.json(rows); // frontend renders with innerHTML (unsafe)
+    res.json(rows);
   });
 });
 
@@ -122,18 +131,19 @@ app.get("/api/xss/safe-list", (_req, res) => {
 });
 
 // --- Users (safe) with masking & role-based view ---
+// (nur EINMAL definieren – vorher doppelt in deiner Datei)
 app.get("/api/users/safe", (_req, res) => {
   db.all("SELECT id, name, email, phone, address FROM users ORDER BY id", (err, rows) => {
     if (err) return res.status(500).json({ error: String(err) });
 
-    let out = rows;
+    let out = rows ?? [];
     if (DEMO_ROLE !== "admin") {
-      out = rows.map(r => ({
+      out = out.map(r => ({
         id: r.id,
         name: r.name,
         email: maskEmail(r.email),
         phone: maskPhone(r.phone),
-        address: r.address // could be reduced to city only, if desired
+        address: r.address
       }));
     }
     res.json({ role: DEMO_ROLE, rows: out });

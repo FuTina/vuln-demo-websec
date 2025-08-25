@@ -5,69 +5,77 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Users (Rollen & Maskierung)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root{ --blue:#2563eb; --ink:#0f172a; --muted:#475569; --border:rgba(15,23,42,.10); }
-    a:focus, button:focus { outline:2px solid var(--blue); outline-offset:3px; }
-
-    .bg-hero{
-      position:fixed; inset:0; z-index:-1;
-      background:
-        linear-gradient(135deg, rgba(37,99,235,.12) 0%, transparent 40%),
-        linear-gradient(225deg, rgba(59,130,246,.12) 0%, transparent 40%),
-        linear-gradient(180deg, #e0e7ff 0%, #ffffff 70%);
-    }
-    .bg-hero::after{
-      content:""; position:absolute; inset:0;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cpath d='M44 0H0v44' fill='none' stroke='%232563eb' stroke-opacity='.45' stroke-width='1'/%3E%3C/svg%3E");
-      background-size:44px 44px; filter:blur(2px); opacity:.6;
-    }
-
-    .surface{
-      background:rgba(255,255,255,.9);
-      -webkit-backdrop-filter:blur(8px) saturate(120%);
-      backdrop-filter:blur(8px) saturate(120%);
-      border:1px solid var(--border);
-      border-radius:20px;
-      box-shadow:0 20px 40px rgba(2,6,23,.08), 0 4px 12px rgba(2,6,23,.04);
-    }
-  </style>
+  <link rel="stylesheet" href="/css/ui.css" />
 </head>
 <body class="text-[var(--ink)]">
+  <!-- Global Header & Nav -->
+  <header class="app-header">
+    <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2 text-[var(--ink)] font-semibold">
+        <span class="h-8 w-8 rounded-lg bg-[var(--blue)] text-white grid place-items-center">🛡️</span>
+        Web Security Demo
+      </a>
+      <nav class="app-nav flex items-center gap-1">
+        <a href="/" data-path="/">Start</a>
+        <a href="/sqli.html" data-path="/sqli.html">SQLi</a>
+        <a href="/xss.html" data-path="/xss.html">XSS</a>
+        <a href="/users.html" data-path="/users.html">Users</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hintergrund -->
   <div class="bg-hero"></div>
 
-  <main class="max-w-5xl mx-auto px-5 py-10">
-    <a href="/" class="text-sm underline">← Zurück</a>
+  <!-- Aktive Seite markieren -->
+  <script>
+    (function(){
+      const path = location.pathname.replace(/\/+$/,'') || '/';
+      document.querySelectorAll('.app-nav a').forEach(a=>{
+        if (a.getAttribute('data-path') === path) a.setAttribute('aria-current','page');
+      });
+    })();
+  </script>
 
-    <section class="surface mt-6 p-6 md:p-10 space-y-6">
-      <header class="flex items-center justify-between gap-4">
-        <div>
-          <h1 class="text-3xl font-bold">Users (rollenbasierte Ansicht)</h1>
-          <p class="text-[var(--muted)] text-sm">Privacy by Default &amp; Need-to-Know.</p>
-        </div>
+  <main class="max-w-6xl mx-auto px-5 py-10">
+    <section class="surface p-6 md:p-10 space-y-6">
+      <!-- Kopfzeile mit modernem Zurück-Button & Rollen-Badge -->
+      <div class="flex items-center justify-between gap-4">
+        <button onclick="history.back()" class="btn btn-ghost btn-sm" title="Zurück">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4A1 1 0 018.707 6.293L6.414 8.586H17a1 1 0 110 2H6.414l2.293 2.293a1 1 0 010 1.414z"/>
+          </svg>
+          Zurück
+        </button>
         <span id="role-badge" class="text-xs px-2 py-1 rounded border border-slate-300 bg-white">Rolle: …</span>
+      </div>
+
+      <header>
+        <h1 class="text-3xl font-bold">Users (rollenbasierte Ansicht)</h1>
+        <p class="text-[var(--muted)] text-sm">Privacy by Default &amp; Need‑to‑Know.</p>
       </header>
 
       <!-- Admin-Hinweis -->
       <div id="admin-hint" class="hidden rounded border border-amber-200 bg-amber-50 text-amber-900 p-3 text-sm">
         <p class="mb-2">
-          Du siehst aktuell die <strong>User-Sicht</strong> (maskierte Daten).
-          Für die <strong>Admin-Sicht</strong> (volle Felder) starte den Server so neu:
+          Du siehst aktuell die <strong>User‑Sicht</strong> (maskierte Daten).
+          Für die <strong>Admin‑Sicht</strong> (volle Felder) starte den Server so neu:
         </p>
         <div class="grid sm:grid-cols-3 gap-2">
           <div>
             <p class="text-amber-900/70 mb-1">macOS/Linux</p>
             <pre class="bg-white border border-amber-200 rounded p-2 text-xs">DEMO_ROLE=admin npm start</pre>
-            <button class="btn-copy mt-1 text-xs underline" data-cmd="DEMO_ROLE=admin npm start">Kopieren</button>
+            <button class="btn btn-ghost btn-sm btn-copy" data-cmd="DEMO_ROLE=admin npm start">Kopieren</button>
           </div>
           <div>
             <p class="text-amber-900/70 mb-1">Windows PowerShell</p>
             <pre class="bg-white border border-amber-200 rounded p-2 text-xs">$env:DEMO_ROLE="admin"; npm start</pre>
-            <button class="btn-copy mt-1 text-xs underline" data-cmd="$env:DEMO_ROLE=&quot;admin&quot;; npm start">Kopieren</button>
+            <button class="btn btn-ghost btn-sm btn-copy" data-cmd="$env:DEMO_ROLE=&quot;admin&quot;; npm start">Kopieren</button>
           </div>
           <div>
             <p class="text-amber-900/70 mb-1">Windows CMD</p>
             <pre class="bg-white border border-amber-200 rounded p-2 text-xs">set DEMO_ROLE=admin && npm start</pre>
-            <button class="btn-copy mt-1 text-xs underline" data-cmd="set DEMO_ROLE=admin && npm start">Kopieren</button>
+            <button class="btn btn-ghost btn-sm btn-copy" data-cmd="set DEMO_ROLE=admin && npm start">Kopieren</button>
           </div>
         </div>
       </div>
@@ -81,7 +89,7 @@
               <tr>
                 <th class="text-left px-3 py-2">ID</th>
                 <th class="text-left px-3 py-2">Name</th>
-                <th class="text-left px-3 py-2">E-Mail</th>
+                <th class="text-left px-3 py-2">E‑Mail</th>
                 <th class="text-left px-3 py-2">Telefon</th>
                 <th class="text-left px-3 py-2">Adresse</th>
               </tr>
@@ -90,7 +98,7 @@
           </table>
         </div>
         <p class="text-xs text-slate-500 mt-2">
-          Legende: Maskierung von E-Mails (z. B. <code>al***@example.com</code>) &amp; Telefonnummern (z. B. <code>••••••22</code>) in der User-Sicht.
+          Legende: Maskierung von E‑Mails (z. B. <code>al***@example.com</code>) &amp; Telefonnummern (z. B. <code>••••••22</code>) in der User‑Sicht.
         </p>
       </section>
 
@@ -98,8 +106,8 @@
       <details class="border border-slate-200 rounded p-3 text-sm bg-white">
         <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
         <ul class="list-disc pl-5 mt-2 text-slate-600 space-y-1">
-          <li><strong>User-Rolle:</strong> E-Mail &amp; Telefon sind maskiert (Privacy by Default).</li>
-          <li><strong>Admin-Rolle:</strong> Volle Felder sichtbar (Need-to-Know).</li>
+          <li><strong>User‑Rolle:</strong> E‑Mail &amp; Telefon sind maskiert (Privacy by Default).</li>
+          <li><strong>Admin‑Rolle:</strong> Volle Felder sichtbar (Need‑to‑Know).</li>
           <li><strong>Praxis:</strong> Zugriff auf sensible Daten wird über <em>Rollen &amp; Rechte</em> gesteuert – nicht über Schwachstellen.</li>
         </ul>
       </details>
@@ -107,36 +115,38 @@
   </main>
 
   <script>
-    function maskPhoneClient(phone) {
+    // Clientseitige Fallback-Masken (falls Backend mal unmaskiert liefert)
+    function maskPhoneClient(phone){
       return String(phone).replace(/\d(?=(?:\D*\d){2,}\D*$)/g, "•");
     }
-    function maskEmailClient(email) {
+    function maskEmailClient(email){
       const s = String(email);
       const at = s.indexOf("@");
       if (at <= 1) return s;
-      const user = s.slice(0, at);
-      const domain = s.slice(at + 1);
+      const user = s.slice(0, at), domain = s.slice(at+1);
       const head = user.slice(0, 2);
-      const maskedUser = head + "*".repeat(Math.max(1, user.length - 2));
-      return `${maskedUser}@${domain}`;
+      return head + "*".repeat(Math.max(1, user.length - 2)) + "@" + domain;
     }
 
-    async function loadUsers() {
+    async function loadUsers(){
       const res = await fetch("/api/users/safe");
       const data = await res.json();
+
+      // Rolle anzeigen
       const badge = document.getElementById("role-badge");
       const isAdmin = data.role === "admin";
       badge.textContent = `Rolle: ${data.role}`;
-      if (!isAdmin) {
+      if (!isAdmin){
         document.getElementById("admin-hint").classList.remove("hidden");
         badge.className = "text-xs px-2 py-1 rounded border border-yellow-600 bg-yellow-50 text-yellow-900";
       } else {
         badge.className = "text-xs px-2 py-1 rounded border border-emerald-600 bg-emerald-50 text-emerald-900";
       }
 
+      // Tabelle rendern
       const tbody = document.getElementById("rows");
       tbody.innerHTML = "";
-      (data.rows || []).forEach(r => {
+      (data.rows || []).forEach(r=>{
         const email = isAdmin ? r.email : maskEmailClient(r.email);
         const phone = isAdmin ? r.phone : maskPhoneClient(r.phone);
         const tr = document.createElement("tr");
@@ -151,12 +161,14 @@
       });
     }
 
-    document.addEventListener('click', (e) => {
-      if (e.target.matches('.btn-copy')) {
+    // Copy-Buttons
+    document.addEventListener('click', (e)=>{
+      if (e.target.matches('.btn-copy')){
         const cmd = e.target.getAttribute('data-cmd');
-        navigator.clipboard.writeText(cmd).then(() => {
+        navigator.clipboard.writeText(cmd).then(()=>{
+          const old = e.target.textContent;
           e.target.textContent = "Kopiert!";
-          setTimeout(() => (e.target.textContent = "Kopieren"), 1200);
+          setTimeout(()=> (e.target.textContent = old), 1200);
         });
       }
     });

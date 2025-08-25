@@ -5,40 +5,50 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SQLi Demo</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root{
-      --blue:#2563eb; --ink:#0f172a; --muted:#475569; --border:rgba(15,23,42,.10);
-    }
-    a:focus, button:focus { outline:2px solid var(--blue); outline-offset:3px; }
-
-    .bg-hero{
-      position:fixed; inset:0; z-index:-1;
-      background:
-        linear-gradient(135deg, rgba(37,99,235,.12) 0%, transparent 40%),
-        linear-gradient(225deg, rgba(59,130,246,.12) 0%, transparent 40%),
-        linear-gradient(180deg, #e0e7ff 0%, #ffffff 70%);
-    }
-    .bg-hero::after{
-      content:""; position:absolute; inset:0;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cpath d='M44 0H0v44' fill='none' stroke='%232563eb' stroke-opacity='.45' stroke-width='1'/%3E%3C/svg%3E");
-      background-size:44px 44px; filter:blur(2px); opacity:.6;
-    }
-    .surface{
-      background:rgba(255,255,255,.9);
-      -webkit-backdrop-filter:blur(8px) saturate(120%);
-      backdrop-filter:blur(8px) saturate(120%);
-      border:1px solid var(--border); border-radius:20px;
-      box-shadow:0 20px 40px rgba(2,6,23,.08), 0 4px 12px rgba(2,6,23,.04);
-    }
-  </style>
+  <link rel="stylesheet" href="/css/ui.css" />
 </head>
 <body class="text-[var(--ink)]">
+  <!-- Global Header & Nav -->
+  <header class="app-header">
+    <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2 text-[var(--ink)] font-semibold">
+        <span class="h-8 w-8 rounded-lg bg-[var(--blue)] text-white grid place-items-center">🛡️</span>
+        Web Security Demo
+      </a>
+      <nav class="app-nav flex items-center gap-1">
+        <a href="/" data-path="/">Start</a>
+        <a href="/sqli.html" data-path="/sqli.html">SQLi</a>
+        <a href="/xss.html" data-path="/xss.html">XSS</a>
+        <a href="/users.html" data-path="/users.html">Users</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hintergrund -->
   <div class="bg-hero"></div>
 
-  <main class="max-w-5xl mx-auto px-5 py-10">
-    <a href="/" class="text-sm underline">← Zurück</a>
+  <!-- Aktive Seite markieren -->
+  <script>
+    (function(){
+      const path = location.pathname.replace(/\/+$/,'') || '/';
+      document.querySelectorAll('.app-nav a').forEach(a=>{
+        if (a.getAttribute('data-path') === path) a.setAttribute('aria-current','page');
+      });
+    })();
+  </script>
 
-    <section class="surface mt-6 p-6 md:p-10 space-y-6">
+  <main class="max-w-6xl mx-auto px-5 py-10">
+    <section class="surface p-6 md:p-10 space-y-6">
+      <!-- Kopfzeile mit modernem Zurück-Button -->
+      <div class="flex items-center justify-between">
+        <button onclick="history.back()" class="btn btn-ghost btn-sm" title="Zurück">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4A1 1 0 018.707 6.293L6.414 8.586H17a1 1 0 110 2H6.414l2.293 2.293a1 1 0 010 1.414z"/>
+          </svg>
+          Zurück
+        </button>
+      </div>
+
       <header class="space-y-2">
         <h1 class="text-3xl font-bold">SQL Injection (SQLi)</h1>
         <p class="text-[var(--muted)] text-sm">
@@ -47,20 +57,20 @@
       </header>
 
       <!-- Eingabe + zwei Buttons -->
-      <form id="form" class="flex flex-col gap-2 sm:flex-row sm:items-center" method="get">
+      <form id="form" class="flex flex-col gap-3 md:flex-row md:items-center" method="get">
         <label for="name" class="sr-only">Name</label>
         <input id="name" name="name"
                class="flex-1 border border-slate-200 rounded px-3 py-2 bg-white"
                placeholder="Name eingeben (z. B. Alice, Bob, Charlie)" />
         <div class="flex gap-2">
-          <button type="submit" data-mode="vuln"
-                  class="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-                  title="Unsichere Abfrage (String-Konkatenation)">
+          <button type="submit" data-mode="vuln" class="btn btn-danger" title="Unsichere Abfrage (String-Konkatenation)">
+            <!-- Warn-Icon -->
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a1 1 0 01.894.553l7 14A1 1 0 0117 18H3a1 1 0 01-.894-1.447l7-14A1 1 0 0110 2zM9 8v4a1 1 0 002 0V8a1 1 0 10-2 0zm1 8a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg>
             Unsicher abfragen
           </button>
-          <button type="submit" data-mode="safe"
-                  class="px-3 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700"
-                  title="Sichere Abfrage (parametrisiert)">
+          <button type="submit" data-mode="safe" class="btn btn-primary" title="Sichere Abfrage (parametrisiert)">
+            <!-- Pfeil-Icon -->
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3 10a1 1 0 011-1h7.586l-2.293-2.293a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 11-1.414-1.414L11.586 11H4a1 1 0 01-1-1z"/></svg>
             Sicher abfragen
           </button>
         </div>
@@ -78,19 +88,21 @@
       <!-- Ergebnis-Tabelle -->
       <section>
         <h2 class="font-semibold mb-2">Ergebnis</h2>
-        <table class="w-full text-sm border border-slate-200 rounded overflow-hidden">
-          <thead class="text-slate-600 bg-slate-50">
-            <tr>
-              <th class="text-left px-3 py-2">ID</th>
-              <th class="text-left px-3 py-2">Name</th>
-              <th class="text-left px-3 py-2">E‑Mail</th>
-            </tr>
-          </thead>
-          <tbody id="rows" class="bg-white"></tbody>
-        </table>
+        <div class="overflow-x-auto rounded border border-slate-200 bg-white">
+          <table class="w-full text-sm">
+            <thead class="text-slate-600 bg-slate-50">
+              <tr>
+                <th class="text-left px-3 py-2">ID</th>
+                <th class="text-left px-3 py-2">Name</th>
+                <th class="text-left px-3 py-2">E‑Mail</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
       </section>
 
-      <!-- Erklärung -->
+      <!-- Erklärung unten -->
       <details class="border border-slate-200 rounded p-3 text-sm bg-white">
         <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
         <ul class="list-disc pl-5 mt-2 text-slate-600 space-y-1">
@@ -108,17 +120,12 @@
     const sqlEl = document.getElementById('sql');
     const errorEl = document.getElementById('error');
 
-    function showError(msg) {
-      errorEl.textContent = msg;
-      errorEl.classList.remove('hidden');
-    }
-    function clearError() {
-      errorEl.textContent = '';
-      errorEl.classList.add('hidden');
-    }
+    function showError(msg){ errorEl.textContent = msg; errorEl.classList.remove('hidden'); }
+    function clearError(){ errorEl.textContent = ''; errorEl.classList.add('hidden'); }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const submitter = e.submitter; // Button, der das Submit ausgelöst hat
       const mode = submitter?.dataset?.mode || 'safe';
       const name = document.getElementById('name').value;
@@ -132,12 +139,9 @@
         const res = await fetch(url);
         const data = await res.json();
 
-        if (!res.ok) {
-          // Fehler vom Backend anzeigen
-          showError(data?.error || 'Unbekannter Fehler.');
-        }
+        if (!res.ok) showError(data?.error || 'Unbekannter Fehler.');
 
-        // Query anzeigen (kommt bei safe schon als Preview mit Werten)
+        // Query anzeigen
         sqlEl.textContent = data.sql || '';
 
         // Ergebnisse anzeigen
@@ -151,12 +155,13 @@
           rowsEl.appendChild(tr);
         });
 
+        // Kein Ergebnis?
         if (!data.rows || data.rows.length === 0) {
           const tr = document.createElement('tr');
           tr.innerHTML = `<td colspan="3" class="px-3 py-3 text-slate-500 border-t border-slate-100">Keine Treffer.</td>`;
           rowsEl.appendChild(tr);
         }
-      } catch (err) {
+      } catch {
         showError('Fehler beim Laden.');
       }
     });

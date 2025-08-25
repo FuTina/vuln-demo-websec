@@ -5,77 +5,40 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Web Security Demo</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root{
-      --blue: #2563eb;
-      --ink: #0f172a;
-      --muted: #475569;
-      --border: rgba(15,23,42,.10);
-    }
-    a:focus, button:focus { outline: 2px solid var(--blue); outline-offset: 3px; }
-
-    /* Hintergrund */
-    .bg-hero{
-      position: fixed; inset: 0; z-index: -1;
-      background:
-        linear-gradient(135deg, rgba(37,99,235,.12) 0%, transparent 40%),
-        linear-gradient(225deg, rgba(59,130,246,.12) 0%, transparent 40%),
-        linear-gradient(180deg, #e0e7ff 0%, #ffffff 70%);
-    }
-    .bg-hero::after{
-      content:""; position:absolute; inset:0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cpath d='M44 0H0v44' fill='none' stroke='%232563eb' stroke-opacity='.45' stroke-width='1'/%3E%3C/svg%3E");
-      background-size: 44px 44px;
-      filter: blur(2px);
-      opacity: .6;   /* klarer als vorher */
-    }
-
-    /* Vordergrund-Surface */
-    .surface{
-      background: rgba(255,255,255,.9);
-      -webkit-backdrop-filter: blur(8px) saturate(120%);
-      backdrop-filter: blur(8px) saturate(120%);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      box-shadow:
-        0 20px 40px rgba(2,6,23,.08),
-        0 4px 12px rgba(2,6,23,.04);
-    }
-
-    /* Tiles */
-    .tile{
-      border: 1px solid rgba(37,99,235,.25);
-      border-radius: 14px;
-      background: linear-gradient(180deg, #ffffff 0%, #f0f6ff 100%);
-      box-shadow: 0 4px 10px rgba(37,99,235,.08);
-      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-    }
-    .tile:hover{
-      transform: translateY(-4px);
-      border-color: rgba(37,99,235,.6);
-      box-shadow:
-        0 14px 28px rgba(37,99,235,.25),
-        0 6px 14px rgba(37,99,235,.15);
-      background: linear-gradient(180deg, #ffffff 0%, #e8f0ff 100%);
-    }
-  </style>
+  <link rel="stylesheet" href="/css/ui.css" />
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%232563eb' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l7 4v6c0 5.25-3.5 10-7 10s-7-4.75-7-10V6l7-4z'/%3E%3C/svg%3E">
 </head>
 <body class="text-[var(--ink)]">
-  <div class="bg-hero"></div>
-
-  <header class="border-b border-slate-200/70 bg-white/70 backdrop-blur-sm">
-    <div class="max-w-6xl mx-auto px-5 py-4 flex items-center gap-3">
-      <div class="h-8 w-8 rounded-lg bg-[var(--blue)] flex items-center justify-center">
-        <span class="text-white text-sm" aria-hidden="true">🛡️</span>
-      </div>
-      <div class="leading-tight">
-        <p class="font-semibold tracking-tight">Web Security Demo</p>
-        <p class="text-xs text-slate-500">SQLi · XSS · Rollen &amp; Maskierung</p>
-      </div>
+  <!-- Global Header & Nav -->
+  <header class="app-header">
+    <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2 text-[var(--ink)] font-semibold">
+        <span class="h-8 w-8 rounded-lg bg-[var(--blue)] text-white grid place-items-center">🛡️</span>
+        Web Security Demo
+      </a>
+      <nav class="app-nav flex items-center gap-1">
+        <a href="/" data-path="/">Start</a>
+        <a href="/sqli.html" data-path="/sqli.html">SQLi</a>
+        <a href="/xss.html" data-path="/xss.html">XSS</a>
+        <a href="/users.html" data-path="/users.html">Users</a>
+      </nav>
     </div>
   </header>
+
+  <!-- Hintergrund -->
+  <div class="bg-hero"></div>
+
+  <!-- Aktive Seite markieren -->
+  <script>
+    (function(){
+      const path = location.pathname.replace(/\/+$/,'') || '/';
+      const cur = path === '/index.html' ? '/' : path;
+      document.querySelectorAll('.app-nav a').forEach(a => {
+        if (a.getAttribute('data-path') === cur) a.setAttribute('aria-current','page');
+      });
+    })();
+  </script>
 
   <main class="max-w-6xl mx-auto px-5">
     <section class="surface mt-10 mb-12 p-6 md:p-10">
@@ -86,8 +49,8 @@
           </h1>
           <p class="text-[var(--muted)] max-w-prose">
             Minimalistische Demo der Unterschiede zwischen <strong>unsicheren</strong> und
-            <strong>sicheren</strong> Implementierungen für <em>SQL Injection</em>, <em>Cross-Site Scripting</em>
-            und <em>rollenbasierte Datenmaskierung</em>.
+            <strong>sicheren</strong> Implementierungen für <em>SQL Injection</em>,
+            <em>Cross-Site Scripting</em> und <em>rollenbasierte Datenmaskierung</em>.
           </p>
         </div>
         <ul class="text-sm text-slate-600 md:justify-self-end md:max-w-sm space-y-2">
@@ -101,7 +64,7 @@
         <a href="/sqli.html" class="tile block p-5">
           <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold">SQL Injection (SQLi)</h2>
-            <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
               <path d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z"/>
             </svg>
           </div>
@@ -113,7 +76,7 @@
         <a href="/xss.html" class="tile block p-5">
           <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold">Cross-Site Scripting (XSS)</h2>
-            <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
               <path d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z"/>
             </svg>
           </div>
@@ -125,7 +88,7 @@
         <a href="/users.html" class="tile block p-5">
           <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold">Rollen &amp; Maskierung</h2>
-            <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
               <path d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z"/>
             </svg>
           </div>

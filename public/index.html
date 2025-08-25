@@ -1,107 +1,125 @@
 <!doctype html>
 <html lang="de">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Web Security Demo</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/css/ui.css" />
-  <link rel="icon" type="image/svg+xml"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%232563eb' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l7 4v6c0 5.25-3.5 10-7 10s-7-4.75-7-10V6l7-4z'/%3E%3C/svg%3E">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Web Security Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/ui.css" />
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%232563eb' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l7 4v6c0 5.25-3.5 10-7 10s-7-4.75-7-10V6l7-4z'/%3E%3C/svg%3E">
 </head>
+
 <body class="text-[var(--ink)]">
-  <!-- Global Header & Nav -->
-  <header class="app-header">
-    <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
-      <a href="/" class="flex items-center gap-2 text-[var(--ink)] font-semibold">
-        <span class="h-8 w-8 rounded-lg bg-[var(--blue)] text-white grid place-items-center">🛡️</span>
-        Web Security Demo
-      </a>
-      <nav class="app-nav flex items-center gap-1">
-        <a href="/" data-path="/">Start</a>
-        <a href="/sqli.html" data-path="/sqli.html">SQLi</a>
-        <a href="/xss.html" data-path="/xss.html">XSS</a>
-        <a href="/users.html" data-path="/users.html">Users</a>
-      </nav>
-    </div>
-  </header>
-
-  <!-- Hintergrund -->
-  <div class="bg-hero"></div>
-
-  <!-- Aktive Seite markieren -->
-  <script>
-    (function(){
-      const path = location.pathname.replace(/\/+$/,'') || '/';
-      const cur = path === '/index.html' ? '/' : path;
-      document.querySelectorAll('.app-nav a').forEach(a => {
-        if (a.getAttribute('data-path') === cur) a.setAttribute('aria-current','page');
-      });
-    })();
-  </script>
-
-  <main class="max-w-6xl mx-auto px-5">
-    <section class="surface mt-10 mb-12 p-6 md:p-10">
-      <div class="grid md:grid-cols-2 gap-10 items-start">
-        <div class="space-y-4">
-          <h1 class="text-4xl font-extrabold tracking-tight leading-tight">
-            Sicher entwickeln. <span class="text-[var(--blue)]">Risiken verstehen.</span>
-          </h1>
-          <p class="text-[var(--muted)] max-w-prose">
-            Minimalistische Demo der Unterschiede zwischen <strong>unsicheren</strong> und
-            <strong>sicheren</strong> Implementierungen für <em>SQL Injection</em>,
-            <em>Cross-Site Scripting</em> und <em>rollenbasierte Datenmaskierung</em>.
-          </p>
+    <!-- Global Header & Nav -->
+    <header class="app-header">
+        <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
+            <a href="/" class="flex items-center gap-2 text-[var(--ink)] font-semibold">
+                <span class="h-8 w-8 rounded-lg bg-[var(--blue)] text-white grid place-items-center">🛡️</span>
+                Web Security Demo
+            </a>
+            <nav class="app-nav flex items-center gap-1">
+                <a href="/" data-path="/">Start</a>
+                <a href="/sqli.html" data-path="/sqli.html">SQLi</a>
+                <a href="/xss.html" data-path="/xss.html">XSS</a>
+                <a href="/users.html" data-path="/users.html">Users</a>
+            </nav>
         </div>
-        <ul class="text-sm text-slate-600 md:justify-self-end md:max-w-sm space-y-2">
-          <li>SQLi: Prepared Statements statt String-Konkatenation</li>
-          <li>XSS: kein <code>innerHTML</code>, stattdessen Escaping/<code>textContent</code></li>
-          <li>Daten: Rollen &amp; Maskierung (Privacy by Default)</li>
-        </ul>
-      </div>
+    </header>
 
-      <div class="mt-10 grid md:grid-cols-3 gap-6">
-        <a href="/sqli.html" class="tile block p-5">
-          <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold">SQL Injection (SQLi)</h2>
-            <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z"/>
-            </svg>
-          </div>
-          <p class="mt-2 text-sm text-[var(--muted)]">
-            Unsichere String-Konkatenation vs. sichere Parametrisierung (Prepared Statements).
-          </p>
-        </a>
+    <!-- Hintergrund -->
+    <div class="bg-hero"></div>
 
-        <a href="/xss.html" class="tile block p-5">
-          <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold">Cross-Site Scripting (XSS)</h2>
-            <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z"/>
-            </svg>
-          </div>
-          <p class="mt-2 text-sm text-[var(--muted)]">
-            <code>innerHTML</code> (unsicher) vs. <code>textContent</code> (sicheres Rendering).
-          </p>
-        </a>
+    <!-- Aktive Seite markieren -->
+    <script>
+        (function () {
+            const path = location.pathname.replace(/\/+$/, '') || '/';
+            const cur = path === '/index.html' ? '/' : path;
+            document.querySelectorAll('.app-nav a').forEach(a => {
+                if (a.getAttribute('data-path') === cur) a.setAttribute('aria-current', 'page');
+            });
+        })();
+    </script>
 
-        <a href="/users.html" class="tile block p-5">
-          <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold">Rollen &amp; Maskierung</h2>
-            <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z"/>
-            </svg>
-          </div>
-          <p class="mt-2 text-sm text-[var(--muted)]">
-            User-Sicht (maskiert) vs. Admin-Sicht (volle Felder) – Need-to-Know.
-          </p>
-        </a>
-      </div>
-    </section>
-  </main>
+    <main class="max-w-6xl mx-auto px-5">
+        <section class="surface mt-10 mb-12 p-6 md:p-10">
+            <div class="grid md:grid-cols-2 gap-10 items-start">
+                <div class="space-y-4">
+                    <h1 class="text-4xl font-extrabold tracking-tight leading-tight">
+                        Sicher entwickeln. <span class="text-[var(--blue)]">Risiken verstehen.</span>
+                    </h1>
+                    <p class="text-[var(--muted)] max-w-prose">
+                        Minimalistische Demo der Unterschiede zwischen <strong>unsicheren</strong> und
+                        <strong>sicheren</strong> Implementierungen für <em>SQL Injection</em>,
+                        <em>Cross-Site Scripting</em> und <em>rollenbasierte Datenmaskierung</em>.
+                    </p>
+                </div>
+                <ul class="text-sm text-slate-600 md:justify-self-end md:max-w-sm space-y-2">
+                    <li>SQLi: Prepared Statements statt String-Konkatenation</li>
+                    <li>XSS: kein <code>innerHTML</code>, stattdessen Escaping/<code>textContent</code></li>
+                    <li>Daten: Rollen &amp; Maskierung (Privacy by Default)</li>
+                </ul>
+            </div>
 
-  <footer class="max-w-6xl mx-auto px-5 mb-10 text-xs text-slate-500">
-    © 2025 Demo – Referat T14
-  </footer>
+            <div class="mt-10 grid md:grid-cols-3 gap-6">
+                <a href="/sqli.html" class="tile block p-5">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-base font-semibold">SQL Injection (SQLi)</h2>
+                        <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
+                            <path
+                                d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z" />
+                        </svg>
+                    </div>
+                    <p class="mt-2 text-sm text-[var(--muted)]">
+                        Unsichere String-Konkatenation vs. sichere Parametrisierung (Prepared Statements).
+                    </p>
+                </a>
+
+                <a href="/xss.html" class="tile block p-5">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-base font-semibold">Cross-Site Scripting (XSS)</h2>
+                        <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
+                            <path
+                                d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z" />
+                        </svg>
+                    </div>
+                    <p class="mt-2 text-sm text-[var(--muted)]">
+                        <code>innerHTML</code> (unsicher) vs. <code>textContent</code> (sicheres Rendering).
+                    </p>
+                </a>
+
+                <a href="/users.html" class="tile block p-5">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-base font-semibold">Rollen &amp; Maskierung</h2>
+                        <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
+                            <path
+                                d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z" />
+                        </svg>
+                    </div>
+                    <p class="mt-2 text-sm text-[var(--muted)]">
+                        User-Sicht (maskiert) vs. Admin-Sicht (volle Felder) – Need-to-Know.
+                    </p>
+                </a>
+            </div>
+
+            <div class="mt-10 grid md:grid-cols-3 gap-6">
+                <!-- ... deine drei Kacheln ... -->
+            </div>
+
+            <!-- Warnhinweis -->
+            <div class="mt-8 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                ⚠️ Diese Anwendung enthält <strong>absichtlich verwundbare Endpunkte</strong>.
+                Sie dient ausschließlich <strong>Demonstrations- und Lehrzwecken</strong>.
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer class="max-w-6xl mx-auto px-5 mb-10 text-xs text-slate-500">
+        © 2025 Demo – Referat T14
+    </footer>
 </body>
+
 </html>

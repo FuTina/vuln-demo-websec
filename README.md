@@ -23,8 +23,8 @@ npm start
 http://localhost:5173
 ```
 ---
-
 ### Admin View (full data)
+---
 ---
 ```bash
 # macOS/Linux
@@ -37,7 +37,6 @@ $env:DEMO_ROLE="admin"; npm start
 set DEMO_ROLE=admin && npm start
 ```
 ---
-
 ## 📂 Pages
 
 - `/sqli.html` — **SQL Injection**: vulnerable vs safe (parameterized)
@@ -69,7 +68,7 @@ set DEMO_ROLE=admin && npm start
 1. **SQL Injection**  
    - Open `/sqli.html`.  
    - Search for `Alice` → show query in *vulnerable* vs. *safe* mode.  
-   - Try SQLi (x' OR 1=1--)
+   - Try SQLi (' OR '1'='1'--; x' OR 1=1--)
    - Concatenation vs. parametrization.
 
 2. **Users (Masking)**  

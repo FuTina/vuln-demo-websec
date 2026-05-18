@@ -59,6 +59,9 @@
           <div class="risk-score" aria-live="polite"><strong id="config-score">100</strong><span class="muted">/ 100</span></div>
           <div class="meter" aria-hidden="true"><span id="config-meter"></span></div>
           <p id="config-explanation" class="muted" style="margin-top:12px"></p>
+          <p class="small muted" style="margin-top:10px">
+            Demo heuristic, not a formal risk model. Critical blockers keep the status elevated.
+          </p>
         </div>
       </div>
     </section>
@@ -81,6 +84,7 @@ AUDIT_LOGGING=false</pre>
           <pre id="config-preview" class="query-box"></pre>
         </div>
       </div>
+      <div id="blocker-note" class="notice notice-warning" style="margin-top:14px"></div>
     </section>
 
     <section class="module-section">
@@ -99,6 +103,11 @@ AUDIT_LOGGING=false</pre>
           </tbody>
         </table>
       </div>
+      <p class="small muted" style="margin-top:12px">
+        The score starts at 100 and subtracts illustrative control weights. Missing critical controls impose a minimum
+        risk floor, so hardcoded secrets, root users, public ports, or broad privileges cannot be hidden by unrelated
+        good settings.
+      </p>
     </section>
 
     <section class="module-section">
@@ -125,7 +134,8 @@ AUDIT_LOGGING=false</pre>
     const explanation = document.getElementById("config-explanation");
     const preview = document.getElementById("config-preview");
     const badge = document.getElementById("config-badge");
-    const weights = { user: 14, privilege: 16, network: 16, tls: 12, audit: 12, backups: 14, secrets: 16 };
+    const blockerNote = document.getElementById("blocker-note");
+    const weights = { user: 14, privilege: 16, network: 16, tls: 10, audit: 10, backups: 12, secrets: 18 };
 
     function selected() {
       return Array.from(checklist.querySelectorAll("input")).filter((item) => item.checked).map((item) => item.dataset.key);
@@ -138,7 +148,16 @@ AUDIT_LOGGING=false</pre>
     function render() {
       const keys = selected();
       const reduction = keys.reduce((total, key) => total + weights[key], 0);
-      const risk = Math.max(5, 100 - reduction);
+      const blockers = [];
+      if (!has("secrets", keys)) blockers.push("hardcoded credentials");
+      if (!has("user", keys)) blockers.push("root/default database user");
+      if (!has("network", keys)) blockers.push("public database port");
+      if (!has("privilege", keys)) blockers.push("broad privileges");
+
+      let risk = Math.max(5, 100 - reduction);
+      if (blockers.length > 0) risk = Math.max(risk, 70);
+      if (!has("secrets", keys) || !has("network", keys)) risk = Math.max(risk, 80);
+
       score.textContent = risk;
       meter.style.width = `${risk}%`;
 
@@ -149,16 +168,18 @@ AUDIT_LOGGING=false</pre>
       let gradient = "linear-gradient(90deg, #dc2626, #f97316)";
       if (risk < 40) {
         label = "Low risk configuration";
-        detail = "Most baseline controls are enabled. The configuration is much closer to a production-ready posture.";
+        detail = "Critical blockers are removed and most baseline controls are enabled. This is still a demo score, not a certification.";
         className = "result-box result-safe";
         badgeClass = "badge badge-safe";
         gradient = "linear-gradient(90deg, #22c55e, #15803d)";
       } else if (risk < 70) {
         label = "Medium risk configuration";
-        detail = "Some important controls are enabled, but the baseline still has gaps worth fixing.";
+        detail = "The critical blockers are handled, but resilience or visibility controls are still missing.";
         className = "result-box result-warning";
         badgeClass = "badge badge-warning";
         gradient = "linear-gradient(90deg, #f59e0b, #facc15)";
+      } else if (blockers.length > 0) {
+        detail = `Critical blocker${blockers.length > 1 ? "s" : ""}: ${blockers.join(", ")}. This cannot be considered low risk.`;
       }
       result.className = className;
       status.textContent = label;
@@ -176,6 +197,14 @@ AUDIT_LOGGING=false</pre>
         `AUDIT_LOGGING=${has("audit", keys) ? "enabled" : "false"}`,
         `BACKUPS=${has("backups", keys) ? "configured and restore-tested" : "not configured"}`
       ].join("\n");
+
+      if (blockers.length > 0) {
+        blockerNote.className = "notice notice-warning";
+        blockerNote.innerHTML = `<h3>Risk floor active</h3><p>Missing critical control${blockers.length > 1 ? "s" : ""}: ${blockers.join(", ")}. The score is intentionally prevented from dropping into low risk.</p>`;
+      } else {
+        blockerNote.className = "notice notice-safe";
+        blockerNote.innerHTML = "<h3>No critical blockers</h3><p>Root/default user, public DB port, broad privileges, and hardcoded secrets are removed in the current preview.</p>";
+      }
     }
 
     checklist.addEventListener("change", render);

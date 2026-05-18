@@ -43,16 +43,14 @@
     <section class="module-section">
       <p class="module-kicker">Try it yourself</p>
       <h2>Change role and controls</h2>
-      <div class="controls">
-        <label>
-          Role
-          <select id="role-select" class="role-select">
-            <option value="guest">Guest</option>
-            <option value="app_user" selected>App User</option>
-            <option value="analyst">Analyst</option>
-            <option value="admin">Admin</option>
-          </select>
-        </label>
+      <div class="role-grid" role="group" aria-label="Select role">
+        <button type="button" class="role-card" data-role="guest" aria-pressed="false"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>Guest</strong><span>No sensitive fields.</span></button>
+        <button type="button" class="role-card" data-role="app_user" aria-pressed="true"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg></span>App User</strong><span>Masked contact data.</span></button>
+        <button type="button" class="role-card" data-role="analyst" aria-pressed="false"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>Analyst</strong><span>Business fields only.</span></button>
+        <button type="button" class="role-card" data-role="admin" aria-pressed="false"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg></span>Admin</strong><span>Full record access.</span></button>
+      </div>
+
+      <div class="controls" style="margin-top:14px">
         <label class="switch-card">
           <span><strong>RBAC enabled</strong><span>Enforce role permissions.</span></span>
           <span class="switch"><input id="rbac-toggle" type="checkbox" checked /><span class="slider"></span></span>
@@ -133,12 +131,14 @@
       { name: "Charlie Retail", segment: "SMB", revenue: "$12,200", email: "charlie@example.com", phone: "+49 171 222222", notes: "Support escalation open" }
     ];
 
-    const roleSelect = document.getElementById("role-select");
+    const roleCards = Array.from(document.querySelectorAll("[data-role]"));
     const rbacToggle = document.getElementById("rbac-toggle");
     const maskToggle = document.getElementById("mask-toggle");
     const rows = document.getElementById("customer-rows");
     const roleBadge = document.getElementById("role-badge");
     const warning = document.getElementById("rbac-warning");
+    let currentRole = "app_user";
+    const roleLabels = { guest: "Guest", app_user: "App User", analyst: "Analyst", admin: "Admin" };
 
     function maskEmail(email) {
       const [user, domain] = email.split("@");
@@ -178,13 +178,14 @@
     }
 
     function render() {
-      const role = roleSelect.value;
+      const role = currentRole;
       const rbacEnabled = rbacToggle.checked;
       const maskingEnabled = maskToggle.checked;
-      const label = roleSelect.options[roleSelect.selectedIndex].text;
+      const label = roleLabels[role];
       roleBadge.textContent = `Role: ${label}`;
       roleBadge.className = role === "admin" ? "badge badge-safe" : "badge badge-role";
       warning.classList.toggle("hidden", rbacEnabled);
+      roleCards.forEach((card) => card.setAttribute("aria-pressed", String(card.dataset.role === role)));
 
       rows.innerHTML = "";
       customers.forEach((record) => {
@@ -198,7 +199,13 @@
       });
     }
 
-    [roleSelect, rbacToggle, maskToggle].forEach((control) => control.addEventListener("change", render));
+    roleCards.forEach((card) => {
+      card.addEventListener("click", () => {
+        currentRole = card.dataset.role;
+        render();
+      });
+    });
+    [rbacToggle, maskToggle].forEach((control) => control.addEventListener("change", render));
     render();
   </script>
 </body>

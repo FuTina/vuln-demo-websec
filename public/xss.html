@@ -43,27 +43,41 @@
     <section class="module-section">
       <p class="module-kicker">Try it yourself</p>
       <h2>Render a comment</h2>
-      <div class="segmented" role="group" aria-label="Rendering mode">
-        <button id="vulnerable-render" class="danger-option" type="button" aria-pressed="true">Vulnerable rendering</button>
-        <button id="safe-render" class="safe-option" type="button" aria-pressed="false">Safe rendering</button>
-      </div>
 
-      <form id="comment-form" class="stack" style="margin-top:16px">
-        <label>
-          Comment
-          <input id="comment-input" class="input" value="Hello database team" autocomplete="off" />
-        </label>
-        <div class="controls">
-          <button id="render-button" type="submit" class="btn btn-danger">Render in vulnerable mode</button>
-          <button type="button" id="clear-comments" class="btn btn-ghost">Clear comments</button>
+      <div class="interaction-grid">
+        <div class="input-panel">
+          <h3>1. Enter comment</h3>
+          <form id="comment-form" class="stack">
+            <label>
+              Comment
+              <input id="comment-input" class="input" value="Hello database team" autocomplete="off" />
+            </label>
+            <div class="examples">
+              <span class="small muted">Optional demo payloads:</span>
+              <button type="button" class="btn btn-risk" data-payload="&lt;strong&gt;Injected HTML&lt;/strong&gt;">Injected HTML</button>
+              <button type="button" class="btn btn-risk" data-payload="&lt;a href='https://www.bsi.bund.de' target='_blank' rel='noopener'&gt;Open BSI website&lt;/a&gt;">Clickable BSI link</button>
+              <button type="button" class="btn btn-risk" data-payload="&lt;a download='security-demo.txt' href='data:text/plain,This%20is%20a%20harmless%20fake%20download%20from%20the%20Database%20Security%20Playground.'&gt;Download fake report&lt;/a&gt;">Fake file download</button>
+            </div>
+          </form>
         </div>
-      </form>
 
-      <div class="examples" style="margin-top:14px">
-        <span class="small muted">Harmless demo payloads:</span>
-        <button type="button" class="btn btn-risk" data-payload="&lt;strong&gt;Injected HTML&lt;/strong&gt;">Injected HTML</button>
-        <button type="button" class="btn btn-risk" data-payload="&lt;a href='https://www.bsi.bund.de' target='_blank' rel='noopener'&gt;Open BSI website&lt;/a&gt;">Clickable BSI link</button>
-        <button type="button" class="btn btn-risk" data-payload="&lt;a download='security-demo.txt' href='data:text/plain,This%20is%20a%20harmless%20fake%20download%20from%20the%20Database%20Security%20Playground.'&gt;Download fake report&lt;/a&gt;">Fake file download</button>
+        <div class="action-panel">
+          <h3>2. Choose rendering and run</h3>
+          <div class="segmented" role="group" aria-label="Rendering mode">
+            <button id="vulnerable-render" class="danger-option" type="button" aria-pressed="true">Vulnerable rendering</button>
+            <button id="safe-render" class="safe-option" type="button" aria-pressed="false">Safe rendering</button>
+          </div>
+          <div class="controls" style="margin-top:14px">
+            <button id="render-button" type="submit" form="comment-form" class="btn btn-danger">
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              Render in vulnerable mode
+            </button>
+            <button type="button" id="clear-comments" class="btn btn-ghost">
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></span>
+              Clear comments
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="badge-row" style="margin-top:14px">

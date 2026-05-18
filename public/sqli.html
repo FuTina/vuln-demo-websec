@@ -43,34 +43,48 @@
     <section class="module-section">
       <p class="module-kicker">Try it yourself</p>
       <h2>Attempt a login</h2>
-      <div class="segmented" role="group" aria-label="SQL mode">
-        <button id="vulnerable-mode" class="danger-option" type="button" aria-pressed="true">Vulnerable mode</button>
-        <button id="protected-mode" class="safe-option" type="button" aria-pressed="false">Protected mode</button>
-      </div>
 
-      <form id="login-form" class="stack" style="margin-top:16px">
-        <div class="grid grid-2">
-          <label>
-            Username
-            <input id="username" class="input" value="alice" autocomplete="off" />
-          </label>
-          <label>
-            Password
-            <input id="password" class="input" value="wrong-password" autocomplete="off" />
-          </label>
+      <div class="interaction-grid">
+        <div class="input-panel">
+          <h3>1. Enter credentials</h3>
+          <form id="login-form" class="stack">
+            <div class="grid grid-2">
+              <label>
+                Username
+                <input id="username" class="input" value="alice" autocomplete="off" />
+              </label>
+              <label>
+                Password
+                <input id="password" class="input" value="wrong-password" autocomplete="off" />
+              </label>
+            </div>
+            <div class="examples" aria-label="Example payloads">
+              <span class="small muted">Optional examples:</span>
+              <button type="button" class="btn btn-chip" data-user="alice" data-pass="correct-horse">Valid login</button>
+              <button type="button" class="btn btn-chip" data-user="alice" data-pass="wrong-password">Wrong password</button>
+              <button type="button" class="btn btn-risk" data-user="alice' --" data-pass="anything">Bypass username</button>
+              <button type="button" class="btn btn-risk" data-user="' OR '1'='1'--" data-pass="anything">Return first user</button>
+            </div>
+          </form>
         </div>
-        <div class="controls">
-          <button type="submit" class="btn btn-primary">Run login check</button>
-          <button type="button" id="reset" class="btn btn-ghost">Reset</button>
-        </div>
-      </form>
 
-      <div class="examples" style="margin-top:14px" aria-label="Example payloads">
-        <span class="small muted">Example inputs:</span>
-        <button type="button" class="btn btn-chip" data-user="alice" data-pass="correct-horse">Valid login</button>
-        <button type="button" class="btn btn-chip" data-user="alice" data-pass="wrong-password">Wrong password</button>
-        <button type="button" class="btn btn-risk" data-user="alice' --" data-pass="anything">Bypass username</button>
-        <button type="button" class="btn btn-risk" data-user="' OR '1'='1'--" data-pass="anything">Return first user</button>
+        <div class="action-panel">
+          <h3>2. Choose mode and run</h3>
+          <div class="segmented" role="group" aria-label="SQL mode">
+            <button id="vulnerable-mode" class="danger-option" type="button" aria-pressed="true">Vulnerable mode</button>
+            <button id="protected-mode" class="safe-option" type="button" aria-pressed="false">Protected mode</button>
+          </div>
+          <div class="controls" style="margin-top:14px">
+            <button type="submit" form="login-form" class="btn btn-primary">
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+              Run login check
+            </button>
+            <button type="button" id="reset" class="btn btn-ghost">
+              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg></span>
+              Reset
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="grid grid-2" style="margin-top:18px">

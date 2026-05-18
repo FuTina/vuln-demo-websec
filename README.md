@@ -67,3 +67,4 @@ http://localhost:5173
 - XSS examples are harmless formatting examples so the presentation stays focused on rendering behavior.
 - This project demonstrates security concepts visually. Some modules are simulated intentionally to keep the demo safe and easy to run.
 - The audit, network, and configuration modules do not perform real database administration or network changes.
+- Risk scores are illustrative demo heuristics, not measured or standardized risk calculations.

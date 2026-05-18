@@ -48,15 +48,18 @@
           <span><strong>Audit logging enabled</strong><span>Write security events to the log.</span></span>
           <span class="switch"><input id="audit-toggle" type="checkbox" checked /><span class="slider"></span></span>
         </label>
-        <button type="button" class="btn btn-ghost" id="clear-log">Clear log</button>
+        <button type="button" class="btn btn-ghost" id="clear-log">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></span>
+          Clear log
+        </button>
       </div>
 
-      <div class="controls" style="margin-top:14px">
-        <button type="button" class="btn btn-chip" data-event="success">Successful login</button>
-        <button type="button" class="btn btn-chip" data-event="failed">Failed login</button>
-        <button type="button" class="btn btn-chip" data-event="read">Read customer data</button>
-        <button type="button" class="btn btn-chip" data-event="export">Export customer data</button>
-        <button type="button" class="btn btn-chip" data-event="privilege">Privilege escalation attempt</button>
+      <div class="action-grid" style="margin-top:14px">
+        <button type="button" class="action-card" data-event="success"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span>Successful login</strong><span>Normal authenticated session.</span></button>
+        <button type="button" class="action-card risk-action" data-event="failed"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span>Failed login</strong><span>Failed authentication attempt.</span></button>
+        <button type="button" class="action-card" data-event="read"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></svg></span>Read customer data</strong><span>Sensitive table read.</span></button>
+        <button type="button" class="action-card risk-action" data-event="export"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>Export customer data</strong><span>Large data movement.</span></button>
+        <button type="button" class="action-card risk-action" data-event="privilege"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></span>Privilege escalation attempt</strong><span>Denied admin-level action.</span></button>
       </div>
 
       <div id="audit-warning" class="notice notice-danger hidden" style="margin-top:16px">

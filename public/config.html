@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Secure Configuration - Database Security Playground</title>
+  <link rel="stylesheet" href="/css/ui.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="/" class="brand" aria-label="Database Security Playground home">
+        <span class="brand-mark">DB</span>
+        <span>Database Security Playground</span>
+      </a>
+      <nav class="app-nav" aria-label="Main navigation">
+        <a href="/" data-path="/">Overview</a>
+        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
+        <a href="/users.html" data-path="/users.html">Data Masking</a>
+        <a href="/xss.html" data-path="/xss.html">XSS</a>
+        <a href="/audit.html" data-path="/audit.html">Audit</a>
+        <a href="/network.html" data-path="/network.html">Network</a>
+        <a href="/config.html" data-path="/config.html">Config</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="module-section">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Scenario</p>
+          <h1>Secure Database Configuration</h1>
+          <p>
+            Check hardening controls and watch the configuration preview, risk score, and explanation update immediately.
+          </p>
+        </div>
+        <span id="config-badge" class="badge badge-warning">Needs hardening</span>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">Try it yourself</p>
+      <h2>Build a safer database baseline</h2>
+      <div class="grid grid-2">
+        <div>
+          <div class="checklist" id="checklist">
+            <label class="check-item"><input type="checkbox" data-key="user" /> Dedicated DB user</label>
+            <label class="check-item"><input type="checkbox" data-key="privilege" /> Least privilege grants</label>
+            <label class="check-item"><input type="checkbox" data-key="network" /> No public DB port</label>
+            <label class="check-item"><input type="checkbox" data-key="tls" /> TLS enabled</label>
+            <label class="check-item"><input type="checkbox" data-key="audit" /> Audit logging enabled</label>
+            <label class="check-item"><input type="checkbox" data-key="backups" /> Backups configured</label>
+            <label class="check-item"><input type="checkbox" data-key="secrets" /> Secrets not hardcoded</label>
+          </div>
+        </div>
+        <div id="config-result" class="result-box result-warning">
+          <h3 id="config-status">High risk configuration</h3>
+          <div class="risk-score" aria-live="polite"><strong id="config-score">100</strong><span class="muted">/ 100</span></div>
+          <div class="meter" aria-hidden="true"><span id="config-meter"></span></div>
+          <p id="config-explanation" class="muted" style="margin-top:12px"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">Live configuration preview</p>
+      <h2>Bad defaults move toward safer settings</h2>
+      <div class="preview-grid">
+        <div>
+          <h3>Bad example</h3>
+          <pre class="query-box">DB_USER=root
+DB_PASSWORD=root
+DB_PORT=3306 exposed
+GRANTS=ALL PRIVILEGES
+TLS=false
+AUDIT_LOGGING=false</pre>
+        </div>
+        <div>
+          <h3>Current preview</h3>
+          <pre id="config-preview" class="query-box"></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">What happens?</p>
+      <h2>Secure configuration turns risky defaults into explicit controls</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Risky default</th><th>Safer control</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td>Default/root user</td><td>Dedicated app user</td><td>Limits blast radius.</td></tr>
+            <tr><td>Broad privileges</td><td>Least privilege</td><td>Reduces abuse if credentials leak.</td></tr>
+            <tr><td>No TLS</td><td>TLS</td><td>Protects traffic in transit.</td></tr>
+            <tr><td>No backups</td><td>Tested backups</td><td>Supports recovery.</td></tr>
+            <tr><td>No monitoring</td><td>Audit logs and metrics</td><td>Makes incidents visible.</td></tr>
+            <tr><td>Plain secrets</td><td>Secret management</td><td>Supports rotation and reduces leakage.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">Best practice takeaway</p>
+      <h2>Make the secure database configuration the normal configuration.</h2>
+    </section>
+  </main>
+
+  <footer class="footer">Database Security Playground - secure configuration module.</footer>
+
+  <script>
+    (function () {
+      const path = location.pathname.replace(/\/+$/, "") || "/";
+      document.querySelectorAll(".app-nav a").forEach((link) => {
+        if (link.getAttribute("data-path") === path) link.setAttribute("aria-current", "page");
+      });
+    })();
+
+    const checklist = document.getElementById("checklist");
+    const score = document.getElementById("config-score");
+    const meter = document.getElementById("config-meter");
+    const result = document.getElementById("config-result");
+    const status = document.getElementById("config-status");
+    const explanation = document.getElementById("config-explanation");
+    const preview = document.getElementById("config-preview");
+    const badge = document.getElementById("config-badge");
+    const weights = { user: 14, privilege: 16, network: 16, tls: 12, audit: 12, backups: 14, secrets: 16 };
+
+    function selected() {
+      return Array.from(checklist.querySelectorAll("input")).filter((item) => item.checked).map((item) => item.dataset.key);
+    }
+
+    function has(key, keys) {
+      return keys.includes(key);
+    }
+
+    function render() {
+      const keys = selected();
+      const reduction = keys.reduce((total, key) => total + weights[key], 0);
+      const risk = Math.max(5, 100 - reduction);
+      score.textContent = risk;
+      meter.style.width = `${risk}%`;
+
+      let label = "High risk configuration";
+      let detail = "Several risky defaults remain. This may be acceptable for a toy demo, not for production.";
+      let className = "result-box result-danger";
+      let badgeClass = "badge badge-danger";
+      let gradient = "linear-gradient(90deg, #dc2626, #f97316)";
+      if (risk < 40) {
+        label = "Low risk configuration";
+        detail = "Most baseline controls are enabled. The configuration is much closer to a production-ready posture.";
+        className = "result-box result-safe";
+        badgeClass = "badge badge-safe";
+        gradient = "linear-gradient(90deg, #22c55e, #15803d)";
+      } else if (risk < 70) {
+        label = "Medium risk configuration";
+        detail = "Some important controls are enabled, but the baseline still has gaps worth fixing.";
+        className = "result-box result-warning";
+        badgeClass = "badge badge-warning";
+        gradient = "linear-gradient(90deg, #f59e0b, #facc15)";
+      }
+      result.className = className;
+      status.textContent = label;
+      badge.textContent = label.replace(" configuration", "");
+      badge.className = badgeClass;
+      explanation.textContent = detail;
+      meter.style.background = gradient;
+
+      preview.textContent = [
+        `DB_USER=${has("user", keys) ? "app_user" : "root"}`,
+        `DB_PASSWORD=${has("secrets", keys) ? "from environment / secret manager" : "root"}`,
+        `DB_PORT=${has("network", keys) ? "internal only" : "3306 exposed"}`,
+        `GRANTS=${has("privilege", keys) ? "least privilege" : "ALL PRIVILEGES"}`,
+        `TLS=${has("tls", keys) ? "required" : "false"}`,
+        `AUDIT_LOGGING=${has("audit", keys) ? "enabled" : "false"}`,
+        `BACKUPS=${has("backups", keys) ? "configured and restore-tested" : "not configured"}`
+      ].join("\n");
+    }
+
+    checklist.addEventListener("change", render);
+    render();
+  </script>
+</body>
+</html>

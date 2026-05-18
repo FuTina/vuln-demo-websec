@@ -1,179 +1,205 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Users (Rollen & Maskierung)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Data Masking - Database Security Playground</title>
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
-<body class="text-[var(--ink)]">
-  <!-- Global Header & Nav -->
+<body>
   <header class="app-header">
-    <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
-      <a href="/" class="flex items-center gap-2 text-[var(--ink)] font-semibold">
-        <span class="h-8 w-8 rounded-lg bg-[var(--blue)] text-white grid place-items-center">🛡️</span>
-        Web Security Demo
+    <div class="header-inner">
+      <a href="/" class="brand" aria-label="Database Security Playground home">
+        <span class="brand-mark">DB</span>
+        <span>Database Security Playground</span>
       </a>
-      <nav class="app-nav flex items-center gap-1">
-        <a href="/" data-path="/">Start</a>
-        <a href="/sqli.html" data-path="/sqli.html">SQLi</a>
+      <nav class="app-nav" aria-label="Main navigation">
+        <a href="/" data-path="/">Overview</a>
+        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
+        <a href="/users.html" data-path="/users.html">Data Masking</a>
         <a href="/xss.html" data-path="/xss.html">XSS</a>
-        <a href="/users.html" data-path="/users.html">Users</a>
+        <a href="/audit.html" data-path="/audit.html">Audit</a>
+        <a href="/network.html" data-path="/network.html">Network</a>
+        <a href="/config.html" data-path="/config.html">Config</a>
       </nav>
     </div>
   </header>
 
-  <!-- Hintergrund -->
-  <div class="bg-hero"></div>
+  <main class="page">
+    <section class="module-section">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Scenario</p>
+          <h1>Role-Based Access &amp; Data Masking</h1>
+          <p>
+            Customer records contain useful business data and sensitive contact data. Select a role and toggle controls
+            to see why authorization and masking solve different parts of the problem.
+          </p>
+        </div>
+        <span id="role-badge" class="badge badge-role">Role: App User</span>
+      </div>
+    </section>
 
-  <!-- Aktive Seite markieren -->
-  <script>
-    (function(){
-      const path = location.pathname.replace(/\/+$/,'') || '/';
-      document.querySelectorAll('.app-nav a').forEach(a=>{
-        if (a.getAttribute('data-path') === path) a.setAttribute('aria-current','page');
-      });
-    })();
-  </script>
-
-  <main class="max-w-6xl mx-auto px-5 py-10">
-    <section class="surface p-6 md:p-10 space-y-6">
-      <!-- Kopfzeile mit modernem Zurück-Button & Rollen-Badge -->
-      <div class="flex items-center justify-between gap-4">
-        <button onclick="history.back()" class="btn btn-ghost btn-sm" title="Zurück">
-          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4A1 1 0 018.707 6.293L6.414 8.586H17a1 1 0 110 2H6.414l2.293 2.293a1 1 0 010 1.414z"/>
-          </svg>
-          Zurück
-        </button>
-        <span id="role-badge" class="text-xs px-2 py-1 rounded border border-slate-300 bg-white">Rolle: …</span>
+    <section class="module-section">
+      <p class="module-kicker">Try it yourself</p>
+      <h2>Change role and controls</h2>
+      <div class="controls">
+        <label>
+          Role
+          <select id="role-select" class="role-select">
+            <option value="guest">Guest</option>
+            <option value="app_user" selected>App User</option>
+            <option value="analyst">Analyst</option>
+            <option value="admin">Admin</option>
+          </select>
+        </label>
+        <label class="switch-card">
+          <span><strong>RBAC enabled</strong><span>Enforce role permissions.</span></span>
+          <span class="switch"><input id="rbac-toggle" type="checkbox" checked /><span class="slider"></span></span>
+        </label>
+        <label class="switch-card">
+          <span><strong>Data masking enabled</strong><span>Hide sensitive values where possible.</span></span>
+          <span class="switch"><input id="mask-toggle" type="checkbox" checked /><span class="slider"></span></span>
+        </label>
       </div>
 
-      <header>
-        <h1 class="text-3xl font-bold">Users (rollenbasierte Ansicht)</h1>
-        <p class="text-[var(--muted)] text-sm">Privacy by Default &amp; Need‑to‑Know.</p>
-      </header>
-
-      <!-- Admin-Hinweis -->
-      <div id="admin-hint" class="hidden rounded border border-amber-200 bg-amber-50 text-amber-900 p-3 text-sm">
-        <p class="mb-2">
-          Du siehst aktuell die <strong>User‑Sicht</strong> (maskierte Daten).
-          Für die <strong>Admin‑Sicht</strong> (volle Felder) starte den Server so neu:
+      <div id="rbac-warning" class="notice notice-warning hidden" style="margin-top:16px">
+        <h3>Masking alone is not authorization</h3>
+        <p>
+          RBAC is disabled, so every role can reach the underlying records. Masking may hide some fields, but it does not
+          prove the user is allowed to access the data.
         </p>
-        <div class="grid sm:grid-cols-3 gap-2">
-          <div>
-            <p class="text-amber-900/70 mb-1">macOS/Linux</p>
-            <pre class="bg-white border border-amber-200 rounded p-2 text-xs">DEMO_ROLE=admin npm start</pre>
-            <button class="btn btn-ghost btn-sm btn-copy" data-cmd="DEMO_ROLE=admin npm start">Kopieren</button>
-          </div>
-          <div>
-            <p class="text-amber-900/70 mb-1">Windows PowerShell</p>
-            <pre class="bg-white border border-amber-200 rounded p-2 text-xs">$env:DEMO_ROLE="admin"; npm start</pre>
-            <button class="btn btn-ghost btn-sm btn-copy" data-cmd="$env:DEMO_ROLE=&quot;admin&quot;; npm start">Kopieren</button>
-          </div>
-          <div>
-            <p class="text-amber-900/70 mb-1">Windows CMD</p>
-            <pre class="bg-white border border-amber-200 rounded p-2 text-xs">set DEMO_ROLE=admin && npm start</pre>
-            <button class="btn btn-ghost btn-sm btn-copy" data-cmd="set DEMO_ROLE=admin && npm start">Kopieren</button>
-          </div>
-        </div>
       </div>
 
-      <!-- Tabelle -->
-      <section>
-        <h2 class="font-semibold mb-2">Benutzer</h2>
-        <div class="overflow-x-auto rounded border border-slate-200 bg-white">
-          <table class="w-full text-sm">
-            <thead class="text-slate-600 bg-slate-50">
-              <tr>
-                <th class="text-left px-3 py-2">ID</th>
-                <th class="text-left px-3 py-2">Name</th>
-                <th class="text-left px-3 py-2">E‑Mail</th>
-                <th class="text-left px-3 py-2">Telefon</th>
-                <th class="text-left px-3 py-2">Adresse</th>
-              </tr>
-            </thead>
-            <tbody id="rows"></tbody>
-          </table>
-        </div>
-        <p class="text-xs text-slate-500 mt-2">
-          Legende: Maskierung von E‑Mails (z. B. <code>al***@example.com</code>) &amp; Telefonnummern (z. B. <code>••••••22</code>) in der User‑Sicht.
-        </p>
-      </section>
+      <div class="table-wrap" style="margin-top:18px">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Segment</th>
+              <th>Revenue</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="customer-rows"></tbody>
+        </table>
+      </div>
+    </section>
 
-      <!-- Erklärung unten -->
-      <details class="border border-slate-200 rounded p-3 text-sm bg-white">
-        <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
-        <ul class="list-disc pl-5 mt-2 text-slate-600 space-y-1">
-          <li><strong>User‑Rolle:</strong> E‑Mail &amp; Telefon sind maskiert (Privacy by Default).</li>
-          <li><strong>Admin‑Rolle:</strong> Volle Felder sichtbar (Need‑to‑Know).</li>
-          <li><strong>Praxis:</strong> Zugriff auf sensible Daten wird über <em>Rollen &amp; Rechte</em> gesteuert – nicht über Schwachstellen.</li>
-        </ul>
-      </details>
+    <section class="module-section">
+      <p class="module-kicker">What happens?</p>
+      <h2>Least privilege changes what each role can see</h2>
+      <div class="grid grid-2">
+        <div class="comparison-card">
+          <h3>Authentication</h3>
+          <p>Authentication proves who the user is. It does not automatically grant access to every field.</p>
+        </div>
+        <div class="comparison-card">
+          <h3>Authorization</h3>
+          <p>Authorization decides which records and fields the authenticated role can access.</p>
+        </div>
+        <div class="comparison-card">
+          <h3>Masking</h3>
+          <p>Masking reduces displayed sensitivity, such as showing only part of an email or phone number.</p>
+        </div>
+        <div class="comparison-card">
+          <h3>Least privilege</h3>
+          <p>Least privilege returns only the data needed for the current role and task.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">Best practice takeaway</p>
+      <h2>Authorize first, then minimize and mask the data returned.</h2>
     </section>
   </main>
 
+  <footer class="footer">Database Security Playground - role and data masking module.</footer>
+
   <script>
-    // Clientseitige Fallback-Masken (falls Backend mal unmaskiert liefert)
-    function maskPhoneClient(phone){
-      return String(phone).replace(/\d(?=(?:\D*\d){2,}\D*$)/g, "•");
-    }
-    function maskEmailClient(email){
-      const s = String(email);
-      const at = s.indexOf("@");
-      if (at <= 1) return s;
-      const user = s.slice(0, at), domain = s.slice(at+1);
-      const head = user.slice(0, 2);
-      return head + "*".repeat(Math.max(1, user.length - 2)) + "@" + domain;
+    (function () {
+      const path = location.pathname.replace(/\/+$/, "") || "/";
+      document.querySelectorAll(".app-nav a").forEach((link) => {
+        if (link.getAttribute("data-path") === path) link.setAttribute("aria-current", "page");
+      });
+    })();
+
+    const customers = [
+      { name: "Alice GmbH", segment: "Enterprise", revenue: "$125,000", email: "alice@example.com", phone: "+49 151 000000", notes: "Renewal in Q3" },
+      { name: "Bob Logistics", segment: "Mid-market", revenue: "$48,500", email: "bob@example.com", phone: "+49 160 111111", notes: "Interested in analytics" },
+      { name: "Charlie Retail", segment: "SMB", revenue: "$12,200", email: "charlie@example.com", phone: "+49 171 222222", notes: "Support escalation open" }
+    ];
+
+    const roleSelect = document.getElementById("role-select");
+    const rbacToggle = document.getElementById("rbac-toggle");
+    const maskToggle = document.getElementById("mask-toggle");
+    const rows = document.getElementById("customer-rows");
+    const roleBadge = document.getElementById("role-badge");
+    const warning = document.getElementById("rbac-warning");
+
+    function maskEmail(email) {
+      const [user, domain] = email.split("@");
+      return `${user.slice(0, 2)}${"*".repeat(Math.max(1, user.length - 2))}@${domain}`;
     }
 
-    async function loadUsers(){
-      const res = await fetch("/api/users/safe");
-      const data = await res.json();
+    function maskPhone(phone) {
+      return phone.replace(/\d(?=(?:\D*\d){2,}\D*$)/g, "*");
+    }
 
-      // Rolle anzeigen
-      const badge = document.getElementById("role-badge");
-      const isAdmin = data.role === "admin";
-      badge.textContent = `Rolle: ${data.role}`;
-      if (!isAdmin){
-        document.getElementById("admin-hint").classList.remove("hidden");
-        badge.className = "text-xs px-2 py-1 rounded border border-yellow-600 bg-yellow-50 text-yellow-900";
-      } else {
-        badge.className = "text-xs px-2 py-1 rounded border border-emerald-600 bg-emerald-50 text-emerald-900";
+    function valueFor(record, field, role, rbacEnabled, maskingEnabled) {
+      if (!rbacEnabled) {
+        if (!maskingEnabled) return record[field];
+        if (field === "email") return maskEmail(record.email);
+        if (field === "phone") return maskPhone(record.phone);
+        return record[field];
       }
 
-      // Tabelle rendern
-      const tbody = document.getElementById("rows");
-      tbody.innerHTML = "";
-      (data.rows || []).forEach(r=>{
-        const email = isAdmin ? r.email : maskEmailClient(r.email);
-        const phone = isAdmin ? r.phone : maskPhoneClient(r.phone);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="px-3 py-2 border-t border-slate-100">${r.id}</td>
-          <td class="px-3 py-2 border-t border-slate-100">${r.name}</td>
-          <td class="px-3 py-2 border-t border-slate-100">${email}</td>
-          <td class="px-3 py-2 border-t border-slate-100">${phone}</td>
-          <td class="px-3 py-2 border-t border-slate-100">${r.address}</td>
-        `;
-        tbody.appendChild(tr);
+      if (role === "guest") {
+        if (["name", "segment"].includes(field)) return record[field];
+        return "Restricted";
+      }
+
+      if (role === "app_user") {
+        if (field === "email") return maskingEnabled ? maskEmail(record.email) : record.email;
+        if (field === "phone") return maskingEnabled ? maskPhone(record.phone) : record.phone;
+        if (field === "revenue") return "Restricted";
+        return record[field];
+      }
+
+      if (role === "analyst") {
+        if (field === "email" || field === "phone") return "Not needed";
+        return record[field];
+      }
+
+      return record[field];
+    }
+
+    function render() {
+      const role = roleSelect.value;
+      const rbacEnabled = rbacToggle.checked;
+      const maskingEnabled = maskToggle.checked;
+      const label = roleSelect.options[roleSelect.selectedIndex].text;
+      roleBadge.textContent = `Role: ${label}`;
+      roleBadge.className = role === "admin" ? "badge badge-safe" : "badge badge-role";
+      warning.classList.toggle("hidden", rbacEnabled);
+
+      rows.innerHTML = "";
+      customers.forEach((record) => {
+        const row = document.createElement("tr");
+        ["name", "segment", "revenue", "email", "phone", "notes"].forEach((field) => {
+          const cell = document.createElement("td");
+          cell.textContent = valueFor(record, field, role, rbacEnabled, maskingEnabled);
+          row.appendChild(cell);
+        });
+        rows.appendChild(row);
       });
     }
 
-    // Copy-Buttons
-    document.addEventListener('click', (e)=>{
-      if (e.target.matches('.btn-copy')){
-        const cmd = e.target.getAttribute('data-cmd');
-        navigator.clipboard.writeText(cmd).then(()=>{
-          const old = e.target.textContent;
-          e.target.textContent = "Kopiert!";
-          setTimeout(()=> (e.target.textContent = old), 1200);
-        });
-      }
-    });
-
-    loadUsers();
+    [roleSelect, rbacToggle, maskToggle].forEach((control) => control.addEventListener("change", render));
+    render();
   </script>
 </body>
 </html>

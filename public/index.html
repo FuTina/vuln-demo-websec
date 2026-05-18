@@ -1,125 +1,236 @@
 <!doctype html>
-<html lang="de">
-
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Web Security Demo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/css/ui.css" />
-    <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%232563eb' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l7 4v6c0 5.25-3.5 10-7 10s-7-4.75-7-10V6l7-4z'/%3E%3C/svg%3E">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Database Security Playground</title>
+  <link rel="stylesheet" href="/css/ui.css" />
 </head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="/" class="brand" aria-label="Database Security Playground home">
+        <span class="brand-mark">DB</span>
+        <span>Database Security Playground</span>
+      </a>
+      <nav class="app-nav" aria-label="Main navigation">
+        <a href="/" data-path="/">Overview</a>
+        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
+        <a href="/users.html" data-path="/users.html">Data Masking</a>
+        <a href="/xss.html" data-path="/xss.html">XSS</a>
+        <a href="/audit.html" data-path="/audit.html">Audit</a>
+        <a href="/network.html" data-path="/network.html">Network</a>
+        <a href="/config.html" data-path="/config.html">Config</a>
+      </nav>
+    </div>
+  </header>
 
-<body class="text-[var(--ink)]">
-    <!-- Global Header & Nav -->
-    <header class="app-header">
-        <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
-            <a href="/" class="flex items-center gap-2 text-[var(--ink)] font-semibold">
-                <span class="h-8 w-8 rounded-lg bg-[var(--blue)] text-white grid place-items-center">🛡️</span>
-                Web Security Demo
-            </a>
-            <nav class="app-nav flex items-center gap-1">
-                <a href="/" data-path="/">Start</a>
-                <a href="/sqli.html" data-path="/sqli.html">SQLi</a>
-                <a href="/xss.html" data-path="/xss.html">XSS</a>
-                <a href="/users.html" data-path="/users.html">Users</a>
-            </nav>
+  <main class="page">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-panel">
+        <p class="eyebrow">Interactive database security demo</p>
+        <h1 id="page-title">Database Security Playground</h1>
+        <p class="lead">
+          A self-clickable security presentation app. Toggle controls, open modules, and see how risk changes when
+          database security defenses are enabled or removed.
+        </p>
+      </div>
+
+      <aside class="risk-card" aria-labelledby="risk-title">
+        <div>
+          <p class="eyebrow">Live risk overview</p>
+          <h2 id="risk-title">Current risk score</h2>
+          <div class="risk-score" id="risk-score" aria-live="polite">
+            <strong id="score-value">30</strong>
+            <span class="muted">/ 100</span>
+          </div>
+          <div class="meter" aria-hidden="true"><span id="score-meter"></span></div>
+          <p id="score-explanation" class="small muted" style="margin-top:12px"></p>
         </div>
-    </header>
+        <div class="control-list" aria-label="Active controls">
+          <span class="badge badge-safe">Prepared Statements</span>
+          <span class="badge badge-safe">RBAC</span>
+          <span class="badge badge-safe">Output Encoding</span>
+          <span class="badge badge-safe">Audit Logging</span>
+          <span class="badge badge-safe">Network Segmentation</span>
+          <span class="badge badge-safe">Secure Configuration</span>
+        </div>
+      </aside>
+    </section>
 
-    <!-- Hintergrund -->
-    <div class="bg-hero"></div>
+    <section class="surface" aria-labelledby="control-panel-title">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Security Control Panel</p>
+          <h2 id="control-panel-title">Toggle controls and watch the risk score move</h2>
+          <p class="muted">This is a client-side simulation for the presentation. It helps connect each module to a security control.</p>
+        </div>
+      </div>
+      <div class="control-panel">
+        <div id="risk-panel" class="result-box">
+          <h3 id="risk-label">Low risk</h3>
+          <p id="risk-detail" class="muted"></p>
+        </div>
+        <div class="switch-grid" id="control-switches">
+          <label class="switch-card">
+            <span><strong>Prepared Statements</strong><span>Separate SQL code from values.</span></span>
+            <span class="switch"><input type="checkbox" data-weight="18" checked /><span class="slider"></span></span>
+          </label>
+          <label class="switch-card">
+            <span><strong>RBAC</strong><span>Authorize users before data is returned.</span></span>
+            <span class="switch"><input type="checkbox" data-weight="16" checked /><span class="slider"></span></span>
+          </label>
+          <label class="switch-card">
+            <span><strong>Output Encoding</strong><span>Render untrusted input as data.</span></span>
+            <span class="switch"><input type="checkbox" data-weight="14" checked /><span class="slider"></span></span>
+          </label>
+          <label class="switch-card">
+            <span><strong>Audit Logging</strong><span>Preserve investigation evidence.</span></span>
+            <span class="switch"><input type="checkbox" data-weight="12" checked /><span class="slider"></span></span>
+          </label>
+          <label class="switch-card">
+            <span><strong>Network Segmentation</strong><span>Keep the database off the public internet.</span></span>
+            <span class="switch"><input type="checkbox" data-weight="16" checked /><span class="slider"></span></span>
+          </label>
+          <label class="switch-card">
+            <span><strong>Secure Configuration</strong><span>Use hardened defaults and secrets handling.</span></span>
+            <span class="switch"><input type="checkbox" data-weight="14" checked /><span class="slider"></span></span>
+          </label>
+        </div>
+      </div>
+    </section>
 
-    <!-- Aktive Seite markieren -->
-    <script>
-        (function () {
-            const path = location.pathname.replace(/\/+$/, '') || '/';
-            const cur = path === '/index.html' ? '/' : path;
-            document.querySelectorAll('.app-nav a').forEach(a => {
-                if (a.getAttribute('data-path') === cur) a.setAttribute('aria-current', 'page');
-            });
-        })();
-    </script>
+    <section class="surface" aria-labelledby="modules-title" style="margin-top:18px">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Working modules</p>
+          <h2 id="modules-title">Choose a security scenario</h2>
+          <p class="muted">Every visible module is clickable and contains a working simulation.</p>
+        </div>
+      </div>
 
-    <main class="max-w-6xl mx-auto px-5">
-        <section class="surface mt-10 mb-12 p-6 md:p-10">
-            <div class="grid md:grid-cols-2 gap-10 items-start">
-                <div class="space-y-4">
-                    <h1 class="text-4xl font-extrabold tracking-tight leading-tight">
-                        Sicher entwickeln. <span class="text-[var(--blue)]">Risiken verstehen.</span>
-                    </h1>
-                    <p class="text-[var(--muted)] max-w-prose">
-                        Minimalistische Demo der Unterschiede zwischen <strong>unsicheren</strong> und
-                        <strong>sicheren</strong> Implementierungen für <em>SQL Injection</em>,
-                        <em>Cross-Site Scripting</em> und <em>rollenbasierte Datenmaskierung</em>.
-                    </p>
-                </div>
-                <ul class="text-sm text-slate-600 md:justify-self-end md:max-w-sm space-y-2">
-                    <li>SQLi: Prepared Statements statt String-Konkatenation</li>
-                    <li>XSS: kein <code>innerHTML</code>, stattdessen Escaping/<code>textContent</code></li>
-                    <li>Daten: Rollen &amp; Maskierung (Privacy by Default)</li>
-                </ul>
-            </div>
+      <div class="module-grid">
+        <a class="module-card" href="/sqli.html">
+          <div>
+            <span class="badge badge-danger">Interactive</span>
+            <h3>SQL Injection</h3>
+            <p>Switch vulnerable/protected login behavior and test the same payload.</p>
+          </div>
+          <strong>Open module</strong>
+        </a>
 
-            <div class="mt-10 grid md:grid-cols-3 gap-6">
-                <a href="/sqli.html" class="tile block p-5">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-base font-semibold">SQL Injection (SQLi)</h2>
-                        <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
-                            <path
-                                d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z" />
-                        </svg>
-                    </div>
-                    <p class="mt-2 text-sm text-[var(--muted)]">
-                        Unsichere String-Konkatenation vs. sichere Parametrisierung (Prepared Statements).
-                    </p>
-                </a>
+        <a class="module-card" href="/users.html">
+          <div>
+            <span class="badge badge-warning">Interactive</span>
+            <h3>Role-Based Access &amp; Data Masking</h3>
+            <p>Select roles and toggle RBAC and masking to see data exposure change.</p>
+          </div>
+          <strong>Open module</strong>
+        </a>
 
-                <a href="/xss.html" class="tile block p-5">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-base font-semibold">Cross-Site Scripting (XSS)</h2>
-                        <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
-                            <path
-                                d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z" />
-                        </svg>
-                    </div>
-                    <p class="mt-2 text-sm text-[var(--muted)]">
-                        <code>innerHTML</code> (unsicher) vs. <code>textContent</code> (sicheres Rendering).
-                    </p>
-                </a>
+        <a class="module-card" href="/xss.html">
+          <div>
+            <span class="badge badge-danger">Interactive</span>
+            <h3>Cross-Site Scripting</h3>
+            <p>Render comments with unsafe HTML insertion or safe text output.</p>
+          </div>
+          <strong>Open module</strong>
+        </a>
 
-                <a href="/users.html" class="tile block p-5">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-base font-semibold">Rollen &amp; Maskierung</h2>
-                        <svg class="h-4 w-4 text-[var(--blue)]" viewBox="0 0 20 20" fill="currentColor">
-                            <path
-                                d="M10.293 3.293a1 1 0 011.414 0l5 5-.002.002a1 1 0 01-1.412 1.412L12 6.414V16a1 1 0 11-2 0V6.414L6.707 10.12A1 1 0 015.293 8.706l5-5z" />
-                        </svg>
-                    </div>
-                    <p class="mt-2 text-sm text-[var(--muted)]">
-                        User-Sicht (maskiert) vs. Admin-Sicht (volle Felder) – Need-to-Know.
-                    </p>
-                </a>
-            </div>
+        <a class="module-card" href="/audit.html">
+          <div>
+            <span class="badge badge-safe">Interactive</span>
+            <h3>Audit Logging</h3>
+            <p>Trigger actions, toggle logging, and watch suspicious activity detection.</p>
+          </div>
+          <strong>Open module</strong>
+        </a>
 
-            <div class="mt-10 grid md:grid-cols-3 gap-6">
-                <!-- ... deine drei Kacheln ... -->
-            </div>
+        <a class="module-card" href="/network.html">
+          <div>
+            <span class="badge badge-safe">Interactive</span>
+            <h3>Network Exposure</h3>
+            <p>Test access paths with exposed ports, firewall, TLS, and segmentation.</p>
+          </div>
+          <strong>Open module</strong>
+        </a>
 
-            <!-- Warnhinweis -->
-            <div class="mt-8 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                ⚠️ Diese Anwendung enthält <strong>absichtlich verwundbare Endpunkte</strong>.
-                Sie dient ausschließlich <strong>Demonstrations- und Lehrzwecken</strong>.
-            </div>
+        <a class="module-card" href="/config.html">
+          <div>
+            <span class="badge badge-safe">Interactive</span>
+            <h3>Secure Configuration</h3>
+            <p>Check hardening controls and watch the generated configuration improve.</p>
+          </div>
+          <strong>Open module</strong>
+        </a>
+      </div>
+    </section>
 
-        </section>
+    <section class="notice notice-warning" style="margin-top:18px">
+      <h2>Local demo warning</h2>
+      <p>
+        This project contains intentionally vulnerable educational examples and safe simulations. Run it locally or in an
+        isolated lab only, and do not expose it as a public service.
+      </p>
+    </section>
+  </main>
 
-    </main>
+  <footer class="footer">
+    Database Security Playground - intentionally vulnerable local demo.
+  </footer>
 
-    <footer class="max-w-6xl mx-auto px-5 mb-10 text-xs text-slate-500">
-        © 2025 Demo – Referat T14
-    </footer>
+  <script>
+    (function () {
+      const path = location.pathname.replace(/\/+$/, "") || "/";
+      const current = path === "/index.html" ? "/" : path;
+      document.querySelectorAll(".app-nav a").forEach((link) => {
+        if (link.getAttribute("data-path") === current) link.setAttribute("aria-current", "page");
+      });
+    })();
+
+    const switches = Array.from(document.querySelectorAll("#control-switches input"));
+    const scoreValue = document.getElementById("score-value");
+    const meter = document.getElementById("score-meter");
+    const explanation = document.getElementById("score-explanation");
+    const riskPanel = document.getElementById("risk-panel");
+    const riskLabel = document.getElementById("risk-label");
+    const riskDetail = document.getElementById("risk-detail");
+
+    function renderRisk() {
+      const baseRisk = 100;
+      const reduction = switches
+        .filter((item) => item.checked)
+        .reduce((total, item) => total + Number(item.dataset.weight), 0);
+      const score = Math.max(5, baseRisk - reduction);
+      scoreValue.textContent = score;
+      meter.style.width = `${score}%`;
+
+      let label = "Low risk";
+      let detail = "Most core controls are enabled. The remaining risk is suitable for a controlled demo discussion.";
+      let className = "result-box result-safe";
+      let color = "linear-gradient(90deg, #22c55e, #15803d)";
+
+      if (score >= 70) {
+        label = "High risk";
+        detail = "Several primary controls are disabled. A real system in this state would be exposed to preventable failures.";
+        className = "result-box result-danger";
+        color = "linear-gradient(90deg, #dc2626, #f97316)";
+      } else if (score >= 40) {
+        label = "Medium risk";
+        detail = "Some important controls are missing. The system may work, but investigation, containment, or data protection is weaker.";
+        className = "result-box result-warning";
+        color = "linear-gradient(90deg, #f59e0b, #facc15)";
+      }
+
+      meter.style.background = color;
+      explanation.textContent = detail;
+      riskPanel.className = className;
+      riskLabel.textContent = label;
+      riskDetail.textContent = detail;
+    }
+
+    switches.forEach((item) => item.addEventListener("change", renderRisk));
+    renderRisk();
+  </script>
 </body>
-
 </html>

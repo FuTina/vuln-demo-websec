@@ -187,8 +187,9 @@ app.get("/api/users/safe", (_req, res) => {
 
 // --- Start server ---
 const PORT = process.env.PORT || 5173;
-app.listen(PORT, () => {
-  console.log(`Vuln demo running on http://localhost:${PORT}`);
+const HOST = process.env.HOST || "localhost";
+app.listen(PORT, HOST, () => {
+  console.log(`Vuln demo running on http://${HOST}:${PORT}`);
   console.log("⚠️  Demo/education only. Do NOT expose to the internet for production use.");
 });
 

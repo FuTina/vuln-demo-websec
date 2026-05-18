@@ -1,89 +1,69 @@
+# Database Security Playground
 
-# Web Security Demo (SQLi & XSS)
+An intentionally vulnerable Express and SQLite demo for a database security presentation. It shows how common application choices affect data exposure and database risk through safe local simulations.
 
-> Intentionally vulnerable endpoints for **educational purposes only**.  
-> ⚠️ **Run locally – do NOT expose to the internet.**
+## What This Demonstrates
 
-This project demonstrates common web vulnerabilities in a modern, simple interface:  
-- **SQL Injection** – unsafe string concatenation vs. parameterized queries  
-- **Cross-Site Scripting (XSS)** – unsafe `innerHTML` vs. safe `textContent`  
-- **Role-based data masking** – User vs Admin view (E-mail & phone)
+- SQL Injection: vulnerable string concatenation compared with safe parameterized queries.
+- Cross-Site Scripting: unsafe `innerHTML` compared with safe `textContent`.
+- Role-based data masking: guest, app user, analyst, and admin views with RBAC and masking toggles.
+- Audit logging: fake security events that build an investigation timeline.
+- Network exposure: public database port compared with internal-only access.
+- Secure configuration: risky defaults compared with hardened database settings.
+- Presentation framing: a dynamic risk score and clickable security controls.
 
-## 🚀 Quickstart
+## Local Warning
 
----
+This project contains intentionally vulnerable endpoints and simulated security scenarios. Use it only locally or in an isolated lab environment. Do not expose it to the internet or use it as a production pattern.
+
+## Run Locally
+
 ```bash
-# Install dependencies
 npm install
-
-# Start demo (user role, masked data)
 npm start
+```
 
-# Open in browser
+Open:
+
+```text
 http://localhost:5173
 ```
----
-### Admin View (full data)
----
----
-```bash
-# macOS/Linux
-DEMO_ROLE=admin npm start
 
-# Windows PowerShell
-$env:DEMO_ROLE="admin"; npm start
+## Pages
 
-# Windows CMD
-set DEMO_ROLE=admin && npm start
-```
----
-## 📂 Pages
+- `/` - landing page with module cards and a dynamic security control panel.
+- `/sqli.html` - SQL Injection module.
+- `/users.html` - role-based access and data masking module.
+- `/xss.html` - Cross-Site Scripting module.
+- `/audit.html` - database audit logging module.
+- `/network.html` - database network exposure module.
+- `/config.html` - secure database configuration module.
 
-- `/sqli.html` — **SQL Injection**: vulnerable vs safe (parameterized)
-- `/xss.html` — **Cross-Site Scripting**: innerHTML vs textContent
-- `/users.html` — **Role-based masking** (E-mail & phone masked for normal users)
+## Suggested Demo Flow
 
-## 🧠 Feature Explanations
+1. Start on the landing page.
+2. Toggle controls and observe the dynamic risk score.
+3. Open the SQL Injection module.
+4. Test a payload in vulnerable and protected mode.
+5. Open the RBAC module and switch roles.
+6. Open the Network module and run connection tests.
+7. Finish with the Secure Configuration checklist.
 
-### 🔹 SQL Injection
-- **Vulnerable:** Input directly concatenated into SQL → query logic can be manipulated.  
-- **Safe:** Parameterized queries (`?`) → input treated as value, not code.  
+## Suggested Presentation Narrative
 
-➡️ *Message:* Always use **Prepared Statements**, never string concatenation.
+1. Start with the risk overview: the score is low because multiple controls are still missing.
+2. Demonstrate SQL Injection: string concatenation lets input change query logic.
+3. Show the safe parameterized query: the SQL structure stays fixed and input becomes a value.
+4. Show role-based masking: sensitive data should be authorized first and minimized before rendering.
+5. Explain audit logging: investigations need protected, centralized records.
+6. Explain network segmentation: the web app should be reachable, not the database.
+7. Explain secure configuration: least privilege, TLS, backups, monitoring, and secrets management reduce avoidable risk.
 
-### 🔹 Cross-Site Scripting (XSS)
-- **Vulnerable:** Comments rendered with `innerHTML` → input is executed as HTML/JS.  
-- **Safe:** Comments rendered with `textContent` → input is neutral text.  
+## Notes
 
-➡️ *Message:* Avoid unsafe `innerHTML`. Use escaping, safe template engines, and Content-Security-Policy (CSP).
-
-### 🔹 Role-based Data Masking
-- **User Role:** Masked data (e.g., `al***@example.com`, `••••••22`).  
-- **Admin Role:** Full data visible.  
-
-➡️ *Message:* Access to sensitive data should be controlled via **roles & permissions**, not via vulnerabilities.
-
-## 🎤 Demo Flow (3–5 minutes)
-
-1. **SQL Injection**  
-   - Open `/sqli.html`.  
-   - Search for `Alice` → show query in *vulnerable* vs. *safe* mode.  
-   - Try SQLi (' OR '1'='1'--; x' OR 1=1--)
-   - Concatenation vs. parametrization.
-
-2. **Users (Masking)**  
-   - Open `/users.html`.  
-   - Default (user): E-mail & phone masked.  
-   - Restart server with `DEMO_ROLE=admin` → Admin sees full fields.  
-   - Sensitive data access is about **authorization**, not exploits.
-
-3. **Cross-Site Scripting**  
-   - Open `/xss.html`.  
-   - Post a comment → left (vulnerable) interprets HTML, right (safe) shows plain text.  
-   - Test a html input: `<b>Wichtiger Text!</b><span style="color:red">Achtung</span>` or: `<img src="x" onerror="alert('XSS')" alt="Bild nicht gefunden">` or: `<a href="https://example.com">Klick mich</a>`
-   - `innerHTML` vs. `textContent`.
-
-## ⚠️ Notes
-- This project is for **learning/demo purposes** only.  
-- Contains intentionally vulnerable endpoints.  
-- Do **not** deploy publicly, use only locally/in isolated environments.
+- The app intentionally keeps the Express and SQLite structure simple.
+- The SQL Injection demo does not include destructive payloads.
+- Data masking is not a replacement for authorization.
+- XSS examples are harmless formatting examples so the presentation stays focused on rendering behavior.
+- This project demonstrates security concepts visually. Some modules are simulated intentionally to keep the demo safe and easy to run.
+- The audit, network, and configuration modules do not perform real database administration or network changes.

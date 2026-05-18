@@ -1,167 +1,183 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>XSS Demo</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>XSS - Database Security Playground</title>
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
-<body class="text-[var(--ink)]">
-  <!-- Global Header & Nav -->
+<body>
   <header class="app-header">
-    <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
-      <a href="/" class="flex items-center gap-2 text-[var(--ink)] font-semibold">
-        <span class="h-8 w-8 rounded-lg bg-[var(--blue)] text-white grid place-items-center">🛡️</span>
-        Web Security Demo
+    <div class="header-inner">
+      <a href="/" class="brand" aria-label="Database Security Playground home">
+        <span class="brand-mark">DB</span>
+        <span>Database Security Playground</span>
       </a>
-      <nav class="app-nav flex items-center gap-1">
-        <a href="/" data-path="/">Start</a>
-        <a href="/sqli.html" data-path="/sqli.html">SQLi</a>
+      <nav class="app-nav" aria-label="Main navigation">
+        <a href="/" data-path="/">Overview</a>
+        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
+        <a href="/users.html" data-path="/users.html">Data Masking</a>
         <a href="/xss.html" data-path="/xss.html">XSS</a>
-        <a href="/users.html" data-path="/users.html">Users</a>
+        <a href="/audit.html" data-path="/audit.html">Audit</a>
+        <a href="/network.html" data-path="/network.html">Network</a>
+        <a href="/config.html" data-path="/config.html">Config</a>
       </nav>
     </div>
   </header>
 
-  <!-- Hintergrund -->
-  <div class="bg-hero"></div>
+  <main class="page">
+    <section class="module-section">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Scenario</p>
+          <h1>Cross-Site Scripting Rendering</h1>
+          <p>
+            Comments are harmless only if the application renders them safely. In vulnerable mode, demo links and a fake
+            download become clickable page elements. In safe mode, the exact same input stays visible as text.
+          </p>
+        </div>
+        <span id="render-badge" class="badge badge-danger">Vulnerable rendering</span>
+      </div>
+    </section>
 
-  <!-- Aktive Seite markieren -->
-  <script>
-    (function(){
-      const path = location.pathname.replace(/\/+$/,'') || '/';
-      document.querySelectorAll('.app-nav a').forEach(a=>{
-        if (a.getAttribute('data-path') === path) a.setAttribute('aria-current','page');
-      });
-    })();
-  </script>
-
-  <main class="max-w-6xl mx-auto px-5 py-10">
-    <section class="surface p-6 md:p-10 space-y-6">
-      <!-- Kopfzeile mit modernem Zurück-Button -->
-      <div class="flex items-center justify-between">
-        <button onclick="history.back()" class="btn btn-ghost btn-sm" title="Zurück">
-          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4A1 1 0 018.707 6.293L6.414 8.586H17a1 1 0 110 2H6.414l2.293 2.293a1 1 0 010 1.414z"/>
-          </svg>
-          Zurück
-        </button>
+    <section class="module-section">
+      <p class="module-kicker">Try it yourself</p>
+      <h2>Render a comment</h2>
+      <div class="segmented" role="group" aria-label="Rendering mode">
+        <button id="vulnerable-render" class="danger-option" type="button" aria-pressed="true">Vulnerable rendering</button>
+        <button id="safe-render" class="safe-option" type="button" aria-pressed="false">Safe rendering</button>
       </div>
 
-      <header class="space-y-2">
-        <h1 class="text-3xl font-bold">Cross‑Site Scripting (XSS)</h1>
-        <p class="text-[var(--muted)] text-sm">
-          <strong>Links:</strong> unsicher via <code>innerHTML</code> (HTML wird interpretiert). –
-          <strong>Rechts:</strong> sicher via <code>textContent</code> (nur Text).
-          Hinweis: Dynamisch per <code>innerHTML</code> eingefügte <code>&lt;script&gt;</code>-Tags werden von Browsern i. d. R. nicht ausgeführt.
-        </p>
-      </header>
-
-      <!-- Eingabe -->
-      <form id="form" class="flex flex-col gap-3 md:flex-row md:items-center" method="post">
-        <label for="text" class="sr-only">Kommentar</label>
-        <input id="text" name="text"
-               class="flex-1 border border-slate-200 rounded px-3 py-2 bg-white"
-               placeholder="Kommentar … z. B. <b>Hallo</b> oder <img src=x onerror=&quot;alert('XSS')&quot;>" />
-        <button type="submit" class="btn btn-primary" title="Kommentar absenden">
-          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path d="M2.94 2.94a1.5 1.5 0 012.12 0l12 12a1.5 1.5 0 01-1.7 2.41l-5.38-1.8-1.8 5.38a1.5 1.5 0 01-2.41 1.7l-12-12a1.5 1.5 0 010-2.12l9.9-3.3z"/>
-          </svg>
-          Kommentar posten
-        </button>
+      <form id="comment-form" class="stack" style="margin-top:16px">
+        <label>
+          Comment
+          <input id="comment-input" class="input" value="Hello database team" autocomplete="off" />
+        </label>
+        <div class="controls">
+          <button id="render-button" type="submit" class="btn btn-danger">Render in vulnerable mode</button>
+          <button type="button" id="clear-comments" class="btn btn-ghost">Clear comments</button>
+        </div>
       </form>
 
-      <!-- Fehlerbanner -->
-      <div id="error" class="hidden rounded border border-red-200 bg-red-50 text-red-800 text-sm px-3 py-2"></div>
-
-      <!-- Zwei Feeds nebeneinander -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <section class="feed p-4">
-          <h2 class="font-semibold mb-2">Unsicherer Feed (<code>innerHTML</code>)</h2>
-          <div id="list-vuln" class="space-y-2 text-sm"></div>
-        </section>
-        <section class="feed p-4">
-          <h2 class="font-semibold mb-2">Sicherer Feed (<code>textContent</code>)</h2>
-          <div id="list-safe" class="space-y-2 text-sm"></div>
-        </section>
+      <div class="examples" style="margin-top:14px">
+        <span class="small muted">Harmless demo payloads:</span>
+        <button type="button" class="btn btn-risk" data-payload="&lt;strong&gt;Injected HTML&lt;/strong&gt;">Injected HTML</button>
+        <button type="button" class="btn btn-risk" data-payload="&lt;a href='https://www.bsi.bund.de' target='_blank' rel='noopener'&gt;Open BSI website&lt;/a&gt;">Clickable BSI link</button>
+        <button type="button" class="btn btn-risk" data-payload="&lt;a download='security-demo.txt' href='data:text/plain,This%20is%20a%20harmless%20fake%20download%20from%20the%20Database%20Security%20Playground.'&gt;Download fake report&lt;/a&gt;">Fake file download</button>
       </div>
 
-      <!-- Erklärung unten -->
-      <details class="border border-slate-200 rounded p-3 text-sm bg-white">
-        <summary class="cursor-pointer font-medium">Was wird hier demonstriert?</summary>
-        <ul class="list-disc pl-5 mt-2 text-slate-600 space-y-1">
-          <li><strong>Unsicher:</strong> Rendering mit <code>innerHTML</code> – HTML‑Tags wirken (fett, Link, Bild …).</li>
-          <li><strong>Sicher:</strong> Rendering mit <code>textContent</code> – HTML bleibt als Text sichtbar.</li>
-          <li><strong>Praxis:</strong> Kein unkontrolliertes <code>innerHTML</code>; stattdessen Escaping/Encoding, Templates &amp; CSP.</li>
-        </ul>
-      </details>
+      <div class="badge-row" style="margin-top:14px">
+        <span id="csp-badge" class="badge badge-warning">Simulated CSP: report-only</span>
+        <span class="small muted">CSP is shown as a teaching badge; rendering behavior is controlled by the switch.</span>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:18px">
+        <section class="feed">
+          <div class="badge-row">
+            <h3>Rendered output</h3>
+            <span id="output-mode" class="badge badge-danger">innerHTML</span>
+          </div>
+          <div id="comment-list" class="feed-list"></div>
+        </section>
+        <section id="xss-result" class="result-box result-warning">
+          <h3>Ready</h3>
+          <p class="muted">Use one of the red demo payloads to show the difference between clickable markup and safe text.</p>
+        </section>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">What happens?</p>
+      <h2>Rendering API choice changes the security outcome</h2>
+      <div class="grid grid-3">
+        <div class="comparison-card">
+          <h3>innerHTML interprets markup</h3>
+          <p>When untrusted input is assigned to <code>innerHTML</code>, the browser parses tags as page structure. Links and downloads become active UI.</p>
+        </div>
+        <div class="comparison-card">
+          <h3>textContent treats input as text</h3>
+          <p>When assigned to <code>textContent</code>, angle brackets remain characters, not HTML.</p>
+        </div>
+        <div class="comparison-card">
+          <h3>Output encoding prevents injection</h3>
+          <p>Encoding or safe rendering ensures user content is displayed in the intended context only.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">Best practice takeaway</p>
+      <h2>Default to safe text output for user-generated content.</h2>
+      <p>If rich text is required, sanitize it with a proven library and pair it with CSP.</p>
     </section>
   </main>
 
+  <footer class="footer">Database Security Playground - XSS module.</footer>
+
   <script>
-    const form = document.getElementById('form');
-    const textInput = document.getElementById('text');
-    const vEl = document.getElementById('list-vuln');
-    const sEl = document.getElementById('list-safe');
-    const errorEl = document.getElementById('error');
+    (function () {
+      const path = location.pathname.replace(/\/+$/, "") || "/";
+      document.querySelectorAll(".app-nav a").forEach((link) => {
+        if (link.getAttribute("data-path") === path) link.setAttribute("aria-current", "page");
+      });
+    })();
 
-    function showError(msg){ errorEl.textContent = msg; errorEl.classList.remove('hidden'); }
-    function clearError(){ errorEl.textContent = ''; errorEl.classList.add('hidden'); }
+    let mode = "vulnerable";
+    const input = document.getElementById("comment-input");
+    const list = document.getElementById("comment-list");
+    const result = document.getElementById("xss-result");
+    const badge = document.getElementById("render-badge");
+    const outputMode = document.getElementById("output-mode");
+    const vulnerableButton = document.getElementById("vulnerable-render");
+    const safeButton = document.getElementById("safe-render");
+    const renderButton = document.getElementById("render-button");
 
-    function renderUnsafe(container, text) {
-      const div = document.createElement('div');
-      div.className = 'p-3 bg-white border border-slate-200 rounded';
-      div.innerHTML = text; // absichtlich unsicher
-      container.appendChild(div);
-    }
-    function renderSafe(container, text) {
-      const div = document.createElement('div');
-      div.className = 'p-3 bg-white border border-slate-200 rounded';
-      div.textContent = text; // sicher
-      container.appendChild(div);
-    }
-
-    async function loadFeeds() {
-      const [vulnRes, safeRes] = await Promise.all([
-        fetch('/api/xss/vuln-list'),
-        fetch('/api/xss/safe-list')
-      ]);
-      const [vuln, safe] = await Promise.all([vulnRes.json(), safeRes.json()]);
-      vEl.innerHTML = '';
-      sEl.innerHTML = '';
-      (vuln || []).forEach(c => renderUnsafe(vEl, c.text));
-      (safe || []).forEach(c => renderSafe(sEl, c.text));
+    function setMode(nextMode) {
+      mode = nextMode;
+      const vulnerable = mode === "vulnerable";
+      vulnerableButton.setAttribute("aria-pressed", String(vulnerable));
+      safeButton.setAttribute("aria-pressed", String(!vulnerable));
+      badge.textContent = vulnerable ? "Vulnerable rendering" : "Safe rendering";
+      badge.className = vulnerable ? "badge badge-danger" : "badge badge-safe";
+      outputMode.textContent = vulnerable ? "innerHTML" : "textContent";
+      outputMode.className = vulnerable ? "badge badge-danger" : "badge badge-safe";
+      renderButton.textContent = vulnerable ? "Render in vulnerable mode" : "Render in safe mode";
+      renderButton.className = vulnerable ? "btn btn-danger" : "btn btn-safe";
     }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearError();
-      const text = textInput.value.trim();
-      if (!text) return;
-
-      try {
-        const res = await fetch('/api/xss/vuln', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        });
-
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          showError(data?.error || 'Fehler beim Speichern.');
-          return;
-        }
-
-        textInput.value = '';
-        await loadFeeds();
-      } catch {
-        showError('Netzwerkfehler.');
+    function renderComment(text) {
+      const item = document.createElement("div");
+      item.className = "comment";
+      if (mode === "vulnerable") {
+        item.innerHTML = text;
+        result.className = "result-box result-danger";
+        result.innerHTML = "<h3>Vulnerable: markup became active</h3><p>The comment was inserted with innerHTML. If the payload contains a link or download attribute, it becomes clickable UI inside the trusted page.</p>";
+      } else {
+        item.textContent = text;
+        result.className = "result-box result-safe";
+        result.innerHTML = "<h3>Safe: output encoded</h3><p>The same input was inserted with textContent. Links, downloads, and tags stay visible as text instead of becoming active page elements.</p>";
       }
-    });
+      list.prepend(item);
+    }
 
-    // Initial laden
-    loadFeeds();
+    document.getElementById("comment-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (input.value.trim()) renderComment(input.value.trim());
+    });
+    document.querySelectorAll("[data-payload]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        input.value = event.currentTarget.dataset.payload;
+        input.focus();
+      });
+    });
+    document.getElementById("clear-comments").addEventListener("click", () => {
+      list.innerHTML = "";
+      result.className = "result-box result-warning";
+      result.innerHTML = "<h3>Ready</h3><p>Use one of the red demo payloads to show the difference between clickable markup and safe text.</p>";
+    });
+    vulnerableButton.addEventListener("click", () => setMode("vulnerable"));
+    safeButton.addEventListener("click", () => setMode("safe"));
+    setMode("vulnerable");
   </script>
 </body>
 </html>

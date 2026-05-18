@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Network Exposure - Database Security Playground</title>
+  <link rel="stylesheet" href="/css/ui.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="/" class="brand" aria-label="Database Security Playground home">
+        <span class="brand-mark">DB</span>
+        <span>Database Security Playground</span>
+      </a>
+      <nav class="app-nav" aria-label="Main navigation">
+        <a href="/" data-path="/">Overview</a>
+        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
+        <a href="/users.html" data-path="/users.html">Data Masking</a>
+        <a href="/xss.html" data-path="/xss.html">XSS</a>
+        <a href="/audit.html" data-path="/audit.html">Audit</a>
+        <a href="/network.html" data-path="/network.html">Network</a>
+        <a href="/config.html" data-path="/config.html">Config</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="module-section">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Scenario</p>
+          <h1>Database Network Exposure</h1>
+          <p>
+            The database should be reachable by required services only. Toggle the network controls and run connection
+            tests from different sources.
+          </p>
+        </div>
+        <span id="network-badge" class="badge badge-warning">Review required</span>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">Try it yourself</p>
+      <h2>Change network controls</h2>
+      <div class="switch-grid">
+        <label class="switch-card">
+          <span><strong>Database port exposed</strong><span>Direct internet path exists.</span></span>
+          <span class="switch"><input id="exposed-toggle" type="checkbox" checked /><span class="slider"></span></span>
+        </label>
+        <label class="switch-card">
+          <span><strong>Internal network only</strong><span>Database is private.</span></span>
+          <span class="switch"><input id="internal-toggle" type="checkbox" /><span class="slider"></span></span>
+        </label>
+        <label class="switch-card">
+          <span><strong>Firewall enabled</strong><span>Only approved sources can reach DB.</span></span>
+          <span class="switch"><input id="firewall-toggle" type="checkbox" /><span class="slider"></span></span>
+        </label>
+        <label class="switch-card">
+          <span><strong>TLS enabled</strong><span>Database traffic is encrypted.</span></span>
+          <span class="switch"><input id="tls-toggle" type="checkbox" checked /><span class="slider"></span></span>
+        </label>
+      </div>
+
+      <div id="network-diagram" class="diagram diagram-4 exposed" aria-label="Internet to web app to API to database diagram">
+        <div class="diagram-node"><strong>Internet</strong><span class="muted">Untrusted clients</span></div>
+        <div id="arrow-web" class="diagram-arrow safe-path">-></div>
+        <div class="diagram-node"><strong>Web App</strong><span class="muted">Public endpoint</span></div>
+        <div id="arrow-api" class="diagram-arrow safe-path">-></div>
+        <div class="diagram-node"><strong>API</strong><span class="muted">Application service</span></div>
+        <div id="arrow-db" class="diagram-arrow safe-path">-></div>
+        <div class="diagram-node database-node"><strong>Database</strong><span id="db-network-state" class="muted">Public port exposed</span></div>
+      </div>
+
+      <div id="network-message" class="notice notice-warning" style="margin-top:18px"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button type="button" class="btn btn-chip" data-source="internet">Test Internet to DB</button>
+        <button type="button" class="btn btn-chip" data-source="api">Test API to DB</button>
+        <button type="button" class="btn btn-chip" data-source="admin">Test Admin Network to DB</button>
+      </div>
+      <div id="connection-result" class="result-box result-warning" style="margin-top:14px">
+        <h3>No connection test yet</h3>
+        <p class="muted">Run a test to see whether the path is allowed or blocked.</p>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">What happens?</p>
+      <h2>Segmentation narrows who can reach the database</h2>
+      <p>
+        Databases should not be directly reachable from the internet. Only required services should communicate with the
+        DB. This supports Zero Trust because each path is explicit, restricted, and testable.
+      </p>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">Best practice takeaway</p>
+      <h2>Expose the application, not the database.</h2>
+    </section>
+  </main>
+
+  <footer class="footer">Database Security Playground - network exposure module.</footer>
+
+  <script>
+    (function () {
+      const path = location.pathname.replace(/\/+$/, "") || "/";
+      document.querySelectorAll(".app-nav a").forEach((link) => {
+        if (link.getAttribute("data-path") === path) link.setAttribute("aria-current", "page");
+      });
+    })();
+
+    const controls = {
+      exposed: document.getElementById("exposed-toggle"),
+      internal: document.getElementById("internal-toggle"),
+      firewall: document.getElementById("firewall-toggle"),
+      tls: document.getElementById("tls-toggle")
+    };
+    const badge = document.getElementById("network-badge");
+    const diagram = document.getElementById("network-diagram");
+    const dbState = document.getElementById("db-network-state");
+    const message = document.getElementById("network-message");
+    const result = document.getElementById("connection-result");
+    const arrowDb = document.getElementById("arrow-db");
+
+    function syncExclusive(changed) {
+      if (changed === "exposed" && controls.exposed.checked) controls.internal.checked = false;
+      if (changed === "internal" && controls.internal.checked) controls.exposed.checked = false;
+      if (!controls.exposed.checked && !controls.internal.checked) controls.internal.checked = true;
+    }
+
+    function state() {
+      return {
+        exposed: controls.exposed.checked,
+        internal: controls.internal.checked,
+        firewall: controls.firewall.checked,
+        tls: controls.tls.checked
+      };
+    }
+
+    function render() {
+      const current = state();
+      const highRisk = current.exposed;
+      const protectedState = current.internal && current.firewall && current.tls;
+      badge.textContent = protectedState ? "Protected" : highRisk ? "High risk" : "Medium risk";
+      badge.className = protectedState ? "badge badge-safe" : highRisk ? "badge badge-danger" : "badge badge-warning";
+      diagram.className = highRisk ? "diagram diagram-4 exposed" : "diagram diagram-4 protected";
+      arrowDb.className = current.firewall ? "diagram-arrow safe-path" : highRisk ? "diagram-arrow risk-path" : "diagram-arrow safe-path";
+      dbState.textContent = highRisk ? "Public port exposed" : "Internal network only";
+
+      let html = "";
+      let className = "notice notice-safe";
+      if (highRisk) {
+        html = "<h3>Database port exposed</h3><p>There is a direct red path from the internet to the database. This creates avoidable attack surface.</p>";
+        className = "notice notice-danger";
+      } else if (!current.tls) {
+        html = "<h3>Plaintext traffic risk</h3><p>The database is private, but TLS is disabled. Credentials and data could be exposed on trusted networks.</p>";
+        className = "notice notice-warning";
+      } else if (!current.firewall) {
+        html = "<h3>Segmentation is incomplete</h3><p>The database is internal, but without a firewall more internal sources may reach it than necessary.</p>";
+        className = "notice notice-warning";
+      } else {
+        html = "<h3>Green protected state</h3><p>The database is internal, encrypted, and reachable only from approved service paths.</p>";
+      }
+      message.className = className;
+      message.innerHTML = html;
+    }
+
+    function testConnection(source) {
+      const current = state();
+      let allowed = false;
+      let text = "";
+
+      if (source === "internet") {
+        allowed = current.exposed && !current.internal && !current.firewall;
+        text = allowed
+          ? "Internet to DB allowed because the database port is exposed and no firewall blocks it."
+          : "Internet to DB blocked by internal-only networking or firewall rules.";
+      } else if (source === "api") {
+        allowed = true;
+        text = current.tls
+          ? "API to DB allowed over the intended service path with TLS enabled."
+          : "API to DB allowed, but plaintext traffic risk remains because TLS is disabled.";
+      } else {
+        allowed = current.firewall ? false : !current.internal;
+        text = allowed
+          ? "Admin Network to DB allowed. This may be acceptable only through a controlled admin path."
+          : "Admin Network to DB blocked by segmentation or firewall policy.";
+      }
+
+      result.className = allowed && current.tls ? "result-box result-safe" : allowed ? "result-box result-warning" : "result-box result-danger";
+      result.innerHTML = `<h3>${allowed ? "Allowed" : "Blocked"}</h3><p>${text}</p>`;
+    }
+
+    Object.entries(controls).forEach(([name, control]) => {
+      control.addEventListener("change", () => {
+        syncExclusive(name);
+        render();
+      });
+    });
+    document.querySelectorAll("[data-source]").forEach((button) => {
+      button.addEventListener("click", () => testConnection(button.dataset.source));
+    });
+    render();
+  </script>
+</body>
+</html>

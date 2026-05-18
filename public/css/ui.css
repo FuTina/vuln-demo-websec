@@ -919,6 +919,123 @@ tr:last-child td {
   box-shadow: inset 4px 0 0 #f59e0b;
 }
 
+.packet-simulator {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px;
+  margin-top: 18px;
+}
+
+.packet-lane {
+  display: grid;
+  grid-template-columns: 130px minmax(180px, 1fr) 130px;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.lane-label {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  padding: 10px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.lane-track {
+  position: relative;
+  height: 56px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(21, 128, 61, .08), rgba(37, 99, 235, .08));
+  overflow: hidden;
+}
+
+.lane-track::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 18px;
+  right: 18px;
+  border-top: 3px solid #cbd5e1;
+  transform: translateY(-50%);
+}
+
+.lane-track.allowed::before {
+  border-color: var(--green);
+}
+
+.lane-track.blocked::before {
+  border-color: #f59e0b;
+  border-top-style: dashed;
+}
+
+.packet {
+  position: absolute;
+  top: 50%;
+  left: 18px;
+  z-index: 2;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 2px solid var(--blue);
+  border-radius: 50%;
+  color: var(--blue-dark);
+  background: #ffffff;
+  font-size: .82rem;
+  font-weight: 900;
+  transform: translateY(-50%);
+}
+
+.packet.running.allowed {
+  animation: packetAllowed 1s ease-in-out forwards;
+}
+
+.packet.running.blocked {
+  animation: packetBlocked 1s ease-in-out forwards;
+}
+
+.packet-blocker {
+  position: absolute;
+  top: 9px;
+  left: 62%;
+  z-index: 1;
+  display: none;
+  min-width: 74px;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  color: var(--amber);
+  background: #ffffff;
+  padding: 7px 10px;
+  font-size: .78rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.lane-track.blocked .packet-blocker {
+  display: block;
+}
+
+.packet-status {
+  margin-top: 10px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+@keyframes packetAllowed {
+  from { left: 18px; }
+  to { left: calc(100% - 48px); }
+}
+
+@keyframes packetBlocked {
+  from { left: 18px; }
+  to { left: calc(62% - 18px); }
+}
+
 .toggle-group {
   display: inline-flex;
   flex-wrap: wrap;
@@ -1143,6 +1260,10 @@ tr:last-child td {
     border-top: 0;
     border-left: 3px solid var(--border);
     justify-self: center;
+  }
+
+  .packet-lane {
+    grid-template-columns: 1fr;
   }
 
   .diagram-arrow {

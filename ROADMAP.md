@@ -14,7 +14,9 @@
 
 ## Phase 3
 
-- Add Docker Compose.
-- Add MariaDB or PostgreSQL option.
-- Add Redis security module.
-- Add real configuration comparison.
+- Add Docker Compose with isolated app and database services.
+- Add MariaDB or PostgreSQL option beside SQLite.
+- Add Redis security module for unauthenticated access, protected mode, and secrets.
+- Add real configuration comparison using example config files.
+- Add presenter mode that guides the 5-minute demo path.
+- Add browser-level interaction tests for each module.

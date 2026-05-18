@@ -81,8 +81,25 @@
 
       <div class="controls" style="margin-top:18px">
         <button type="button" class="btn btn-primary" id="run-tests">Run connection tests</button>
+        <button type="button" class="btn btn-ghost" data-send="internet">Send Internet packet</button>
+        <button type="button" class="btn btn-ghost" data-send="api">Send API packet</button>
+        <button type="button" class="btn btn-ghost" data-send="admin">Send Admin packet</button>
         <button type="button" class="btn btn-ghost" id="secure-preset">Apply secure preset</button>
         <button type="button" class="btn btn-ghost" id="risky-preset">Apply risky preset</button>
+      </div>
+
+      <div class="packet-simulator">
+        <h3>Packet simulation</h3>
+        <p class="muted">Send one connection attempt. The packet reaches the database only if the current controls allow that path.</p>
+        <div class="packet-lane">
+          <div id="packet-source" class="lane-label">Source</div>
+          <div id="lane-track" class="lane-track">
+            <div id="packet" class="packet" aria-hidden="true">DB</div>
+            <div class="packet-blocker">blocked</div>
+          </div>
+          <div class="lane-label">Database</div>
+        </div>
+        <p id="packet-status" class="packet-status">Choose a packet source to animate a connection attempt.</p>
       </div>
 
       <div class="test-grid" aria-live="polite">
@@ -137,6 +154,10 @@
     const message = document.getElementById("network-message");
     const directPath = document.getElementById("direct-path");
     const edgeDb = document.getElementById("edge-db");
+    const packet = document.getElementById("packet");
+    const packetSource = document.getElementById("packet-source");
+    const packetStatus = document.getElementById("packet-status");
+    const laneTrack = document.getElementById("lane-track");
     const testCards = {
       internet: document.getElementById("test-internet"),
       api: document.getElementById("test-api"),
@@ -196,6 +217,22 @@
       card.innerHTML = `<h3>${card.querySelector("h3")?.textContent || ""}</h3><p>${evaluation.title}: ${evaluation.text}</p>`;
     }
 
+    function animatePacket(source) {
+      const current = state();
+      const evaluation = evaluate(source, current);
+      const sourceLabel = source === "internet" ? "Internet" : source === "api" ? "API" : "Admin Network";
+      packetSource.textContent = sourceLabel;
+      packetStatus.textContent = "Sending packet...";
+      laneTrack.className = `lane-track ${evaluation.allowed ? "allowed" : "blocked"}`;
+      packet.className = "packet";
+      void packet.offsetWidth;
+      packet.classList.add("running", evaluation.allowed ? "allowed" : "blocked");
+      window.setTimeout(() => {
+        packetStatus.textContent = `${evaluation.title}: ${evaluation.text}`;
+        renderCard(testCards[source], evaluation);
+      }, 1050);
+    }
+
     function runTests() {
       const current = state();
       renderCard(testCards.internet, evaluate("internet", current));
@@ -240,6 +277,9 @@
       });
     });
     document.getElementById("run-tests").addEventListener("click", runTests);
+    document.querySelectorAll("[data-send]").forEach((button) => {
+      button.addEventListener("click", () => animatePacket(button.dataset.send));
+    });
     document.getElementById("secure-preset").addEventListener("click", () => {
       controls.exposed.checked = false;
       controls.internal.checked = true;

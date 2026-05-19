@@ -35,7 +35,10 @@
             Review a risky database baseline, approve hardening controls, and decide whether this configuration can ship.
           </p>
         </div>
-        <span id="config-badge" class="badge badge-warning">Needs hardening</span>
+        <div class="module-actions">
+          <span id="config-badge" class="badge badge-warning">Needs hardening</span>
+          <button type="button" class="btn btn-primary" data-open-config-tab="postgres">Open Postgres runtime</button>
+        </div>
       </div>
     </section>
 
@@ -44,10 +47,17 @@
         <div>
           <p class="module-kicker">Configuration areas</p>
           <h2>Choose the part of the configuration to inspect</h2>
+          <p class="muted">Use the Postgres runtime tab for the live Docker database status, TLS/container hardening notes, and risky-vs-hardened file comparison.</p>
         </div>
-        <div id="config-tabs" class="segmented" role="group" aria-label="Configuration area">
-          <button type="button" data-config-tab="baseline" aria-pressed="true">Baseline review</button>
-          <button type="button" data-config-tab="postgres" aria-pressed="false">Postgres runtime</button>
+        <div id="config-tabs" class="segmented config-tab-selector" role="group" aria-label="Configuration area">
+          <button type="button" data-config-tab="baseline" aria-pressed="true">
+            <strong>Baseline review</strong>
+            <span>Checklist and risk score</span>
+          </button>
+          <button type="button" data-config-tab="postgres" aria-pressed="false">
+            <strong>Postgres runtime</strong>
+            <span>Live DB status and hardening</span>
+          </button>
         </div>
       </div>
     </section>
@@ -57,8 +67,8 @@
       <p class="module-kicker">Try it yourself</p>
       <h2>Build a safer database baseline</h2>
       <div class="network-actions" style="margin-bottom:14px">
-        <button type="button" class="btn btn-safe" id="apply-baseline">Apply production baseline</button>
-        <button type="button" class="btn btn-danger" id="apply-risky">Revert to risky defaults</button>
+        <button type="button" class="btn btn-safe" id="apply-baseline">Apply secure baseline</button>
+        <button type="button" class="btn btn-danger" id="apply-risky">Start insecure demo</button>
       </div>
       <div class="grid grid-2">
         <div>
@@ -161,7 +171,7 @@ AUDIT_LOGGING=false</pre>
     </div>
 
     <div id="config-tab-postgres" class="config-tab-panel hidden">
-    <section class="module-section">
+    <section class="module-section" id="postgres-runtime">
       <div class="module-header">
         <div>
           <p class="module-kicker">Postgres runtime</p>
@@ -519,13 +529,27 @@ AUDIT_LOGGING=false</pre>
       if (tab === "postgres" && !postgresLoaded) loadPostgresTab();
     }
 
+    function openConfigTab(tab, scrollTarget) {
+      setConfigTab(tab);
+      if (scrollTarget) {
+        document.getElementById(scrollTarget)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
     checklist.addEventListener("change", render);
     document.getElementById("apply-baseline").addEventListener("click", () => setAllControls(true));
     document.getElementById("apply-risky").addEventListener("click", () => setAllControls(false));
     tabButtons.forEach((button) => {
       button.addEventListener("click", () => setConfigTab(button.dataset.configTab));
     });
+    document.querySelectorAll("[data-open-config-tab]").forEach((button) => {
+      button.addEventListener("click", () => openConfigTab(button.dataset.openConfigTab, "postgres-runtime"));
+    });
+    if (location.hash === "#postgres" || location.hash === "#postgres-runtime") {
+      openConfigTab("postgres", "postgres-runtime");
+    }
     render();
   </script>
+  <script src="/presenter.js"></script>
 </body>
 </html>

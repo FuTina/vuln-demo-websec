@@ -69,25 +69,17 @@ http://localhost:5173/config.html
 - `/network.html` - database network exposure module.
 - `/config.html` - secure database configuration module, including the Postgres runtime and hardening tab.
 
-## Suggested Demo Flow
+## 5-Minute Guided Demo Script
 
-1. Start on the landing page.
-2. Toggle controls and observe the dynamic risk score.
-3. Open the SQL Injection module.
-4. Test a payload in vulnerable and protected mode.
-5. Open the RBAC module and switch roles.
-6. Open the Network module and run connection tests.
-7. Finish with the Secure Configuration checklist.
+Use Guided Mode on `/` as the click path. It updates the same six controls used by the live risk score, saves the guided-demo state in the browser, and shows a compact Guided Mode panel inside the relevant modules.
 
-## Suggested Presentation Narrative
-
-1. Start with the risk overview: the score is low while the baseline controls are enabled, then rises sharply when critical controls such as network segmentation or secure configuration are removed.
-2. Demonstrate SQL Injection: string concatenation lets input change query logic.
-3. Show the safe parameterized query: the SQL structure stays fixed and input becomes a value.
-4. Show role-based masking: sensitive data should be authorized first and minimized before rendering.
-5. Explain audit logging: investigations need protected, centralized records.
-6. Explain network segmentation: the web app should be reachable, not the database.
-7. Explain secure configuration: least privilege, TLS, backups, monitoring, and secrets management reduce avoidable risk.
+1. **0:00 - Start insecure baseline.** Click `Start insecure demo`. Explain that the score is high because SQL input, role boundaries, output handling, audit evidence, network exposure, and configuration are all weak.
+2. **0:40 - SQL injection + prepared statements.** Open `/sqli.html`, run a safe bypass example in `Vulnerable`, then use the Guided Mode panel to switch to `Protected` and continue.
+3. **1:25 - XSS + output encoding.** Open `/xss.html`, render a harmless demo payload in `Vulnerable`, then use the Guided Mode panel to switch to protected text output.
+4. **2:05 - RBAC + data masking.** Open `/users.html`. Switch roles, briefly disable RBAC if needed, then continue with RBAC and masking enabled.
+5. **2:45 - Audit logging.** Open `/audit.html`, trigger failed login, export, and privilege events, then continue with audit logging enabled.
+6. **3:30 - Network segmentation.** Open `/network.html`, run the risky connection test, then use the Guided Mode panel to apply the secure network baseline.
+7. **4:20 - Secure configuration + executive close.** Open `/config.html`, apply the secure checklist, inspect the Postgres runtime tab, finish on `/`, and read the Executive summary panel.
 
 ## Notes
 

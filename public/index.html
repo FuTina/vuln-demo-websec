@@ -46,6 +46,7 @@
           </div>
           <div class="meter" aria-hidden="true"><span id="score-meter"></span></div>
           <p id="score-explanation" class="small muted" style="margin-top:12px"></p>
+          <div id="score-causes" class="impact-list" aria-live="polite"></div>
         </div>
         <div class="control-list" aria-label="Control status">
           <span class="badge badge-safe" data-control-badge="prepared">Prepared Statements</span>
@@ -57,6 +58,73 @@
         </div>
       </aside>
     </section>
+
+    <details class="presenter-dock presenter-overview" id="presenter-dock">
+      <summary aria-label="Open Guided Mode">
+        <span class="guided-summary">
+          <span class="guided-icon" aria-hidden="true">G</span>
+          <span>Guided Mode</span>
+        </span>
+        <strong id="presenter-step-pill">Step 1/7</strong>
+        <span class="guided-tooltip" role="tooltip">Guided demo flow: start insecure, visit one module per step, and finish with the secure baseline.</span>
+      </summary>
+      <div class="presenter-dock-body" aria-labelledby="presenter-title">
+        <div>
+          <p class="module-kicker">Guided Mode</p>
+          <h2 id="presenter-title">Guided 5-minute demo flow</h2>
+          <p class="muted">Each step opens one module, shows the risk, applies the matching control, and then moves on.</p>
+        </div>
+        <div class="presenter-progress" aria-hidden="true"><span id="presenter-progress-bar"></span></div>
+        <div class="toolbar-actions">
+          <button type="button" class="btn btn-danger" id="presenter-insecure">Start insecure demo</button>
+          <button type="button" class="btn btn-safe" id="presenter-secure">Apply secure baseline</button>
+        </div>
+        <div id="presenter-current" class="presenter-current" aria-live="polite"></div>
+        <div class="presenter-grid" id="presenter-steps">
+        <article class="presenter-step" data-step="1">
+          <span class="badge badge-danger">Step 1</span>
+          <h3>Start insecure baseline</h3>
+          <p>Use Start insecure demo to disable the main controls and show why the score jumps.</p>
+        </article>
+        <article class="presenter-step" data-step="2">
+          <span class="badge badge-danger">Step 2</span>
+          <h3>SQL injection + prepared statements</h3>
+          <p>Run a login bypass, then protect the query with placeholders.</p>
+          <a class="btn btn-primary" href="/sqli.html" data-presenter-link="2">Open SQL Injection</a>
+        </article>
+        <article class="presenter-step" data-step="3">
+          <span class="badge badge-safe">Step 3</span>
+          <h3>XSS + output encoding</h3>
+          <p>Render active markup, then switch to safe text output.</p>
+          <a class="btn btn-primary" href="/xss.html" data-presenter-link="3">Open XSS</a>
+        </article>
+        <article class="presenter-step" data-step="4">
+          <span class="badge badge-safe">Step 4</span>
+          <h3>Review RBAC and masking</h3>
+          <p>Move from raw data exposure to role-scoped results.</p>
+          <a class="btn btn-primary" href="/users.html" data-presenter-link="4">Open Data Masking</a>
+        </article>
+        <article class="presenter-step" data-step="5">
+          <span class="badge badge-warning">Step 5</span>
+          <h3>Run audit events</h3>
+          <p>Trigger failed login, export, and privilege signals.</p>
+          <a class="btn btn-primary" href="/audit.html" data-presenter-link="5">Open Audit</a>
+        </article>
+        <article class="presenter-step" data-step="6">
+          <span class="badge badge-safe">Step 6</span>
+          <h3>Show network segmentation</h3>
+          <p>Block direct database access and keep the API path explicit.</p>
+          <a class="btn btn-primary" href="/network.html" data-presenter-link="6">Open Network</a>
+        </article>
+        <article class="presenter-step" data-step="7">
+          <span class="badge badge-safe">Step 7</span>
+          <h3>Finish with secure configuration</h3>
+          <p>Apply the checklist and inspect the Postgres runtime tab.</p>
+          <a class="btn btn-primary" href="/config.html" data-presenter-link="7">Open Config</a>
+        </article>
+        </div>
+      </div>
+    </details>
 
     <section class="surface" aria-labelledby="control-panel-title">
       <div class="module-header">
@@ -70,6 +138,10 @@
         <div id="risk-panel" class="result-box">
           <h3 id="risk-label">Low risk</h3>
           <p id="risk-detail" class="muted"></p>
+          <div id="change-summary" class="change-summary" aria-live="polite">
+            <strong>What changed?</strong>
+            <span>Secure baseline is active: controls are enabled for the demo starting point.</span>
+          </div>
         </div>
         <div class="switch-grid" id="control-switches">
           <label class="switch-card">
@@ -112,7 +184,7 @@
       <div class="module-grid">
         <a class="module-card" href="/sqli.html">
           <div>
-            <span class="badge badge-danger">Interactive</span>
+            <span class="badge badge-role">Demo module</span>
             <h3>SQL Injection</h3>
             <p>Switch vulnerable/protected login behavior and test the same payload.</p>
           </div>
@@ -121,7 +193,7 @@
 
         <a class="module-card" href="/users.html">
           <div>
-            <span class="badge badge-warning">Interactive</span>
+            <span class="badge badge-role">Demo module</span>
             <h3>Role-Based Access &amp; Data Masking</h3>
             <p>Select roles and toggle RBAC and masking to see data exposure change.</p>
           </div>
@@ -130,7 +202,7 @@
 
         <a class="module-card" href="/xss.html">
           <div>
-            <span class="badge badge-danger">Interactive</span>
+            <span class="badge badge-role">Demo module</span>
             <h3>Cross-Site Scripting</h3>
             <p>Render comments with unsafe HTML insertion or safe text output.</p>
           </div>
@@ -139,7 +211,7 @@
 
         <a class="module-card" href="/audit.html">
           <div>
-            <span class="badge badge-safe">Interactive</span>
+            <span class="badge badge-role">Demo module</span>
             <h3>Audit Logging</h3>
             <p>Trigger actions, toggle logging, and watch suspicious activity detection.</p>
           </div>
@@ -148,7 +220,7 @@
 
         <a class="module-card" href="/network.html">
           <div>
-            <span class="badge badge-safe">Interactive</span>
+            <span class="badge badge-role">Demo module</span>
             <h3>Network Exposure</h3>
             <p>Test access paths with exposed ports, firewall, TLS, and segmentation.</p>
           </div>
@@ -157,12 +229,39 @@
 
         <a class="module-card" href="/config.html">
           <div>
-            <span class="badge badge-safe">Interactive</span>
+            <span class="badge badge-role">Demo module</span>
             <h3>Secure Configuration</h3>
             <p>Check hardening controls and inspect the Postgres runtime/configuration view.</p>
           </div>
           <strong>Open module</strong>
         </a>
+      </div>
+    </section>
+
+    <section class="surface" aria-labelledby="executive-summary-title" style="margin-top:18px">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Executive summary</p>
+          <h2 id="executive-summary-title">What the presentation proves</h2>
+        </div>
+        <span id="summary-badge" class="badge badge-safe">Protected baseline</span>
+      </div>
+      <div class="summary-grid">
+        <article class="summary-card">
+          <p class="module-kicker">Main risk</p>
+          <h3 id="summary-risk">Residual demo risk only</h3>
+          <p id="summary-risk-text">The primary database attack paths are controlled in the current baseline.</p>
+        </article>
+        <article class="summary-card">
+          <p class="module-kicker">Demonstrated control</p>
+          <h3 id="summary-control">Layered database defenses</h3>
+          <p id="summary-control-text">Prepared statements, RBAC, encoding, audit logs, segmentation, and secure configuration work together.</p>
+        </article>
+        <article class="summary-card">
+          <p class="module-kicker">Operational takeaway</p>
+          <h3 id="summary-takeaway">Make the secure path the default</h3>
+          <p id="summary-takeaway-text">Use the demo to show why prevention, containment, and evidence all matter.</p>
+        </article>
       </div>
     </section>
 
@@ -192,17 +291,122 @@
     const scoreValue = document.getElementById("score-value");
     const meter = document.getElementById("score-meter");
     const explanation = document.getElementById("score-explanation");
+    const causes = document.getElementById("score-causes");
     const riskPanel = document.getElementById("risk-panel");
     const riskLabel = document.getElementById("risk-label");
     const riskDetail = document.getElementById("risk-detail");
+    const changeSummary = document.getElementById("change-summary");
     const controlBadges = Array.from(document.querySelectorAll("[data-control-badge]"));
+    const summaryBadge = document.getElementById("summary-badge");
+    const summaryRisk = document.getElementById("summary-risk");
+    const summaryRiskText = document.getElementById("summary-risk-text");
+    const summaryControl = document.getElementById("summary-control");
+    const summaryControlText = document.getElementById("summary-control-text");
+    const summaryTakeaway = document.getElementById("summary-takeaway");
+    const summaryTakeawayText = document.getElementById("summary-takeaway-text");
+    const presenterDock = document.getElementById("presenter-dock");
+    const presenterCurrent = document.getElementById("presenter-current");
+    const presenterStepPill = document.getElementById("presenter-step-pill");
+    const presenterProgressBar = document.getElementById("presenter-progress-bar");
+    const controlStorageKey = "dbsec.presenter.controls";
+    const presenterStorageKey = "dbsec.presenter.state";
+    const presenterSteps = {
+      1: {
+        title: "Step 1: Start insecure baseline",
+        text: "Click Start insecure demo. The app disables the main controls and keeps that state while you move through the modules."
+      },
+      2: {
+        title: "Step 2: SQL injection + prepared statements",
+        text: "Open SQL Injection, run a bypass example in Vulnerable mode, then use the Guided Mode panel to enable Protected mode and continue.",
+        href: "/sqli.html",
+        label: "Open SQL Injection"
+      },
+      3: {
+        title: "Step 3: XSS + output encoding",
+        text: "Open XSS, render a safe demo payload in Vulnerable mode, then use the Guided Mode panel to switch to Protected output.",
+        href: "/xss.html",
+        label: "Open XSS"
+      },
+      4: {
+        title: "Step 4: Review RBAC/data masking",
+        text: "Open Data Masking, compare roles, then continue with RBAC and masking enabled.",
+        href: "/users.html",
+        label: "Open Data Masking"
+      },
+      5: {
+        title: "Step 5: Run audit events",
+        text: "Open Audit, trigger suspicious events, then continue to the Network module.",
+        href: "/audit.html",
+        label: "Open Audit"
+      },
+      6: {
+        title: "Step 6: Show network segmentation",
+        text: "Open Network, run the risky connection test, then apply the secure network baseline.",
+        href: "/network.html",
+        label: "Open Network"
+      },
+      7: {
+        title: "Step 7: Finish with secure configuration",
+        text: "Open Config, apply the secure checklist, inspect the Postgres tab, and return to the executive summary.",
+        href: "/config.html",
+        label: "Open Config"
+      },
+      8: {
+        title: "Guided demo complete",
+        text: "The secure baseline is applied. Use the Executive summary as the closing slide.",
+        href: "#executive-summary-title",
+        label: "Show Executive Summary"
+      }
+    };
     const riskModel = {
-      prepared: { points: 22, floor: 74, name: "Prepared Statements" },
-      rbac: { points: 18, floor: 58, name: "RBAC" },
-      encoding: { points: 12, floor: 45, name: "Output Encoding" },
-      audit: { points: 8, floor: 0, name: "Audit Logging" },
-      network: { points: 24, floor: 78, name: "Network Segmentation" },
-      config: { points: 20, floor: 72, name: "Secure Configuration" }
+      prepared: {
+        points: 22,
+        floor: 74,
+        name: "Prepared Statements",
+        missing: "SQL input can still change query logic.",
+        enabled: "Prepared Statements enabled: SQL input can no longer change query logic.",
+        disabled: "Prepared Statements disabled: login input can become SQL logic again."
+      },
+      rbac: {
+        points: 18,
+        floor: 58,
+        name: "RBAC",
+        missing: "Users may receive records or fields outside their role.",
+        enabled: "RBAC enabled: records and fields are filtered before display.",
+        disabled: "RBAC disabled: masking alone no longer proves access is authorized."
+      },
+      encoding: {
+        points: 12,
+        floor: 45,
+        name: "Output Encoding",
+        missing: "Stored or reflected text can become active page markup.",
+        enabled: "Output Encoding enabled: untrusted content renders as text.",
+        disabled: "Output Encoding disabled: untrusted content can become active markup."
+      },
+      audit: {
+        points: 8,
+        floor: 0,
+        name: "Audit Logging",
+        missing: "Suspicious access leaves little investigation evidence.",
+        enabled: "Audit Logging enabled: failed logins, exports, and privilege attempts become evidence.",
+        disabled: "Audit Logging disabled: suspicious activity can happen without a useful trail."
+      },
+      network: {
+        points: 24,
+        floor: 78,
+        name: "Network Segmentation",
+        missing: "The database can be reached outside the intended service path.",
+        enabled: "Network Segmentation enabled: users reach the app, not the database.",
+        disabled: "Network Segmentation disabled: direct database exposure becomes the dominant risk."
+      },
+      config: {
+        points: 20,
+        floor: 72,
+        name: "Secure Configuration",
+        missing: "Default users, broad grants, weak secrets, or missing TLS can remain.",
+        enabled: "Secure Configuration enabled: least privilege, secrets handling, TLS, and hardening are in scope.",
+        disabled: "Secure Configuration disabled: risky defaults can undermine otherwise good controls."
+      }
     };
     const combinedFloors = [
       { controls: ["network", "config"], floor: 88 },
@@ -215,6 +419,206 @@
       return switches
         .filter((item) => !item.checked)
         .map((item) => item.dataset.control);
+    }
+
+    function readPresenterState() {
+      try {
+        return JSON.parse(localStorage.getItem(presenterStorageKey)) || { active: false, step: 1 };
+      } catch {
+        return { active: false, step: 1 };
+      }
+    }
+
+    function writePresenterState(step, active = true) {
+      localStorage.setItem(presenterStorageKey, JSON.stringify({ active, step }));
+    }
+
+    function readSavedControls() {
+      try {
+        return JSON.parse(localStorage.getItem(controlStorageKey));
+      } catch {
+        return null;
+      }
+    }
+
+    function saveControls() {
+      const state = {};
+      switches.forEach((item) => {
+        state[item.dataset.control] = item.checked;
+      });
+      localStorage.setItem(controlStorageKey, JSON.stringify(state));
+    }
+
+    function loadSavedControls() {
+      const saved = readSavedControls();
+      if (!saved) return;
+      switches.forEach((item) => {
+        if (Object.prototype.hasOwnProperty.call(saved, item.dataset.control)) {
+          item.checked = Boolean(saved[item.dataset.control]);
+        }
+      });
+    }
+
+    function setChangeSummary(text, state = "info") {
+      changeSummary.className = `change-summary change-${state}`;
+      changeSummary.innerHTML = `<strong>What changed?</strong><span>${text}</span>`;
+    }
+
+    function setAllControls(enabled, message, nextStep) {
+      switches.forEach((item) => {
+        item.checked = enabled;
+      });
+      saveControls();
+      if (nextStep) writePresenterState(nextStep);
+      setChangeSummary(message, enabled ? "safe" : "danger");
+      renderRisk();
+    }
+
+    function setControl(control, enabled, nextStep) {
+      const item = switches.find((input) => input.dataset.control === control);
+      if (!item) return;
+      item.checked = enabled;
+      saveControls();
+      if (nextStep) writePresenterState(nextStep);
+      setChangeSummary(enabled ? riskModel[control].enabled : riskModel[control].disabled, enabled ? "safe" : "danger");
+      renderRisk();
+    }
+
+    function renderCauses(missing, score, additiveRisk, singleControlFloor, combinedControlFloor) {
+      causes.innerHTML = "";
+      if (missing.length === 0) {
+        causes.innerHTML = '<div class="impact-compact impact-safe"><strong>No missing controls</strong><span>Score 8 is residual demo risk.</span></div>';
+        return;
+      }
+      const missingNames = missing.map((control) => riskModel[control].name);
+      const topDrivers = missing
+        .slice()
+        .sort((left, right) => riskModel[right].points - riskModel[left].points)
+        .slice(0, 3)
+        .map((control) => riskModel[control].name)
+        .join(", ");
+      const details = document.createElement("details");
+      details.className = "impact-compact impact-danger";
+      details.innerHTML = `
+        <summary>
+          <strong>${missing.length} missing controls</strong>
+          <span>Main drivers: ${topDrivers}</span>
+        </summary>
+      `;
+      const list = document.createElement("div");
+      list.className = "impact-detail-list";
+      missing.forEach((control) => {
+        const model = riskModel[control];
+        const item = document.createElement("div");
+        item.className = "impact-item";
+        item.innerHTML = `<strong>${model.name} missing (+${model.points})</strong><span>${model.missing}</span>`;
+        list.appendChild(item);
+      });
+      if (score > additiveRisk + 8) {
+        const floor = document.createElement("div");
+        floor.className = "impact-item impact-warning";
+        floor.innerHTML = `<strong>Risk floor applied (${Math.max(singleControlFloor, combinedControlFloor)})</strong><span>Critical missing controls prevent the score from appearing artificially low.</span>`;
+        list.appendChild(floor);
+      }
+      details.appendChild(list);
+      causes.appendChild(details);
+    }
+
+    function renderSummary(missing, score) {
+      const missingNames = missing.map((control) => riskModel[control].name);
+      if (missing.length === 0) {
+        summaryBadge.textContent = "Protected baseline";
+        summaryBadge.className = "badge badge-safe";
+        summaryRisk.textContent = "Residual demo risk only";
+        summaryRiskText.textContent = "The main database attack paths are controlled in the current baseline.";
+        summaryControl.textContent = "Layered database defenses";
+        summaryControlText.textContent = "Prepared statements, RBAC, output encoding, audit logs, segmentation, and secure configuration work together.";
+        summaryTakeaway.textContent = "Make the secure path the default";
+        summaryTakeawayText.textContent = "The strongest result comes from enabling prevention, containment, and evidence as normal defaults.";
+      } else if (score >= 70) {
+        summaryBadge.textContent = "High risk";
+        summaryBadge.className = "badge badge-danger";
+        summaryRisk.textContent = missingNames.slice(0, 2).join(" and ");
+        summaryRiskText.textContent = `Missing ${missingNames.join(", ")} creates a credible path to bypass, exposure, or weak containment.`;
+        summaryControl.textContent = "Close the critical gap first";
+        summaryControlText.textContent = "Start with prepared statements, network segmentation, and secure configuration before optimizing lower-risk controls.";
+        summaryTakeaway.textContent = "Do not ship this posture";
+        summaryTakeawayText.textContent = "Treat the demo score as a remediation queue: remove direct exposure and exploitable query paths first.";
+      } else {
+        summaryBadge.textContent = "Review required";
+        summaryBadge.className = "badge badge-warning";
+        summaryRisk.textContent = "Partial baseline";
+        summaryRiskText.textContent = `Missing ${missingNames.join(", ")} leaves a visible but bounded gap.`;
+        summaryControl.textContent = "Complete the layered baseline";
+        summaryControlText.textContent = "The remaining control improves either prevention, containment, or investigation quality.";
+        summaryTakeaway.textContent = "Finish the control set";
+        summaryTakeawayText.textContent = "A polished security story should end with all six controls enabled and explained.";
+      }
+    }
+
+    function renderPresenterState(missing) {
+      const state = readPresenterState();
+      const controlSteps = { prepared: 2, encoding: 3, rbac: 4, audit: 5, network: 6, config: 7 };
+      const controlsByStep = {
+        2: "prepared",
+        3: "encoding",
+        4: "rbac",
+        5: "audit",
+        6: "network",
+        7: "config"
+      };
+      const earliestMissingStep = missing.length
+        ? Math.min(...missing.map((control) => controlSteps[control] || 7))
+        : null;
+      let activeStep = state.active ? Number(state.step) || 1 : 1;
+      if (state.active && earliestMissingStep && activeStep > earliestMissingStep) {
+        activeStep = earliestMissingStep;
+        writePresenterState(activeStep);
+      }
+      if (state.active && !missing.length && activeStep < 8) {
+        activeStep = 8;
+        writePresenterState(activeStep);
+      }
+      const current = presenterSteps[activeStep] || presenterSteps[1];
+      const completedControls = Object.keys(controlSteps).filter((control) => !missing.includes(control)).length;
+      const isComplete = state.active && (activeStep >= 8 || missing.length === 0);
+      const completedSteps = isComplete ? 7 : state.active ? Math.min(7, 1 + completedControls) : 0;
+      presenterStepPill.textContent = isComplete ? "Complete" : `Step ${activeStep}/7`;
+      presenterDock.classList.toggle("is-complete", isComplete);
+      presenterDock.classList.toggle("is-active", state.active && !isComplete);
+      presenterProgressBar.style.width = `${Math.round((completedSteps / 7) * 100)}%`;
+      presenterCurrent.className = state.active
+        ? isComplete ? "presenter-current is-complete" : "presenter-current is-active"
+        : "presenter-current";
+      const currentAction = current.href
+        ? `<a class="btn btn-primary" href="${current.href}">${current.label}</a>`
+        : '<a class="btn btn-ghost" href="#control-panel-title">View controls</a>';
+      presenterCurrent.innerHTML = `
+        <div>
+          <strong>${current.title}</strong>
+          <span>${current.text}</span>
+        </div>
+        ${currentAction}
+      `;
+      document.querySelectorAll(".presenter-step").forEach((step) => step.classList.remove("is-active", "is-complete"));
+      if (isComplete) {
+        document.querySelectorAll(".presenter-step").forEach((step) => step.classList.add("is-complete"));
+        document.querySelector('[data-step="7"]')?.classList.add("is-active");
+        if (presenterDock.open) {
+          document.querySelector(".presenter-step.is-active")?.scrollIntoView({ block: "nearest" });
+        }
+        return;
+      }
+      document.querySelectorAll(".presenter-step").forEach((step) => {
+        const number = Number(step.dataset.step);
+        const stepControl = controlsByStep[number];
+        const stepComplete = state.active && (number === 1 ? true : stepControl && !missing.includes(stepControl));
+        if (stepComplete) step.classList.add("is-complete");
+        if (number === activeStep) step.classList.add("is-active");
+      });
+      if (presenterDock.open) {
+        document.querySelector(".presenter-step.is-active")?.scrollIntoView({ block: "nearest" });
+      }
     }
 
     function renderRisk() {
@@ -259,11 +663,39 @@
         const control = switches.find((item) => item.dataset.control === badge.dataset.controlBadge);
         const enabled = control?.checked;
         badge.className = enabled ? "badge badge-safe" : "badge badge-danger";
+        badge.textContent = `${riskModel[badge.dataset.controlBadge].name}: ${enabled ? "Enabled" : "Missing"}`;
         badge.setAttribute("aria-label", `${badge.textContent}: ${enabled ? "enabled" : "disabled"}`);
       });
+      renderCauses(missing, score, additiveRisk, singleControlFloor, combinedControlFloor);
+      renderSummary(missing, score);
+      renderPresenterState(missing);
     }
 
-    switches.forEach((item) => item.addEventListener("change", renderRisk));
+    switches.forEach((item) => {
+      item.addEventListener("change", () => {
+        const control = item.dataset.control;
+        saveControls();
+        setChangeSummary(item.checked ? riskModel[control].enabled : riskModel[control].disabled, item.checked ? "safe" : "danger");
+        renderRisk();
+      });
+    });
+    document.getElementById("presenter-insecure").addEventListener("click", () => {
+      setAllControls(false, "Guided Mode step 1: insecure baseline is active. Next, open SQL Injection from step 2.", 2);
+    });
+    document.getElementById("presenter-secure").addEventListener("click", () => {
+      setAllControls(true, "Guided Mode close: secure baseline is active for the executive summary.", 8);
+    });
+    document.querySelectorAll("[data-presenter-link]").forEach((link) => {
+      link.addEventListener("click", () => {
+        writePresenterState(Number(link.dataset.presenterLink));
+      });
+    });
+    presenterDock.addEventListener("toggle", () => {
+      if (presenterDock.open) {
+        document.querySelector(".presenter-step.is-active")?.scrollIntoView({ block: "nearest" });
+      }
+    });
+    loadSavedControls();
     renderRisk();
   </script>
 </body>

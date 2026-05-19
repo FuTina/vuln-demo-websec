@@ -36,7 +36,7 @@
             to see whether the team has evidence for investigation.
           </p>
         </div>
-        <span id="audit-badge" class="badge badge-safe">Audit logging enabled</span>
+        <span id="audit-badge" class="badge badge-safe">Protected</span>
       </div>
     </section>
 
@@ -180,7 +180,7 @@
 
     auditToggle.addEventListener("change", () => {
       const enabled = auditToggle.checked;
-      badge.textContent = enabled ? "Audit logging enabled" : "Audit logging disabled";
+      badge.textContent = enabled ? "Protected" : "Vulnerable";
       badge.className = enabled ? "badge badge-safe" : "badge badge-danger";
       warning.classList.toggle("hidden", enabled);
     });
@@ -196,5 +196,6 @@
       renderEmpty();
     });
   </script>
+  <script src="/presenter.js"></script>
 </body>
 </html>

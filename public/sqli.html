@@ -36,7 +36,7 @@
             input to see why string concatenation is dangerous and prepared statements are safer.
           </p>
         </div>
-        <span id="mode-badge" class="badge badge-danger">Vulnerable mode</span>
+        <span id="mode-badge" class="badge badge-danger">Vulnerable</span>
       </div>
     </section>
 
@@ -48,8 +48,8 @@
         </div>
         <div class="toolbar-actions">
           <div class="segmented" role="group" aria-label="SQL mode">
-            <button id="vulnerable-mode" class="danger-option" type="button" aria-pressed="true">Vulnerable mode</button>
-            <button id="protected-mode" class="safe-option" type="button" aria-pressed="false">Protected mode</button>
+            <button id="vulnerable-mode" class="danger-option" type="button" aria-pressed="true">Vulnerable</button>
+            <button id="protected-mode" class="safe-option" type="button" aria-pressed="false">Protected</button>
           </div>
           <button type="button" id="reset" class="btn btn-ghost">
             <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg></span>
@@ -202,7 +202,7 @@
       const vulnerable = mode === "vulnerable";
       vulnerableButton.setAttribute("aria-pressed", String(vulnerable));
       protectedButton.setAttribute("aria-pressed", String(!vulnerable));
-      modeBadge.textContent = vulnerable ? "Vulnerable mode" : "Protected mode";
+      modeBadge.textContent = vulnerable ? "Vulnerable" : "Protected";
       modeBadge.className = vulnerable ? "badge badge-danger" : "badge badge-safe";
       renderQuery();
       renderResult("Ready", "Run the login check with the current input.", "warning", []);
@@ -306,5 +306,6 @@
 
     setMode("vulnerable");
   </script>
+  <script src="/presenter.js"></script>
 </body>
 </html>

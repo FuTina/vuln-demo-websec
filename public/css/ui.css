@@ -278,6 +278,13 @@ h3 {
   margin-bottom: 0;
 }
 
+.module-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .badge-row,
 .examples,
 .control-list,
@@ -367,6 +374,261 @@ h3 {
 
 .control-list {
   margin-top: 16px;
+}
+
+.presenter-dock,
+.presenter-module-guide {
+  position: fixed;
+  top: 88px;
+  right: 18px;
+  z-index: 30;
+  width: min(380px, calc(100vw - 32px));
+  overflow: visible;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.presenter-overview[open] {
+  width: min(620px, calc(100vw - 36px));
+  max-height: calc(100vh - 116px);
+}
+
+.presenter-module-guide[open] {
+  max-height: calc(100vh - 116px);
+}
+
+.presenter-dock:not([open]),
+.presenter-module-guide:not([open]) {
+  width: min(220px, calc(100vw - 32px));
+}
+
+.presenter-dock summary,
+.presenter-module-guide summary {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 42px;
+  cursor: pointer;
+  list-style: none;
+  padding: 9px 12px;
+}
+
+.presenter-dock summary::-webkit-details-marker,
+.presenter-module-guide summary::-webkit-details-marker {
+  display: none;
+}
+
+.presenter-dock summary span,
+.presenter-module-guide summary span {
+  color: var(--blue-dark);
+  font-size: .82rem;
+  font-weight: 900;
+}
+
+.guided-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.guided-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 999px;
+  color: #ffffff !important;
+  background: var(--blue);
+  font-size: .78rem !important;
+  letter-spacing: 0;
+}
+
+.guided-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: none;
+  width: min(280px, calc(100vw - 48px));
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  color: var(--text) !important;
+  font-size: .78rem !important;
+  font-weight: 700 !important;
+  line-height: 1.4;
+  padding: 10px;
+  z-index: 40;
+}
+
+.presenter-dock summary:hover .guided-tooltip,
+.presenter-dock summary:focus .guided-tooltip,
+.presenter-module-guide summary:hover .guided-tooltip,
+.presenter-module-guide summary:focus .guided-tooltip {
+  display: block;
+}
+
+.presenter-dock summary strong,
+.presenter-module-guide summary strong {
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--blue);
+  padding: 3px 8px;
+  font-size: .76rem;
+}
+
+.presenter-dock.is-complete summary strong,
+.presenter-module-guide.is-complete summary strong {
+  background: var(--green);
+}
+
+.presenter-module-guide.is-active summary strong,
+.presenter-dock.is-active summary strong {
+  background: var(--blue);
+}
+
+.presenter-dock-body {
+  display: grid;
+  gap: 12px;
+  max-height: calc(100vh - 170px);
+  overflow: auto;
+  border-top: 1px solid var(--border);
+  padding: 14px;
+}
+
+.presenter-dock-body h2 {
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.presenter-progress {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.presenter-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--blue), var(--green));
+  transition: width .2s ease;
+}
+
+.presenter-grid {
+  display: grid;
+  gap: 8px;
+  overflow: visible;
+  padding-bottom: 4px;
+}
+
+.presenter-step {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.presenter-overview .presenter-step {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.presenter-overview .presenter-step .badge {
+  grid-row: 1 / span 2;
+  align-self: start;
+}
+
+.presenter-overview .presenter-step h3,
+.presenter-overview .presenter-step p {
+  grid-column: 2;
+}
+
+.presenter-overview .presenter-step .btn {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.presenter-step h3 {
+  margin-bottom: 0;
+  font-size: .94rem;
+}
+
+.presenter-step p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.35;
+}
+
+.presenter-step .btn {
+  min-height: 32px;
+  margin-top: 0;
+  padding: 7px 10px;
+  font-size: .8rem;
+  text-align: center;
+}
+
+.presenter-step.is-active {
+  border-color: #93c5fd;
+  box-shadow: inset 4px 0 0 var(--blue);
+}
+
+.presenter-step.is-complete {
+  border-color: #86efac;
+  background: var(--green-bg);
+}
+
+.presenter-current {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.presenter-current strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--blue-dark);
+}
+
+.presenter-current span {
+  display: block;
+  color: var(--muted);
+  margin-bottom: 0;
+  font-size: .84rem;
+}
+
+.presenter-current.is-active {
+  box-shadow: inset 4px 0 0 var(--blue);
+}
+
+.presenter-current.is-complete {
+  border-color: #86efac;
+  background: var(--green-bg);
+  box-shadow: inset 4px 0 0 var(--green);
+}
+
+.presenter-current.is-complete strong {
+  color: var(--green);
 }
 
 .controls {
@@ -467,6 +729,126 @@ h3 {
 .switch-card span {
   color: var(--muted);
   font-size: .82rem;
+}
+
+.impact-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.impact-compact,
+.impact-item,
+.change-summary,
+.summary-card {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px 12px;
+}
+
+.impact-compact summary {
+  display: grid;
+  gap: 2px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.impact-compact summary::-webkit-details-marker {
+  display: none;
+}
+
+.impact-compact summary::after {
+  content: "Show details";
+  width: fit-content;
+  margin-top: 4px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: inherit;
+  padding: 2px 8px;
+  font-size: .72rem;
+  font-weight: 800;
+}
+
+.impact-compact[open] summary::after {
+  content: "Hide details";
+}
+
+.impact-detail-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.impact-detail-list .impact-item {
+  padding: 8px 9px;
+  box-shadow: none;
+}
+
+.impact-item strong,
+.impact-compact strong,
+.change-summary strong {
+  font-size: .86rem;
+}
+
+.impact-item span,
+.impact-compact span,
+.change-summary span,
+.summary-card p {
+  color: var(--muted);
+  font-size: .84rem;
+}
+
+.impact-danger {
+  border-color: #fca5a5;
+  background: var(--red-bg);
+}
+
+.impact-danger strong {
+  color: var(--red);
+}
+
+.impact-warning,
+.change-info {
+  border-color: #fde68a;
+  background: var(--amber-bg);
+}
+
+.impact-warning strong,
+.change-info strong {
+  color: var(--amber);
+}
+
+.impact-safe,
+.change-safe {
+  border-color: #86efac;
+  background: var(--green-bg);
+}
+
+.impact-safe strong,
+.change-safe strong {
+  color: var(--green);
+}
+
+.change-danger {
+  border-color: #fca5a5;
+  background: var(--red-bg);
+}
+
+.change-danger strong {
+  color: var(--red);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.summary-card h3 {
+  margin-bottom: 2px;
 }
 
 .switch {
@@ -1120,8 +1502,7 @@ tr:last-child td {
 }
 
 .direct-path {
-  display: flex;
-  align-items: center;
+  display: grid;
   gap: 10px;
   margin-top: 16px;
   border: 1px dashed #cbd5e1;
@@ -1129,11 +1510,33 @@ tr:last-child td {
   padding: 12px;
 }
 
-.direct-path::before,
-.direct-path::after {
-  content: "";
-  flex: 1;
-  border-top: 3px solid #cbd5e1;
+.direct-route {
+  display: grid;
+  grid-template-columns: auto minmax(80px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.direct-node {
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: #ffffff;
+  font-size: .78rem;
+  font-weight: 900;
+  line-height: 1;
+  padding: 7px 10px;
+}
+
+.direct-connector {
+  position: relative;
+  height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: .7;
+}
+
+.direct-path strong {
+  text-align: center;
 }
 
 .direct-path.risk {
@@ -1142,14 +1545,33 @@ tr:last-child td {
   background: var(--red-bg);
 }
 
-.direct-path.risk::before,
-.direct-path.risk::after {
-  border-color: var(--red);
+.direct-path.blocked {
+  border-color: #86efac;
+  color: var(--green);
+  background: var(--green-bg);
 }
 
-.direct-path.blocked {
-  color: var(--muted);
-  background: #f8fafc;
+.direct-path.blocked .direct-connector {
+  background: repeating-linear-gradient(
+    90deg,
+    currentColor 0,
+    currentColor 10px,
+    transparent 10px,
+    transparent 16px
+  );
+}
+
+.direct-path.blocked .direct-connector::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border: 3px solid currentColor;
+  border-radius: 999px;
+  background: #ffffff;
+  transform: translate(-50%, -50%);
 }
 
 .test-grid {
@@ -1351,6 +1773,26 @@ tr:last-child td {
 .segmented button[aria-pressed="true"] {
   color: #ffffff;
   background: var(--blue);
+}
+
+.config-tab-selector {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(170px, 1fr));
+  min-width: min(520px, 100%);
+}
+
+.config-tab-selector button {
+  display: grid;
+  gap: 4px;
+  min-height: 62px;
+  text-align: left;
+}
+
+.config-tab-selector button span {
+  color: inherit;
+  font-size: .78rem;
+  font-weight: 700;
+  opacity: .82;
 }
 
 .segmented button.danger-option[aria-pressed="true"] {
@@ -1634,6 +2076,8 @@ tr:last-child td {
   .grid-2,
   .grid-3,
   .module-grid,
+  .presenter-grid,
+  .summary-grid,
   .network-row,
   .test-grid,
   .finding-grid,
@@ -1697,6 +2141,27 @@ tr:last-child td {
     flex-direction: column;
   }
 
+  .presenter-current {
+    flex-direction: column;
+  }
+
+  .presenter-overview .presenter-step {
+    grid-template-columns: 1fr;
+  }
+
+  .presenter-overview .presenter-step .badge,
+  .presenter-overview .presenter-step h3,
+  .presenter-overview .presenter-step p,
+  .presenter-overview .presenter-step .btn {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .presenter-overview .presenter-step .btn {
+    width: 100%;
+    margin-top: 6px;
+  }
+
   .workbench-header {
     flex-direction: column;
   }
@@ -1734,5 +2199,17 @@ tr:last-child td {
   .role-select,
   .action-submit {
     width: 100%;
+  }
+
+  .presenter-dock,
+  .presenter-module-guide {
+    position: static;
+    width: auto;
+    max-height: none;
+    margin: 0 0 16px;
+  }
+
+  .presenter-dock-body {
+    max-height: none;
   }
 }

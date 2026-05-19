@@ -63,8 +63,8 @@
       </div>
 
       <div class="network-actions" style="margin-top:14px">
-        <button type="button" class="btn btn-safe" id="secure-preset">Apply secure preset</button>
-        <button type="button" class="btn btn-danger" id="risky-preset">Apply risky preset</button>
+        <button type="button" class="btn btn-safe" id="secure-preset">Apply secure baseline</button>
+        <button type="button" class="btn btn-danger" id="risky-preset">Start insecure demo</button>
       </div>
 
       <div class="network-board" aria-label="Network architecture simulation">
@@ -78,7 +78,12 @@
           <div class="network-node database-node"><strong>Database</strong><span id="db-network-state" class="muted">Public port exposed</span></div>
         </div>
         <div id="direct-path" class="direct-path risk">
-          <strong>Direct Internet -> Database path open</strong>
+          <div class="direct-route" aria-hidden="true">
+            <span class="direct-node">Internet</span>
+            <span class="direct-connector"></span>
+            <span class="direct-node">Database</span>
+          </div>
+          <strong>Direct database path open</strong>
         </div>
       </div>
 
@@ -281,17 +286,23 @@
       const current = state();
       const highRisk = current.exposed;
       const protectedState = current.internal && current.firewall && current.tls;
+      const directPathOpen = highRisk && !current.firewall;
 
       badge.textContent = protectedState ? "Protected" : highRisk ? "High risk" : "Medium risk";
       badge.className = protectedState ? "badge badge-safe" : highRisk ? "badge badge-danger" : "badge badge-warning";
       dbState.textContent = highRisk ? "Public port exposed" : "Internal network only";
       edgeDb.className = current.tls ? "network-edge allowed" : "network-edge warning";
-      directPath.className = highRisk && !current.firewall ? "direct-path risk" : "direct-path blocked";
-      directPath.innerHTML = highRisk && !current.firewall
-        ? "<strong>Direct Internet -> Database path open</strong>"
-        : "<strong>Direct Internet -> Database path blocked</strong>";
+      directPath.className = directPathOpen ? "direct-path risk" : "direct-path blocked";
+      directPath.innerHTML = `
+        <div class="direct-route" aria-hidden="true">
+          <span class="direct-node">Internet</span>
+          <span class="direct-connector"></span>
+          <span class="direct-node">Database</span>
+        </div>
+        <strong>${directPathOpen ? "Direct database path open" : "Direct database path blocked"}</strong>
+      `;
 
-      if (highRisk && !current.firewall) {
+      if (directPathOpen) {
         message.className = "notice notice-danger";
         message.innerHTML = "<h3>Public database exposure</h3><p>The red direct path means the database is reachable without going through the application. This is the most important control to fix first.</p>";
       } else if (!current.tls) {
@@ -333,5 +344,6 @@
     });
     render();
   </script>
+  <script src="/presenter.js"></script>
 </body>
 </html>

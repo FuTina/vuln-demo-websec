@@ -36,7 +36,7 @@
             download become clickable page elements. In safe mode, the exact same input stays visible as text.
           </p>
         </div>
-        <span id="render-badge" class="badge badge-danger">Vulnerable rendering</span>
+        <span id="render-badge" class="badge badge-danger">Vulnerable</span>
       </div>
     </section>
 
@@ -48,8 +48,8 @@
         </div>
         <div class="toolbar-actions">
           <div class="segmented" role="group" aria-label="Rendering mode">
-            <button id="vulnerable-render" class="danger-option" type="button" aria-pressed="true">Vulnerable rendering</button>
-            <button id="safe-render" class="safe-option" type="button" aria-pressed="false">Safe rendering</button>
+            <button id="vulnerable-render" class="danger-option" type="button" aria-pressed="true">Vulnerable</button>
+            <button id="safe-render" class="safe-option" type="button" aria-pressed="false">Protected</button>
           </div>
           <button type="button" id="clear-comments" class="btn btn-ghost">
             <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></span>
@@ -168,11 +168,11 @@
       const vulnerable = mode === "vulnerable";
       vulnerableButton.setAttribute("aria-pressed", String(vulnerable));
       safeButton.setAttribute("aria-pressed", String(!vulnerable));
-      badge.textContent = vulnerable ? "Vulnerable rendering" : "Safe rendering";
+      badge.textContent = vulnerable ? "Vulnerable" : "Protected";
       badge.className = vulnerable ? "badge badge-danger" : "badge badge-safe";
       outputMode.textContent = vulnerable ? "innerHTML" : "textContent";
       outputMode.className = vulnerable ? "badge badge-danger" : "badge badge-safe";
-      renderButtonText.textContent = vulnerable ? "Render in vulnerable mode" : "Render in safe mode";
+      renderButtonText.textContent = vulnerable ? "Render in vulnerable mode" : "Render in protected mode";
       renderButton.className = vulnerable ? "btn btn-danger" : "btn btn-safe";
       renderButton.classList.add("action-submit");
     }
@@ -211,5 +211,6 @@
     safeButton.addEventListener("click", () => setMode("safe"));
     setMode("vulnerable");
   </script>
+  <script src="/presenter.js"></script>
 </body>
 </html>

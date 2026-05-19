@@ -1,0 +1,64 @@
+services:
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: "5173"
+      HOST: "0.0.0.0"
+      DB_CLIENT: postgres
+      SQLITE_FILE: /app/data/data.db
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: playground
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_app_password
+    ports:
+      - "5173:5173"
+    secrets:
+      - postgres_app_password
+    volumes:
+      - app-data:/app/data
+    networks:
+      - frontend
+      - backend
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: playground
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_admin_password
+    expose:
+      - "5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./docker/postgres/conf/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d playground"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    secrets:
+      - postgres_admin_password
+      - postgres_app_password
+    networks:
+      - backend
+
+secrets:
+  postgres_admin_password:
+    file: ./secrets/postgres_admin_password.txt
+  postgres_app_password:
+    file: ./secrets/postgres_app_password.txt
+
+volumes:
+  app-data:
+  postgres-data:
+
+networks:
+  frontend:
+  backend:
+    internal: true

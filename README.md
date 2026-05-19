@@ -29,6 +29,33 @@ Open:
 http://localhost:5173
 ```
 
+## Docker Database Mode
+
+The app still runs with SQLite by default for the fastest local demo path. Docker Compose runs the same app with a connected PostgreSQL database service:
+
+- `docker-compose.yml` - isolated app and PostgreSQL services on separate networks.
+- `config-examples/postgres/risky` - intentionally risky example files.
+- `config-examples/postgres/hardened` - hardened reference files used by `/config.html`.
+- `secrets.example` - example secret files; copy these to `secrets/` before running Compose.
+
+```bash
+mkdir -p secrets
+cp secrets.example/* secrets/
+docker compose up --build
+```
+
+Check the active database client:
+
+```bash
+curl http://localhost:5173/healthz
+```
+
+Open:
+
+```text
+http://localhost:5173/config.html
+```
+
 ## Pages
 
 - `/` - landing page with module cards and a dynamic security control panel.

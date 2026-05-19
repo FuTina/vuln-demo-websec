@@ -1,0 +1,26 @@
+services:
+  app:
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_app_password
+    secrets:
+      - postgres_app_password
+    networks:
+      - frontend
+      - backend
+
+  postgres:
+    image: postgres:16-alpine
+    expose:
+      - "5432"
+    secrets:
+      - postgres_admin_password
+      - postgres_app_password
+    networks:
+      - backend
+
+networks:
+  frontend:
+  backend:
+    internal: true

@@ -6,11 +6,12 @@
   "scripts": {
     "start": "node server.js"
   },
-    "engines": {
-    "node": "18.x"
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "express": "^5.1.0",
+    "pg": "^8.21.0",
     "sqlite3": "^5.1.7"
   }
 }

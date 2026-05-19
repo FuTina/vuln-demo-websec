@@ -76,7 +76,7 @@
       <h2>Bad defaults move toward safer settings</h2>
       <div class="preview-grid">
         <div>
-          <h3>Bad example</h3>
+          <h3>Pseudo baseline</h3>
           <pre class="query-box">DB_USER=root
 DB_PASSWORD=root
 DB_PORT=3306 exposed
@@ -85,11 +85,43 @@ TLS=false
 AUDIT_LOGGING=false</pre>
         </div>
         <div>
-          <h3>Current preview</h3>
+          <h3>Current pseudo preview</h3>
           <pre id="config-preview" class="query-box"></pre>
         </div>
       </div>
       <div id="blocker-note" class="notice notice-warning" style="margin-top:14px"></div>
+    </section>
+
+    <section class="module-section">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Real files</p>
+          <h2>Compare risky and hardened database examples</h2>
+          <p class="muted">These snippets are loaded from project files under <code>config-examples</code>.</p>
+        </div>
+        <span id="config-file-engine" class="badge badge-role">Config examples</span>
+      </div>
+      <div id="config-file-tabs" class="segmented" role="group" aria-label="Configuration file type"></div>
+      <div class="file-compare-grid" style="margin-top:14px">
+        <section>
+          <div class="file-heading">
+            <h3>Risky file</h3>
+            <span id="risky-file-path" class="small muted"></span>
+          </div>
+          <pre id="risky-file-preview" class="query-box"></pre>
+        </section>
+        <section>
+          <div class="file-heading">
+            <h3>Hardened file</h3>
+            <span id="hardened-file-path" class="small muted"></span>
+          </div>
+          <pre id="hardened-file-preview" class="query-box"></pre>
+        </section>
+      </div>
+      <div id="config-file-note" class="notice notice-info" style="margin-top:14px">
+        <h3>Why this matters</h3>
+        <p>The checkboxes above summarize controls; this comparison shows how those controls look in real supporting files.</p>
+      </div>
     </section>
 
     <section class="module-section">
@@ -167,7 +199,16 @@ AUDIT_LOGGING=false</pre>
     const blockerNote = document.getElementById("blocker-note");
     const findingGrid = document.getElementById("finding-grid");
     const deployDecision = document.getElementById("deploy-decision");
+    const fileTabs = document.getElementById("config-file-tabs");
+    const fileEngine = document.getElementById("config-file-engine");
+    const riskyFilePath = document.getElementById("risky-file-path");
+    const hardenedFilePath = document.getElementById("hardened-file-path");
+    const riskyFilePreview = document.getElementById("risky-file-preview");
+    const hardenedFilePreview = document.getElementById("hardened-file-preview");
+    const fileNote = document.getElementById("config-file-note");
     const weights = { user: 14, privilege: 16, network: 16, tls: 10, audit: 10, backups: 12, secrets: 18 };
+    let configFiles = [];
+    let activeFileId = "env";
     const controls = {
       user: {
         title: "Default/root user",
@@ -266,6 +307,43 @@ AUDIT_LOGGING=false</pre>
       }
     }
 
+    function renderConfigFile(file) {
+      activeFileId = file.id;
+      fileTabs.querySelectorAll("button").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.file === file.id));
+      });
+      riskyFilePath.textContent = file.riskyPath;
+      hardenedFilePath.textContent = file.hardenedPath;
+      riskyFilePreview.textContent = file.risky.trim();
+      hardenedFilePreview.textContent = file.hardened.trim();
+      fileNote.className = "notice notice-info";
+      fileNote.innerHTML = `<h3>${file.label}</h3><p>The left side shows the kind of shortcut that creates risk; the right side shows the hardened reference file.</p>`;
+    }
+
+    async function loadConfigFiles() {
+      try {
+        const response = await fetch("/api/config-examples");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        configFiles = data.files;
+        fileEngine.textContent = data.engine;
+        fileTabs.innerHTML = "";
+        configFiles.forEach((file) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.file = file.id;
+          button.textContent = file.label;
+          button.setAttribute("aria-pressed", "false");
+          button.addEventListener("click", () => renderConfigFile(file));
+          fileTabs.appendChild(button);
+        });
+        renderConfigFile(configFiles.find((file) => file.id === activeFileId) || configFiles[0]);
+      } catch (err) {
+        fileNote.className = "notice notice-danger";
+        fileNote.innerHTML = `<h3>Could not load config examples</h3><p>${String(err)}</p>`;
+      }
+    }
+
     function render() {
       const keys = selected();
       const reduction = keys.reduce((total, key) => total + weights[key], 0);
@@ -334,6 +412,7 @@ AUDIT_LOGGING=false</pre>
     document.getElementById("apply-baseline").addEventListener("click", () => setAllControls(true));
     document.getElementById("apply-risky").addEventListener("click", () => setAllControls(false));
     render();
+    loadConfigFiles();
   </script>
 </body>
 </html>

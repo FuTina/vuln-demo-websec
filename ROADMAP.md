@@ -14,9 +14,9 @@
 
 ## Phase 3
 
-- Add Docker Compose with isolated app and database services.
-- Add MariaDB or PostgreSQL option beside SQLite.
+- Implemented: Add Docker Compose with isolated app and PostgreSQL services.
+- Implemented: Add real PostgreSQL configuration comparison using example config files.
+- Add optional PostgreSQL runtime adapter beside SQLite demo mode.
 - Add Redis security module for unauthenticated access, protected mode, and secrets.
-- Add real configuration comparison using example config files.
 - Add presenter mode that guides the 5-minute demo path.
 - Add browser-level interaction tests for each module.

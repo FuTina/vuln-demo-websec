@@ -256,6 +256,19 @@ h3 {
   margin-top: 18px;
 }
 
+.security-takeaway {
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  box-shadow: inset 4px 0 0 var(--blue);
+}
+
+.security-takeaway h2 {
+  margin-bottom: 8px;
+  color: var(--blue-dark);
+  font-size: 1.08rem;
+}
+
 .module-kicker {
   margin-bottom: 6px;
   color: var(--blue-dark);

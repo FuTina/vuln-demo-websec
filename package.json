@@ -4,7 +4,8 @@
   "description": "Mini demo: SQLi & XSS (vulnerable vs safe) + role-based masking. For local educational use only.",
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node scripts/smoke-test.js"
   },
   "engines": {
     "node": ">=18"

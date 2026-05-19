@@ -38,6 +38,11 @@ const CONFIG_EXAMPLES = {
     risky: "config-examples/postgres/risky/grants.sql",
     hardened: "config-examples/postgres/hardened/grants.sql",
   },
+  hba: {
+    label: "Connection policy",
+    risky: "config-examples/postgres/risky/pg_hba.conf",
+    hardened: "config-examples/postgres/hardened/pg_hba.conf",
+  },
 };
 
 sqlite3.verbose();
@@ -94,6 +99,7 @@ async function dbRun(sql, params = []) {
 
 function initConnection() {
   if (DB_CLIENT === "postgres") {
+    const sslMode = process.env.POSTGRES_SSLMODE || "disable";
     pgPool = new Pool({
       connectionString: process.env.DATABASE_URL,
       host: process.env.POSTGRES_HOST,
@@ -102,6 +108,7 @@ function initConnection() {
       user: process.env.POSTGRES_USER || "app_user",
       password: readSecret("POSTGRES_PASSWORD_FILE", "POSTGRES_PASSWORD"),
       options: "-c search_path=app,public",
+      ssl: sslMode === "disable" ? false : { rejectUnauthorized: false },
     });
     return;
   }

@@ -40,6 +40,20 @@
     </section>
 
     <section class="module-section">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Configuration areas</p>
+          <h2>Choose the part of the configuration to inspect</h2>
+        </div>
+        <div id="config-tabs" class="segmented" role="group" aria-label="Configuration area">
+          <button type="button" data-config-tab="baseline" aria-pressed="true">Baseline review</button>
+          <button type="button" data-config-tab="postgres" aria-pressed="false">Postgres runtime</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="config-tab-baseline" class="config-tab-panel">
+    <section class="module-section">
       <p class="module-kicker">Try it yourself</p>
       <h2>Build a safer database baseline</h2>
       <div class="network-actions" style="margin-bottom:14px">
@@ -90,38 +104,6 @@ AUDIT_LOGGING=false</pre>
         </div>
       </div>
       <div id="blocker-note" class="notice notice-warning" style="margin-top:14px"></div>
-    </section>
-
-    <section class="module-section">
-      <div class="module-header">
-        <div>
-          <p class="module-kicker">Real files</p>
-          <h2>Compare risky and hardened database examples</h2>
-          <p class="muted">These snippets are loaded from project files under <code>config-examples</code>.</p>
-        </div>
-        <span id="config-file-engine" class="badge badge-role">Config examples</span>
-      </div>
-      <div id="config-file-tabs" class="segmented" role="group" aria-label="Configuration file type"></div>
-      <div class="file-compare-grid" style="margin-top:14px">
-        <section>
-          <div class="file-heading">
-            <h3>Risky file</h3>
-            <span id="risky-file-path" class="small muted"></span>
-          </div>
-          <pre id="risky-file-preview" class="query-box"></pre>
-        </section>
-        <section>
-          <div class="file-heading">
-            <h3>Hardened file</h3>
-            <span id="hardened-file-path" class="small muted"></span>
-          </div>
-          <pre id="hardened-file-preview" class="query-box"></pre>
-        </section>
-      </div>
-      <div id="config-file-note" class="notice notice-info" style="margin-top:14px">
-        <h3>Why this matters</h3>
-        <p>The checkboxes above summarize controls; this comparison shows how those controls look in real supporting files.</p>
-      </div>
     </section>
 
     <section class="module-section">
@@ -176,6 +158,95 @@ AUDIT_LOGGING=false</pre>
       <p class="module-kicker">Best practice takeaway</p>
       <h2>Make the secure database configuration the normal configuration.</h2>
     </section>
+    </div>
+
+    <div id="config-tab-postgres" class="config-tab-panel hidden">
+    <section class="module-section">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Postgres runtime</p>
+          <h2>Connected database mode</h2>
+          <p class="muted">
+            This is a read-only playground view of the running demo and its reference configuration. It does not start or change containers.
+          </p>
+        </div>
+        <span id="db-status-badge" class="badge badge-warning">Checking database</span>
+      </div>
+      <div class="grid grid-2">
+        <div id="db-runtime" class="result-box result-warning">
+          <h3>Waiting for health check</h3>
+          <p class="muted">The page checks <code>/healthz</code> to see which database client is active.</p>
+        </div>
+        <div class="result-box result-safe">
+          <h3>Expected Docker state</h3>
+          <p class="muted">Docker Compose should run the app with <code>client=postgres</code>. Plain <code>npm start</code> intentionally uses SQLite for the quickest local demo path.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">Postgres hardening</p>
+      <h2>What is enabled in the demo container</h2>
+      <div class="finding-grid">
+        <article class="finding-card is-fixed">
+          <div class="finding-head"><span class="badge badge-safe">Enabled</span><strong>Private DB network</strong></div>
+          <p>Postgres is only exposed to Docker's internal backend network; port 5432 is not published to the host.</p>
+        </article>
+        <article class="finding-card is-fixed">
+          <div class="finding-head"><span class="badge badge-safe">Enabled</span><strong>TLS-only TCP</strong></div>
+          <p><code>pg_hba.conf</code> rejects <code>hostnossl</code> and only allows <code>hostssl</code> connections with SCRAM authentication.</p>
+        </article>
+        <article class="finding-card is-fixed">
+          <div class="finding-head"><span class="badge badge-safe">Enabled</span><strong>Secrets outside Compose</strong></div>
+          <p>App and admin passwords are loaded from Docker secret files instead of being hardcoded in Compose.</p>
+        </article>
+        <article class="finding-card is-fixed">
+          <div class="finding-head"><span class="badge badge-safe">Enabled</span><strong>Least privilege role</strong></div>
+          <p>The application connects as <code>app_user</code> with scoped grants, not as the Postgres admin role.</p>
+        </article>
+        <article class="finding-card is-fixed">
+          <div class="finding-head"><span class="badge badge-safe">Enabled</span><strong>Container restrictions</strong></div>
+          <p>Compose applies read-only filesystems, tmpfs runtime paths, dropped capabilities, <code>no-new-privileges</code>, and process limits.</p>
+        </article>
+        <article class="finding-card is-warning">
+          <div class="finding-head"><span class="badge badge-warning">Demo caveat</span><strong>Self-signed certificate</strong></div>
+          <p>TLS encryption is enforced, but certificate trust is relaxed for this local demo. Production should verify a trusted CA.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Config files</p>
+          <h2>Compare risky and hardened Postgres files</h2>
+          <p class="muted">These snippets are loaded from <code>config-examples/postgres</code> and are shown for explanation only.</p>
+        </div>
+        <span id="config-file-engine" class="badge badge-role">Config examples</span>
+      </div>
+      <div id="config-file-tabs" class="segmented" role="group" aria-label="Configuration file type"></div>
+      <div class="file-compare-grid" style="margin-top:14px">
+        <section>
+          <div class="file-heading">
+            <h3>Risky file</h3>
+            <span id="risky-file-path" class="small muted"></span>
+          </div>
+          <pre id="risky-file-preview" class="query-box"></pre>
+        </section>
+        <section>
+          <div class="file-heading">
+            <h3>Hardened file</h3>
+            <span id="hardened-file-path" class="small muted"></span>
+          </div>
+          <pre id="hardened-file-preview" class="query-box"></pre>
+        </section>
+      </div>
+      <div id="config-file-note" class="notice notice-info" style="margin-top:14px">
+        <h3>Why this matters</h3>
+        <p>Use the file tabs to compare how networking, TLS, grants, and secrets differ between risky and hardened setups.</p>
+      </div>
+    </section>
+    </div>
   </main>
 
   <footer class="footer">Database Security Playground - secure configuration module.</footer>
@@ -188,6 +259,11 @@ AUDIT_LOGGING=false</pre>
       });
     })();
 
+    const tabButtons = Array.from(document.querySelectorAll("[data-config-tab]"));
+    const tabPanels = {
+      baseline: document.getElementById("config-tab-baseline"),
+      postgres: document.getElementById("config-tab-postgres")
+    };
     const checklist = document.getElementById("checklist");
     const score = document.getElementById("config-score");
     const meter = document.getElementById("config-meter");
@@ -199,6 +275,8 @@ AUDIT_LOGGING=false</pre>
     const blockerNote = document.getElementById("blocker-note");
     const findingGrid = document.getElementById("finding-grid");
     const deployDecision = document.getElementById("deploy-decision");
+    const statusBadge = document.getElementById("db-status-badge");
+    const runtime = document.getElementById("db-runtime");
     const fileTabs = document.getElementById("config-file-tabs");
     const fileEngine = document.getElementById("config-file-engine");
     const riskyFilePath = document.getElementById("risky-file-path");
@@ -207,8 +285,8 @@ AUDIT_LOGGING=false</pre>
     const hardenedFilePreview = document.getElementById("hardened-file-preview");
     const fileNote = document.getElementById("config-file-note");
     const weights = { user: 14, privilege: 16, network: 16, tls: 10, audit: 10, backups: 12, secrets: 18 };
-    let configFiles = [];
-    let activeFileId = "env";
+    let activeFileId = "compose";
+    let postgresLoaded = false;
     const controls = {
       user: {
         title: "Default/root user",
@@ -297,50 +375,13 @@ AUDIT_LOGGING=false</pre>
     function renderDeployDecision(risk, blockers) {
       if (blockers.length > 0) {
         deployDecision.className = "deploy-decision deploy-blocked";
-        deployDecision.innerHTML = `<strong>Deployment blocked</strong><span>${blockers.length} critical blocker${blockers.length > 1 ? "s" : ""} must be fixed first.</span>`;
+        deployDecision.innerHTML = `<strong>Configuration blocked</strong><span>${blockers.length} critical blocker${blockers.length > 1 ? "s" : ""} must be fixed first.</span>`;
       } else if (risk >= 40) {
         deployDecision.className = "deploy-decision deploy-review";
         deployDecision.innerHTML = "<strong>Security review required</strong><span>Critical blockers are gone, but resilience or visibility gaps remain.</span>";
       } else {
         deployDecision.className = "deploy-decision deploy-approved";
         deployDecision.innerHTML = "<strong>Baseline approved for demo</strong><span>Critical blockers are removed and operational controls are in place.</span>";
-      }
-    }
-
-    function renderConfigFile(file) {
-      activeFileId = file.id;
-      fileTabs.querySelectorAll("button").forEach((button) => {
-        button.setAttribute("aria-pressed", String(button.dataset.file === file.id));
-      });
-      riskyFilePath.textContent = file.riskyPath;
-      hardenedFilePath.textContent = file.hardenedPath;
-      riskyFilePreview.textContent = file.risky.trim();
-      hardenedFilePreview.textContent = file.hardened.trim();
-      fileNote.className = "notice notice-info";
-      fileNote.innerHTML = `<h3>${file.label}</h3><p>The left side shows the kind of shortcut that creates risk; the right side shows the hardened reference file.</p>`;
-    }
-
-    async function loadConfigFiles() {
-      try {
-        const response = await fetch("/api/config-examples");
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        configFiles = data.files;
-        fileEngine.textContent = data.engine;
-        fileTabs.innerHTML = "";
-        configFiles.forEach((file) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.dataset.file = file.id;
-          button.textContent = file.label;
-          button.setAttribute("aria-pressed", "false");
-          button.addEventListener("click", () => renderConfigFile(file));
-          fileTabs.appendChild(button);
-        });
-        renderConfigFile(configFiles.find((file) => file.id === activeFileId) || configFiles[0]);
-      } catch (err) {
-        fileNote.className = "notice notice-danger";
-        fileNote.innerHTML = `<h3>Could not load config examples</h3><p>${String(err)}</p>`;
       }
     }
 
@@ -408,11 +449,83 @@ AUDIT_LOGGING=false</pre>
       }
     }
 
+    async function loadHealth() {
+      try {
+        const response = await fetch("/healthz");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const health = await response.json();
+        const postgres = health.client === "postgres";
+        statusBadge.textContent = postgres ? "Postgres connected" : "SQLite local mode";
+        statusBadge.className = postgres ? "badge badge-safe" : "badge badge-warning";
+        runtime.className = postgres ? "result-box result-safe" : "result-box result-warning";
+        runtime.innerHTML = `<h3>${postgres ? "Postgres is active" : "SQLite is active"}</h3><p class="muted">Health check returned <code>client=${health.client}</code> and <code>db=${health.db}</code>.</p>`;
+      } catch (err) {
+        statusBadge.textContent = "Health check failed";
+        statusBadge.className = "badge badge-danger";
+        runtime.className = "result-box result-danger";
+        runtime.innerHTML = `<h3>Could not check database</h3><p class="muted">${String(err)}</p>`;
+      }
+    }
+
+    function renderConfigFile(file) {
+      activeFileId = file.id;
+      fileTabs.querySelectorAll("button").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.file === file.id));
+      });
+      riskyFilePath.textContent = file.riskyPath;
+      hardenedFilePath.textContent = file.hardenedPath;
+      riskyFilePreview.textContent = file.risky.trim();
+      hardenedFilePreview.textContent = file.hardened.trim();
+      fileNote.className = "notice notice-info";
+      fileNote.innerHTML = `<h3>${file.label}</h3><p>The left side shows the shortcut that creates risk; the right side shows the hardened reference used by this demo.</p>`;
+    }
+
+    async function loadConfigFiles() {
+      try {
+        const response = await fetch("/api/config-examples");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        fileEngine.textContent = data.engine;
+        fileTabs.innerHTML = "";
+        data.files.forEach((file) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.file = file.id;
+          button.textContent = file.label;
+          button.setAttribute("aria-pressed", "false");
+          button.addEventListener("click", () => renderConfigFile(file));
+          fileTabs.appendChild(button);
+        });
+        renderConfigFile(data.files.find((file) => file.id === activeFileId) || data.files[0]);
+      } catch (err) {
+        fileNote.className = "notice notice-danger";
+        fileNote.innerHTML = `<h3>Could not load config examples</h3><p>${String(err)}</p>`;
+      }
+    }
+
+    function loadPostgresTab() {
+      postgresLoaded = true;
+      loadHealth();
+      loadConfigFiles();
+    }
+
+    function setConfigTab(tab) {
+      tabButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.configTab === tab));
+      });
+      Object.entries(tabPanels).forEach(([key, panel]) => {
+        panel.classList.toggle("hidden", key !== tab);
+      });
+      if (tab === "postgres" && !postgresLoaded) loadPostgresTab();
+    }
+
     checklist.addEventListener("change", render);
     document.getElementById("apply-baseline").addEventListener("click", () => setAllControls(true));
     document.getElementById("apply-risky").addEventListener("click", () => setAllControls(false));
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", () => setConfigTab(button.dataset.configTab));
+    });
     render();
-    loadConfigFiles();
   </script>
 </body>
 </html>

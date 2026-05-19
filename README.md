@@ -35,8 +35,11 @@ The app still runs with SQLite by default for the fastest local demo path. Docke
 
 - `docker-compose.yml` - isolated app and PostgreSQL services on separate networks.
 - `config-examples/postgres/risky` - intentionally risky example files.
-- `config-examples/postgres/hardened` - hardened reference files used by `/config.html`.
+- `config-examples/postgres/hardened` - hardened reference files used by the Postgres tab on `/config.html`.
 - `secrets.example` - example secret files; copy these to `secrets/` before running Compose.
+
+The PostgreSQL container uses a self-signed demo certificate and `pg_hba.conf` rejects non-TLS TCP connections. This is suitable for the local security demo, not a production certificate pattern.
+The Compose file also applies demo-friendly container hardening: no published Postgres port, internal backend network, dropped Linux capabilities, read-only filesystems, tmpfs runtime directories, `no-new-privileges`, and process limits.
 
 ```bash
 mkdir -p secrets
@@ -64,7 +67,7 @@ http://localhost:5173/config.html
 - `/xss.html` - Cross-Site Scripting module.
 - `/audit.html` - database audit logging module.
 - `/network.html` - database network exposure module.
-- `/config.html` - secure database configuration module.
+- `/config.html` - secure database configuration module, including the Postgres runtime and hardening tab.
 
 ## Suggested Demo Flow
 

@@ -41,12 +41,26 @@
     </section>
 
     <section class="module-section">
-      <p class="module-kicker">Try it yourself</p>
-      <h2>Attempt a login</h2>
+      <div class="workbench-header">
+        <div>
+          <p class="module-kicker">Try it yourself</p>
+          <h2>Attempt a login</h2>
+        </div>
+        <div class="toolbar-actions">
+          <div class="segmented" role="group" aria-label="SQL mode">
+            <button id="vulnerable-mode" class="danger-option" type="button" aria-pressed="true">Vulnerable mode</button>
+            <button id="protected-mode" class="safe-option" type="button" aria-pressed="false">Protected mode</button>
+          </div>
+          <button type="button" id="reset" class="btn btn-ghost">
+            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg></span>
+            Reset
+          </button>
+        </div>
+      </div>
 
-      <div class="interaction-grid">
+      <div class="workflow-grid">
         <div class="input-panel">
-          <h3>1. Enter credentials</h3>
+          <h3>Credentials</h3>
           <form id="login-form" class="stack">
             <div class="grid grid-2">
               <label>
@@ -58,32 +72,20 @@
                 <input id="password" class="input" value="wrong-password" autocomplete="off" />
               </label>
             </div>
-            <div class="examples" aria-label="Example payloads">
-              <span class="small muted">Optional examples:</span>
-              <button type="button" class="btn btn-chip" data-user="alice" data-pass="correct-horse">Valid login</button>
-              <button type="button" class="btn btn-chip" data-user="alice" data-pass="wrong-password">Wrong password</button>
-              <button type="button" class="btn btn-risk" data-user="alice' --" data-pass="anything">Bypass username</button>
-              <button type="button" class="btn btn-risk" data-user="' OR '1'='1'--" data-pass="anything">Return first user</button>
+            <div>
+              <p class="small muted choice-label">Optional examples</p>
+              <div class="choice-grid" aria-label="Example payloads">
+                <button type="button" class="choice-card choice-safe" data-user="alice" data-pass="DB-Schutz!27-Fokus#91"><strong>Valid BSI-style login</strong><span>alice / DB-Schutz!27-Fokus#91</span></button>
+                <button type="button" class="choice-card choice-neutral" data-user="alice" data-pass="wrong-password"><strong>Wrong password</strong><span>Normal failed login.</span></button>
+                <button type="button" class="choice-card choice-danger" data-user="alice' --" data-pass="anything"><strong>Comment-out bypass</strong><span>Works when login SQL is concatenated.</span></button>
+                <button type="button" class="choice-card choice-danger" data-user="' OR '1'='1'--" data-pass="anything"><strong>Always-true condition</strong><span>Changes vulnerable WHERE logic.</span></button>
+              </div>
             </div>
-          </form>
-        </div>
-
-        <div class="action-panel">
-          <h3>2. Choose mode and run</h3>
-          <div class="segmented" role="group" aria-label="SQL mode">
-            <button id="vulnerable-mode" class="danger-option" type="button" aria-pressed="true">Vulnerable mode</button>
-            <button id="protected-mode" class="safe-option" type="button" aria-pressed="false">Protected mode</button>
-          </div>
-          <div class="controls" style="margin-top:14px">
-            <button type="submit" form="login-form" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary action-submit">
               <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
               Run login check
             </button>
-            <button type="button" id="reset" class="btn btn-ghost">
-              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg></span>
-              Reset
-            </button>
-          </div>
+          </form>
         </div>
       </div>
 
@@ -113,20 +115,35 @@
     <section class="module-section">
       <p class="module-kicker">What changed?</p>
       <h2>String concatenation lets input become SQL logic</h2>
-      <div class="split-note">
-        <div class="comparison-card">
-          <span class="badge badge-danger">Vulnerable</span>
-          <p>
-            The login builds one SQL string with user-controlled text. Payloads such as <code>alice' --</code> can
-            comment out the password check, so the wrong password still grants access.
-          </p>
+      <div class="explain-layout">
+        <div class="explainer-visual" aria-hidden="true">
+          <div class="visual-title">Query boundary</div>
+          <div class="visual-stack">
+            <div class="visual-node"><strong>User input</strong><span>alice' --</span></div>
+            <div class="visual-arrow">-></div>
+            <div class="visual-node"><strong>Vulnerable SQL</strong><span>Input becomes logic</span></div>
+            <div class="visual-pill-row">
+              <span class="visual-pill danger">Password check skipped</span>
+              <span class="visual-pill safe">Prepared statement keeps value separate</span>
+            </div>
+          </div>
         </div>
-        <div class="comparison-card">
-          <span class="badge badge-safe">Protected</span>
-          <p>
-            The login keeps SQL structure fixed with placeholders. The same payload is handled as a literal username,
-            so it does not alter the query and the login fails.
-          </p>
+        <div class="split-note">
+          <div class="comparison-card">
+            <span class="badge badge-danger">Vulnerable</span>
+            <p>
+              The login builds one SQL string with user-controlled text. Payloads such as <code>alice' --</code> can
+              comment out the password check in vulnerable string-built SQL. The same class of bug can appear in any
+              language when values are concatenated into SQL.
+            </p>
+          </div>
+          <div class="comparison-card">
+            <span class="badge badge-safe">Protected</span>
+            <p>
+              The login keeps SQL structure fixed with placeholders. The same payload is handled as a literal username,
+              so it does not alter the query and the login fails.
+            </p>
+          </div>
         </div>
       </div>
     </section>
@@ -135,8 +152,9 @@
       <p class="module-kicker">Security control that fixes it</p>
       <h2>Use prepared statements for every database query</h2>
       <p>
-        Prepared statements separate SQL code from values. Validation and rate limits still matter, but they do not
-        replace parameterized queries.
+        Prepared statements separate SQL code from values. The defense exists across common stacks such as Node.js,
+        PHP, Python, Java, C#, Ruby, and Go. Validation and rate limits still matter, but they do not replace
+        parameterized queries.
       </p>
     </section>
 
@@ -158,7 +176,7 @@
     })();
 
     const users = [
-      { id: 1, username: "alice", password: "correct-horse", role: "admin", email: "alice@example.com" },
+      { id: 1, username: "alice", password: "DB-Schutz!27-Fokus#91", role: "admin", email: "alice@example.com" },
       { id: 2, username: "bob", password: "builder", role: "analyst", email: "bob@example.com" },
       { id: 3, username: "charlie", password: "demo-pass", role: "app_user", email: "charlie@example.com" }
     ];

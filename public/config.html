@@ -32,7 +32,7 @@
           <p class="module-kicker">Scenario</p>
           <h1>Secure Database Configuration</h1>
           <p>
-            Check hardening controls and watch the configuration preview, risk score, and explanation update immediately.
+            Review a risky database baseline, approve hardening controls, and decide whether this configuration can ship.
           </p>
         </div>
         <span id="config-badge" class="badge badge-warning">Needs hardening</span>
@@ -42,16 +42,20 @@
     <section class="module-section">
       <p class="module-kicker">Try it yourself</p>
       <h2>Build a safer database baseline</h2>
+      <div class="network-actions" style="margin-bottom:14px">
+        <button type="button" class="btn btn-safe" id="apply-baseline">Apply production baseline</button>
+        <button type="button" class="btn btn-danger" id="apply-risky">Revert to risky defaults</button>
+      </div>
       <div class="grid grid-2">
         <div>
           <div class="checklist" id="checklist">
-            <label class="check-item"><input type="checkbox" data-key="user" /> Dedicated DB user</label>
-            <label class="check-item"><input type="checkbox" data-key="privilege" /> Least privilege grants</label>
-            <label class="check-item"><input type="checkbox" data-key="network" /> No public DB port</label>
-            <label class="check-item"><input type="checkbox" data-key="tls" /> TLS enabled</label>
-            <label class="check-item"><input type="checkbox" data-key="audit" /> Audit logging enabled</label>
-            <label class="check-item"><input type="checkbox" data-key="backups" /> Backups configured</label>
-            <label class="check-item"><input type="checkbox" data-key="secrets" /> Secrets not hardcoded</label>
+            <label class="check-item"><input type="checkbox" data-key="user" /><span><strong>Dedicated DB user</strong><span>Replace root/default login with an application identity.</span></span></label>
+            <label class="check-item"><input type="checkbox" data-key="privilege" /><span><strong>Least privilege grants</strong><span>Limit the app user to required schemas and operations.</span></span></label>
+            <label class="check-item"><input type="checkbox" data-key="network" /><span><strong>No public DB port</strong><span>Bind the listener to a private network path only.</span></span></label>
+            <label class="check-item"><input type="checkbox" data-key="tls" /><span><strong>TLS enabled</strong><span>Require encrypted database connections.</span></span></label>
+            <label class="check-item"><input type="checkbox" data-key="audit" /><span><strong>Audit logging enabled</strong><span>Record authentication, access, export, and privilege events.</span></span></label>
+            <label class="check-item"><input type="checkbox" data-key="backups" /><span><strong>Backups configured</strong><span>Enable scheduled backups and restore testing.</span></span></label>
+            <label class="check-item"><input type="checkbox" data-key="secrets" /><span><strong>Secrets not hardcoded</strong><span>Move credentials to environment or a secret manager.</span></span></label>
           </div>
         </div>
         <div id="config-result" class="result-box result-warning">
@@ -59,6 +63,7 @@
           <div class="risk-score" aria-live="polite"><strong id="config-score">100</strong><span class="muted">/ 100</span></div>
           <div class="meter" aria-hidden="true"><span id="config-meter"></span></div>
           <p id="config-explanation" class="muted" style="margin-top:12px"></p>
+          <div id="deploy-decision" class="deploy-decision" aria-live="polite"></div>
           <p class="small muted" style="margin-top:10px">
             Demo heuristic, not a formal risk model. Critical blockers keep the status elevated.
           </p>
@@ -88,26 +93,51 @@ AUDIT_LOGGING=false</pre>
     </section>
 
     <section class="module-section">
+      <p class="module-kicker">Configuration review</p>
+      <h2>Findings update from the selected controls</h2>
+      <div id="finding-grid" class="finding-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="module-section">
       <p class="module-kicker">What happens?</p>
       <h2>Secure configuration turns risky defaults into explicit controls</h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Risky default</th><th>Safer control</th><th>Effect</th></tr></thead>
-          <tbody>
-            <tr><td>Default/root user</td><td>Dedicated app user</td><td>Limits blast radius.</td></tr>
-            <tr><td>Broad privileges</td><td>Least privilege</td><td>Reduces abuse if credentials leak.</td></tr>
-            <tr><td>No TLS</td><td>TLS</td><td>Protects traffic in transit.</td></tr>
-            <tr><td>No backups</td><td>Tested backups</td><td>Supports recovery.</td></tr>
-            <tr><td>No monitoring</td><td>Audit logs and metrics</td><td>Makes incidents visible.</td></tr>
-            <tr><td>Plain secrets</td><td>Secret management</td><td>Supports rotation and reduces leakage.</td></tr>
-          </tbody>
-        </table>
+      <div class="explain-layout">
+        <div class="explainer-visual" aria-hidden="true">
+          <div class="visual-title">Baseline controls</div>
+          <div class="visual-stack">
+            <div class="visual-table">
+              <div><span>root user</span><strong class="visual-hidden">Replace</strong></div>
+              <div><span>public port</span><strong class="visual-hidden">Close</strong></div>
+              <div><span>plain secret</span><strong class="visual-hidden">Move</strong></div>
+              <div><span>TLS + backups</span><strong class="visual-safe">Enable</strong></div>
+            </div>
+            <div class="visual-pill-row">
+              <span class="visual-pill safe">Least privilege</span>
+              <span class="visual-pill safe">Secret manager</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Risky default</th><th>Safer control</th><th>Effect</th></tr></thead>
+              <tbody>
+                <tr><td>Default/root user</td><td>Dedicated app user</td><td>Limits blast radius.</td></tr>
+                <tr><td>Broad privileges</td><td>Least privilege</td><td>Reduces abuse if credentials leak.</td></tr>
+                <tr><td>No TLS</td><td>TLS</td><td>Protects traffic in transit.</td></tr>
+                <tr><td>No backups</td><td>Tested backups</td><td>Supports recovery.</td></tr>
+                <tr><td>No monitoring</td><td>Audit logs and metrics</td><td>Makes incidents visible.</td></tr>
+                <tr><td>Plain secrets</td><td>Secret management</td><td>Supports rotation and reduces leakage.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted" style="margin-top:12px">
+            The score starts at 100 and subtracts illustrative control weights. Missing critical controls impose a minimum
+            risk floor, so hardcoded secrets, root users, public ports, or broad privileges cannot be hidden by unrelated
+            good settings.
+          </p>
+        </div>
       </div>
-      <p class="small muted" style="margin-top:12px">
-        The score starts at 100 and subtracts illustrative control weights. Missing critical controls impose a minimum
-        risk floor, so hardcoded secrets, root users, public ports, or broad privileges cannot be hidden by unrelated
-        good settings.
-      </p>
     </section>
 
     <section class="module-section">
@@ -135,7 +165,60 @@ AUDIT_LOGGING=false</pre>
     const preview = document.getElementById("config-preview");
     const badge = document.getElementById("config-badge");
     const blockerNote = document.getElementById("blocker-note");
+    const findingGrid = document.getElementById("finding-grid");
+    const deployDecision = document.getElementById("deploy-decision");
     const weights = { user: 14, privilege: 16, network: 16, tls: 10, audit: 10, backups: 12, secrets: 18 };
+    const controls = {
+      user: {
+        title: "Default/root user",
+        risky: "Application connects as root/default user.",
+        fixed: "Application connects as a dedicated app_user.",
+        impact: "A leaked app credential can become full database control.",
+        severity: "critical"
+      },
+      privilege: {
+        title: "Broad privileges",
+        risky: "App account has ALL PRIVILEGES.",
+        fixed: "App account has only required SELECT/INSERT/UPDATE grants.",
+        impact: "Broad grants increase damage from SQLi or credential theft.",
+        severity: "critical"
+      },
+      network: {
+        title: "Public database port",
+        risky: "Database listener is reachable on a public port.",
+        fixed: "Database listener is internal-only.",
+        impact: "Internet exposure turns weak credentials or old services into direct attack paths.",
+        severity: "critical"
+      },
+      tls: {
+        title: "Plaintext transport",
+        risky: "TLS is not required for DB traffic.",
+        fixed: "TLS is required for DB traffic.",
+        impact: "Credentials and queries may be exposed on the network path.",
+        severity: "medium"
+      },
+      audit: {
+        title: "No audit trail",
+        risky: "Security-relevant DB events are not logged.",
+        fixed: "Authentication, access, export, and privilege events are logged.",
+        impact: "Incidents become harder to investigate and prove.",
+        severity: "medium"
+      },
+      backups: {
+        title: "No restore point",
+        risky: "No scheduled, restore-tested backup exists.",
+        fixed: "Backups are scheduled and restore-tested.",
+        impact: "Recovery from deletion, ransomware, or operator error is uncertain.",
+        severity: "medium"
+      },
+      secrets: {
+        title: "Hardcoded credentials",
+        risky: "Password is stored in source/config as root.",
+        fixed: "Password is loaded from environment or a secret manager.",
+        impact: "Credentials leak through repositories, logs, images, or screenshots.",
+        severity: "critical"
+      }
+    };
 
     function selected() {
       return Array.from(checklist.querySelectorAll("input")).filter((item) => item.checked).map((item) => item.dataset.key);
@@ -143,6 +226,44 @@ AUDIT_LOGGING=false</pre>
 
     function has(key, keys) {
       return keys.includes(key);
+    }
+
+    function setAllControls(enabled) {
+      checklist.querySelectorAll("input").forEach((input) => {
+        input.checked = enabled;
+      });
+      render();
+    }
+
+    function renderFindings(keys) {
+      findingGrid.innerHTML = "";
+      Object.entries(controls).forEach(([key, control]) => {
+        const fixed = has(key, keys);
+        const card = document.createElement("article");
+        card.className = `finding-card ${fixed ? "is-fixed" : control.severity === "critical" ? "is-critical" : "is-warning"}`;
+        card.innerHTML = `
+          <div class="finding-head">
+            <span class="badge ${fixed ? "badge-safe" : control.severity === "critical" ? "badge-danger" : "badge-warning"}">${fixed ? "Resolved" : control.severity === "critical" ? "Critical" : "Review"}</span>
+            <strong>${control.title}</strong>
+          </div>
+          <p>${fixed ? control.fixed : control.risky}</p>
+          <p class="small muted">${control.impact}</p>
+        `;
+        findingGrid.appendChild(card);
+      });
+    }
+
+    function renderDeployDecision(risk, blockers) {
+      if (blockers.length > 0) {
+        deployDecision.className = "deploy-decision deploy-blocked";
+        deployDecision.innerHTML = `<strong>Deployment blocked</strong><span>${blockers.length} critical blocker${blockers.length > 1 ? "s" : ""} must be fixed first.</span>`;
+      } else if (risk >= 40) {
+        deployDecision.className = "deploy-decision deploy-review";
+        deployDecision.innerHTML = "<strong>Security review required</strong><span>Critical blockers are gone, but resilience or visibility gaps remain.</span>";
+      } else {
+        deployDecision.className = "deploy-decision deploy-approved";
+        deployDecision.innerHTML = "<strong>Baseline approved for demo</strong><span>Critical blockers are removed and operational controls are in place.</span>";
+      }
     }
 
     function render() {
@@ -187,6 +308,8 @@ AUDIT_LOGGING=false</pre>
       badge.className = badgeClass;
       explanation.textContent = detail;
       meter.style.background = gradient;
+      renderDeployDecision(risk, blockers);
+      renderFindings(keys);
 
       preview.textContent = [
         `DB_USER=${has("user", keys) ? "app_user" : "root"}`,
@@ -208,6 +331,8 @@ AUDIT_LOGGING=false</pre>
     }
 
     checklist.addEventListener("change", render);
+    document.getElementById("apply-baseline").addEventListener("click", () => setAllControls(true));
+    document.getElementById("apply-risky").addEventListener("click", () => setAllControls(false));
     render();
   </script>
 </body>

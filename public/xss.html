@@ -41,42 +41,44 @@
     </section>
 
     <section class="module-section">
-      <p class="module-kicker">Try it yourself</p>
-      <h2>Render a comment</h2>
+      <div class="workbench-header">
+        <div>
+          <p class="module-kicker">Try it yourself</p>
+          <h2>Render a comment</h2>
+        </div>
+        <div class="toolbar-actions">
+          <div class="segmented" role="group" aria-label="Rendering mode">
+            <button id="vulnerable-render" class="danger-option" type="button" aria-pressed="true">Vulnerable rendering</button>
+            <button id="safe-render" class="safe-option" type="button" aria-pressed="false">Safe rendering</button>
+          </div>
+          <button type="button" id="clear-comments" class="btn btn-ghost">
+            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></span>
+            Clear comments
+          </button>
+        </div>
+      </div>
 
-      <div class="interaction-grid">
+      <div class="workflow-grid">
         <div class="input-panel">
-          <h3>1. Enter comment</h3>
+          <h3>Comment</h3>
           <form id="comment-form" class="stack">
             <label>
               Comment
               <input id="comment-input" class="input" value="Hello database team" autocomplete="off" />
             </label>
-            <div class="examples">
-              <span class="small muted">Optional demo payloads:</span>
-              <button type="button" class="btn btn-risk" data-payload="&lt;strong&gt;Injected HTML&lt;/strong&gt;">Injected HTML</button>
-              <button type="button" class="btn btn-risk" data-payload="&lt;a href='https://www.bsi.bund.de' target='_blank' rel='noopener'&gt;Open BSI website&lt;/a&gt;">Clickable BSI link</button>
-              <button type="button" class="btn btn-risk" data-payload="&lt;a download='security-demo.txt' href='data:text/plain,This%20is%20a%20harmless%20fake%20download%20from%20the%20Database%20Security%20Playground.'&gt;Download fake report&lt;/a&gt;">Fake file download</button>
+            <div>
+              <p class="small muted choice-label">Optional demo payloads</p>
+              <div class="choice-grid choice-grid-3">
+                <button type="button" class="choice-card choice-danger" data-payload="&lt;strong&gt;Injected HTML&lt;/strong&gt;"><strong>Injected HTML</strong><span>Turns markup into page structure.</span></button>
+                <button type="button" class="choice-card choice-danger" data-payload="&lt;a href='https://www.bsi.bund.de' target='_blank' rel='noopener'&gt;Open BSI website&lt;/a&gt;"><strong>Clickable link</strong><span>Creates an active link in the output.</span></button>
+                <button type="button" class="choice-card choice-danger" data-payload="&lt;a download='security-demo.txt' href='data:text/plain,This%20is%20a%20harmless%20fake%20download%20from%20the%20Database%20Security%20Playground.'&gt;Download fake report&lt;/a&gt;"><strong>Fake file download</strong><span>Creates a download action.</span></button>
+              </div>
             </div>
-          </form>
-        </div>
-
-        <div class="action-panel">
-          <h3>2. Choose rendering and run</h3>
-          <div class="segmented" role="group" aria-label="Rendering mode">
-            <button id="vulnerable-render" class="danger-option" type="button" aria-pressed="true">Vulnerable rendering</button>
-            <button id="safe-render" class="safe-option" type="button" aria-pressed="false">Safe rendering</button>
-          </div>
-          <div class="controls" style="margin-top:14px">
-            <button id="render-button" type="submit" form="comment-form" class="btn btn-danger">
+            <button id="render-button" type="submit" class="btn btn-danger action-submit">
               <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
-              Render in vulnerable mode
+              <span id="render-button-text">Render in vulnerable mode</span>
             </button>
-            <button type="button" id="clear-comments" class="btn btn-ghost">
-              <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></span>
-              Clear comments
-            </button>
-          </div>
+          </form>
         </div>
       </div>
 
@@ -103,18 +105,32 @@
     <section class="module-section">
       <p class="module-kicker">What happens?</p>
       <h2>Rendering API choice changes the security outcome</h2>
-      <div class="grid grid-3">
-        <div class="comparison-card">
-          <h3>innerHTML interprets markup</h3>
-          <p>When untrusted input is assigned to <code>innerHTML</code>, the browser parses tags as page structure. Links and downloads become active UI.</p>
+      <div class="explain-layout">
+        <div class="explainer-visual" aria-hidden="true">
+          <div class="visual-title">Browser rendering</div>
+          <div class="visual-stack">
+            <div class="visual-node"><strong>Comment text</strong><span>&lt;a download&gt;...&lt;/a&gt;</span></div>
+            <div class="visual-arrow">-></div>
+            <div class="visual-table">
+              <div><span>innerHTML</span><strong class="visual-hidden">Active markup</strong></div>
+              <div><span>textContent</span><strong class="visual-safe">Visible text</strong></div>
+            </div>
+            <span class="visual-pill safe">Encode output by default</span>
+          </div>
         </div>
-        <div class="comparison-card">
-          <h3>textContent treats input as text</h3>
-          <p>When assigned to <code>textContent</code>, angle brackets remain characters, not HTML.</p>
-        </div>
-        <div class="comparison-card">
-          <h3>Output encoding prevents injection</h3>
-          <p>Encoding or safe rendering ensures user content is displayed in the intended context only.</p>
+        <div class="grid grid-3">
+          <div class="comparison-card">
+            <h3>innerHTML interprets markup</h3>
+            <p>When untrusted input is assigned to <code>innerHTML</code>, the browser parses tags as page structure. Links and downloads become active UI.</p>
+          </div>
+          <div class="comparison-card">
+            <h3>textContent treats input as text</h3>
+            <p>When assigned to <code>textContent</code>, angle brackets remain characters, not HTML.</p>
+          </div>
+          <div class="comparison-card">
+            <h3>Output encoding prevents injection</h3>
+            <p>Encoding or safe rendering ensures user content is displayed in the intended context only.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -145,6 +161,7 @@
     const vulnerableButton = document.getElementById("vulnerable-render");
     const safeButton = document.getElementById("safe-render");
     const renderButton = document.getElementById("render-button");
+    const renderButtonText = document.getElementById("render-button-text");
 
     function setMode(nextMode) {
       mode = nextMode;
@@ -155,8 +172,9 @@
       badge.className = vulnerable ? "badge badge-danger" : "badge badge-safe";
       outputMode.textContent = vulnerable ? "innerHTML" : "textContent";
       outputMode.className = vulnerable ? "badge badge-danger" : "badge badge-safe";
-      renderButton.textContent = vulnerable ? "Render in vulnerable mode" : "Render in safe mode";
+      renderButtonText.textContent = vulnerable ? "Render in vulnerable mode" : "Render in safe mode";
       renderButton.className = vulnerable ? "btn btn-danger" : "btn btn-safe";
+      renderButton.classList.add("action-submit");
     }
 
     function renderComment(text) {

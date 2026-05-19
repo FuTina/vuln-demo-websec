@@ -41,19 +41,19 @@
           <p class="eyebrow">Live risk overview</p>
           <h2 id="risk-title">Current risk score</h2>
           <div class="risk-score" id="risk-score" aria-live="polite">
-            <strong id="score-value">30</strong>
+            <strong id="score-value">8</strong>
             <span class="muted">/ 100</span>
           </div>
           <div class="meter" aria-hidden="true"><span id="score-meter"></span></div>
           <p id="score-explanation" class="small muted" style="margin-top:12px"></p>
         </div>
-        <div class="control-list" aria-label="Active controls">
-          <span class="badge badge-safe">Prepared Statements</span>
-          <span class="badge badge-safe">RBAC</span>
-          <span class="badge badge-safe">Output Encoding</span>
-          <span class="badge badge-safe">Audit Logging</span>
-          <span class="badge badge-safe">Network Segmentation</span>
-          <span class="badge badge-safe">Secure Configuration</span>
+        <div class="control-list" aria-label="Control status">
+          <span class="badge badge-safe" data-control-badge="prepared">Prepared Statements</span>
+          <span class="badge badge-safe" data-control-badge="rbac">RBAC</span>
+          <span class="badge badge-safe" data-control-badge="encoding">Output Encoding</span>
+          <span class="badge badge-safe" data-control-badge="audit">Audit Logging</span>
+          <span class="badge badge-safe" data-control-badge="network">Network Segmentation</span>
+          <span class="badge badge-safe" data-control-badge="config">Secure Configuration</span>
         </div>
       </aside>
     </section>
@@ -63,7 +63,7 @@
         <div>
           <p class="module-kicker">Security Control Panel</p>
           <h2 id="control-panel-title">Toggle controls and watch the risk score move</h2>
-          <p class="muted">This is a client-side demo heuristic, not a formal risk model. It helps connect each module to a security control.</p>
+          <p class="muted">This is a practice-inspired demo model: direct exposure and exploitable data-access flaws are weighted higher than detective controls.</p>
         </div>
       </div>
       <div class="control-panel">
@@ -74,27 +74,27 @@
         <div class="switch-grid" id="control-switches">
           <label class="switch-card">
             <span><strong>Prepared Statements</strong><span>Separate SQL code from values.</span></span>
-            <span class="switch"><input type="checkbox" data-weight="18" checked /><span class="slider"></span></span>
+            <span class="switch"><input type="checkbox" data-control="prepared" checked /><span class="slider"></span></span>
           </label>
           <label class="switch-card">
             <span><strong>RBAC</strong><span>Authorize users before data is returned.</span></span>
-            <span class="switch"><input type="checkbox" data-weight="16" checked /><span class="slider"></span></span>
+            <span class="switch"><input type="checkbox" data-control="rbac" checked /><span class="slider"></span></span>
           </label>
           <label class="switch-card">
             <span><strong>Output Encoding</strong><span>Render untrusted input as data.</span></span>
-            <span class="switch"><input type="checkbox" data-weight="14" checked /><span class="slider"></span></span>
+            <span class="switch"><input type="checkbox" data-control="encoding" checked /><span class="slider"></span></span>
           </label>
           <label class="switch-card">
             <span><strong>Audit Logging</strong><span>Preserve investigation evidence.</span></span>
-            <span class="switch"><input type="checkbox" data-weight="12" checked /><span class="slider"></span></span>
+            <span class="switch"><input type="checkbox" data-control="audit" checked /><span class="slider"></span></span>
           </label>
           <label class="switch-card">
             <span><strong>Network Segmentation</strong><span>Keep the database off the public internet.</span></span>
-            <span class="switch"><input type="checkbox" data-weight="16" checked /><span class="slider"></span></span>
+            <span class="switch"><input type="checkbox" data-control="network" checked /><span class="slider"></span></span>
           </label>
           <label class="switch-card">
             <span><strong>Secure Configuration</strong><span>Use hardened defaults and secrets handling.</span></span>
-            <span class="switch"><input type="checkbox" data-weight="14" checked /><span class="slider"></span></span>
+            <span class="switch"><input type="checkbox" data-control="config" checked /><span class="slider"></span></span>
           </label>
         </div>
       </div>
@@ -195,31 +195,58 @@
     const riskPanel = document.getElementById("risk-panel");
     const riskLabel = document.getElementById("risk-label");
     const riskDetail = document.getElementById("risk-detail");
+    const controlBadges = Array.from(document.querySelectorAll("[data-control-badge]"));
+    const riskModel = {
+      prepared: { points: 22, floor: 74, name: "Prepared Statements" },
+      rbac: { points: 18, floor: 58, name: "RBAC" },
+      encoding: { points: 12, floor: 45, name: "Output Encoding" },
+      audit: { points: 8, floor: 0, name: "Audit Logging" },
+      network: { points: 24, floor: 78, name: "Network Segmentation" },
+      config: { points: 20, floor: 72, name: "Secure Configuration" }
+    };
+    const combinedFloors = [
+      { controls: ["network", "config"], floor: 88 },
+      { controls: ["network", "prepared"], floor: 90 },
+      { controls: ["prepared", "rbac"], floor: 82 },
+      { controls: ["config", "rbac"], floor: 78 }
+    ];
+
+    function missingControls() {
+      return switches
+        .filter((item) => !item.checked)
+        .map((item) => item.dataset.control);
+    }
 
     function renderRisk() {
-      const baseRisk = 100;
-      const reduction = switches
-        .filter((item) => item.checked)
-        .reduce((total, item) => total + Number(item.dataset.weight), 0);
-      const score = Math.max(5, baseRisk - reduction);
+      const missing = missingControls();
+      const missingNames = missing.map((control) => riskModel[control].name);
+      const baseResidualRisk = 8;
+      const additiveRisk = missing.reduce((total, control) => total + riskModel[control].points, 0);
+      const singleControlFloor = missing.reduce((floor, control) => Math.max(floor, riskModel[control].floor), 0);
+      const combinedControlFloor = combinedFloors.reduce((floor, rule) => {
+        return rule.controls.every((control) => missing.includes(control)) ? Math.max(floor, rule.floor) : floor;
+      }, 0);
+      const score = Math.min(100, Math.max(baseResidualRisk + additiveRisk, singleControlFloor, combinedControlFloor));
       scoreValue.textContent = score;
       meter.style.width = `${score}%`;
 
       let label = "Low risk";
-      let detail = "Most core controls are enabled. The remaining risk is suitable for a controlled demo discussion.";
+      let detail = "Core preventive controls are enabled. The remaining score represents residual demo risk.";
       let className = "result-box result-safe";
       let color = "linear-gradient(90deg, #22c55e, #15803d)";
 
       if (score >= 70) {
         label = "High risk";
-        detail = "Several primary controls are disabled. A real system in this state would be exposed to preventable failures.";
+        detail = `Critical gap${missing.length > 1 ? "s" : ""}: ${missingNames.join(", ")}. In practice this would normally require remediation before production use.`;
         className = "result-box result-danger";
         color = "linear-gradient(90deg, #dc2626, #f97316)";
-      } else if (score >= 40) {
+      } else if (score >= 35) {
         label = "Medium risk";
-        detail = "Some important controls are missing. The system may work, but investigation, containment, or data protection is weaker.";
+        detail = `Missing control${missing.length > 1 ? "s" : ""}: ${missingNames.join(", ")}. Risk is elevated because prevention, containment, or visibility is weaker.`;
         className = "result-box result-warning";
         color = "linear-gradient(90deg, #f59e0b, #facc15)";
+      } else if (missing.length > 0) {
+        detail = `Missing control${missing.length > 1 ? "s" : ""}: ${missingNames.join(", ")}. This is a lower-risk gap, but still not a complete baseline.`;
       }
 
       meter.style.background = color;
@@ -227,6 +254,13 @@
       riskPanel.className = className;
       riskLabel.textContent = label;
       riskDetail.textContent = detail;
+
+      controlBadges.forEach((badge) => {
+        const control = switches.find((item) => item.dataset.control === badge.dataset.controlBadge);
+        const enabled = control?.checked;
+        badge.className = enabled ? "badge badge-safe" : "badge badge-danger";
+        badge.setAttribute("aria-label", `${badge.textContent}: ${enabled ? "enabled" : "disabled"}`);
+      });
     }
 
     switches.forEach((item) => item.addEventListener("change", renderRisk));

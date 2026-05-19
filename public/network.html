@@ -62,6 +62,11 @@
         </label>
       </div>
 
+      <div class="network-actions" style="margin-top:14px">
+        <button type="button" class="btn btn-safe" id="secure-preset">Apply secure preset</button>
+        <button type="button" class="btn btn-danger" id="risky-preset">Apply risky preset</button>
+      </div>
+
       <div class="network-board" aria-label="Network architecture simulation">
         <div class="network-row">
           <div class="network-node"><strong>Internet</strong><span class="muted">Untrusted clients</span></div>
@@ -79,18 +84,22 @@
 
       <div id="network-message" class="notice notice-warning" style="margin-top:18px"></div>
 
-      <div class="controls" style="margin-top:18px">
+      <div class="test-runner">
+        <div>
+          <h3>Connection tests</h3>
+          <p id="connection-test-status" class="muted">Run tests to evaluate the current network posture.</p>
+        </div>
         <button type="button" class="btn btn-primary" id="run-tests">Run connection tests</button>
-        <button type="button" class="btn btn-ghost" data-send="internet">Send Internet packet</button>
-        <button type="button" class="btn btn-ghost" data-send="api">Send API packet</button>
-        <button type="button" class="btn btn-ghost" data-send="admin">Send Admin packet</button>
-        <button type="button" class="btn btn-ghost" id="secure-preset">Apply secure preset</button>
-        <button type="button" class="btn btn-ghost" id="risky-preset">Apply risky preset</button>
       </div>
 
       <div class="packet-simulator">
         <h3>Packet simulation</h3>
         <p class="muted">Send one connection attempt. The packet reaches the database only if the current controls allow that path.</p>
+        <div class="controls" style="margin-top:12px">
+          <button type="button" class="btn btn-ghost" data-send="internet">Send Internet packet</button>
+          <button type="button" class="btn btn-ghost" data-send="api">Send API packet</button>
+          <button type="button" class="btn btn-ghost" data-send="admin">Send Admin packet</button>
+        </div>
         <div class="packet-lane">
           <div id="packet-source" class="lane-label">Source</div>
           <div id="lane-track" class="lane-track">
@@ -103,15 +112,15 @@
       </div>
 
       <div class="test-grid" aria-live="polite">
-        <div id="test-internet" class="test-card">
+        <div id="test-internet" class="test-card pending" data-title="Internet to DB">
           <h3>Internet to DB</h3>
           <p class="muted">Not tested yet.</p>
         </div>
-        <div id="test-api" class="test-card">
+        <div id="test-api" class="test-card pending" data-title="API to DB">
           <h3>API to DB</h3>
           <p class="muted">Not tested yet.</p>
         </div>
-        <div id="test-admin" class="test-card">
+        <div id="test-admin" class="test-card pending" data-title="Admin Network to DB">
           <h3>Admin Network to DB</h3>
           <p class="muted">Not tested yet.</p>
         </div>
@@ -121,10 +130,28 @@
     <section class="module-section">
       <p class="module-kicker">What happens?</p>
       <h2>Segmentation makes the allowed path explicit</h2>
-      <p>
-        Public users should enter through the web app. The API should be the narrow service path to the database. A
-        firewall and internal-only network reduce accidental exposure, while TLS protects the approved traffic path.
-      </p>
+      <div class="explain-layout">
+        <div class="explainer-visual" aria-hidden="true">
+          <div class="visual-title">Allowed path</div>
+          <div class="visual-stack">
+            <div class="visual-node"><strong>Internet</strong><span>Only reaches the web app</span></div>
+            <div class="visual-arrow">-></div>
+            <div class="visual-node"><strong>API</strong><span>Narrow service route</span></div>
+            <div class="visual-arrow">-></div>
+            <div class="visual-node"><strong>Database</strong><span>Private and firewall-restricted</span></div>
+            <div class="visual-pill-row">
+              <span class="visual-pill danger">Direct DB path blocked</span>
+              <span class="visual-pill safe">TLS on service path</span>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-2">
+          <div class="comparison-card"><h3>Public entry point</h3><p>Public users should enter through the web app, not a database listener.</p></div>
+          <div class="comparison-card"><h3>Service path</h3><p>The API should be the narrow, intentional path to the database.</p></div>
+          <div class="comparison-card"><h3>Internal network</h3><p>Private networking removes accidental public exposure.</p></div>
+          <div class="comparison-card"><h3>Firewall and TLS</h3><p>Firewall rules restrict sources, while TLS protects approved traffic.</p></div>
+        </div>
+      </div>
     </section>
 
     <section class="module-section">
@@ -158,6 +185,7 @@
     const packetSource = document.getElementById("packet-source");
     const packetStatus = document.getElementById("packet-status");
     const laneTrack = document.getElementById("lane-track");
+    const testStatus = document.getElementById("connection-test-status");
     const testCards = {
       internet: document.getElementById("test-internet"),
       api: document.getElementById("test-api"),
@@ -214,7 +242,15 @@
 
     function renderCard(card, evaluation) {
       card.className = `test-card ${evaluation.level === "allowed" ? "allowed" : evaluation.level === "warning" ? "warning" : "blocked"}`;
-      card.innerHTML = `<h3>${card.querySelector("h3")?.textContent || ""}</h3><p>${evaluation.title}: ${evaluation.text}</p>`;
+      card.innerHTML = `<h3>${card.dataset.title}</h3><p>${evaluation.title}: ${evaluation.text}</p>`;
+    }
+
+    function resetTests() {
+      Object.values(testCards).forEach((card) => {
+        card.className = "test-card pending";
+        card.innerHTML = `<h3>${card.dataset.title}</h3><p class="muted">Settings changed. Run tests to evaluate this posture.</p>`;
+      });
+      testStatus.textContent = "Settings changed. Run tests to update the result cards.";
     }
 
     function animatePacket(source) {
@@ -238,6 +274,7 @@
       renderCard(testCards.internet, evaluate("internet", current));
       renderCard(testCards.api, evaluate("api", current));
       renderCard(testCards.admin, evaluate("admin", current));
+      testStatus.textContent = "Connection tests completed for the current settings.";
     }
 
     function render() {
@@ -267,7 +304,7 @@
         message.className = "notice notice-safe";
         message.innerHTML = "<h3>Protected network posture</h3><p>The database is internal, firewall-restricted, and reached over encrypted service traffic.</p>";
       }
-      runTests();
+      resetTests();
     }
 
     Object.entries(controls).forEach(([name, control]) => {

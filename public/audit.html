@@ -94,11 +94,25 @@
     <section class="module-section">
       <p class="module-kicker">Why audit logs matter</p>
       <h2>Logs turn suspicious behavior into evidence</h2>
-      <div class="grid grid-2">
-        <div class="comparison-card"><h3>Accountability</h3><p>Connect actions to users, services, and request paths.</p></div>
-        <div class="comparison-card"><h3>Incident response</h3><p>Reconstruct what happened and which records may be affected.</p></div>
-        <div class="comparison-card"><h3>Anomaly detection</h3><p>Spot unusual failures, privileged actions, and large exports.</p></div>
-        <div class="comparison-card"><h3>Compliance</h3><p>Show that sensitive data access is monitored and reviewable.</p></div>
+      <div class="explain-layout">
+        <div class="explainer-visual" aria-hidden="true">
+          <div class="visual-title">Evidence trail</div>
+          <div class="visual-stack">
+            <div class="visual-row"><strong>09:41 LOGIN failed</strong><span>unknown actor</span></div>
+            <div class="visual-row"><strong>09:43 EXPORT customer</strong><span>large data movement</span></div>
+            <div class="visual-row"><strong>09:44 ALTER ROLE denied</strong><span>privilege attempt</span></div>
+            <div class="visual-pill-row">
+              <span class="visual-pill warn">Alert signal</span>
+              <span class="visual-pill safe">Investigation evidence</span>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-2">
+          <div class="comparison-card"><h3>Accountability</h3><p>Connect actions to users, services, and request paths.</p></div>
+          <div class="comparison-card"><h3>Incident response</h3><p>Reconstruct what happened and which records may be affected.</p></div>
+          <div class="comparison-card"><h3>Anomaly detection</h3><p>Spot unusual failures, privileged actions, and large exports.</p></div>
+          <div class="comparison-card"><h3>Compliance</h3><p>Show that sensitive data access is monitored and reviewable.</p></div>
+        </div>
       </div>
     </section>
 

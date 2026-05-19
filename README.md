@@ -51,7 +51,7 @@ http://localhost:5173
 
 ## Suggested Presentation Narrative
 
-1. Start with the risk overview: the score is low because multiple controls are still missing.
+1. Start with the risk overview: the score is low while the baseline controls are enabled, then rises sharply when critical controls such as network segmentation or secure configuration are removed.
 2. Demonstrate SQL Injection: string concatenation lets input change query logic.
 3. Show the safe parameterized query: the SQL structure stays fixed and input becomes a value.
 4. Show role-based masking: sensitive data should be authorized first and minimized before rendering.
@@ -67,4 +67,4 @@ http://localhost:5173
 - XSS examples are harmless formatting examples so the presentation stays focused on rendering behavior.
 - This project demonstrates security concepts visually. Some modules are simulated intentionally to keep the demo safe and easy to run.
 - The audit, network, and configuration modules do not perform real database administration or network changes.
-- Risk scores are illustrative demo heuristics, not measured or standardized risk calculations.
+- Risk scores are illustrative demo heuristics. They use practice-inspired weighting and minimum risk floors for critical missing controls, not a measured or universal standardized calculation.

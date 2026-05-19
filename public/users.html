@@ -89,22 +89,40 @@
     <section class="module-section">
       <p class="module-kicker">What happens?</p>
       <h2>Least privilege changes what each role can see</h2>
-      <div class="grid grid-2">
-        <div class="comparison-card">
-          <h3>Authentication</h3>
-          <p>Authentication proves who the user is. It does not automatically grant access to every field.</p>
+      <div class="explain-layout">
+        <div class="explainer-visual" aria-hidden="true">
+          <div class="visual-title">Role policy</div>
+          <div class="visual-stack">
+            <div class="visual-node"><strong id="policy-role">App User</strong><span id="policy-summary">Masked contact data</span></div>
+            <div class="visual-arrow">-></div>
+            <div id="policy-fields" class="visual-table">
+              <div><span>Revenue</span><strong class="visual-hidden">Restricted</strong></div>
+              <div><span>Email</span><strong class="visual-masked">Masked</strong></div>
+              <div><span>Phone</span><strong class="visual-masked">Masked</strong></div>
+            </div>
+            <div class="visual-pill-row">
+              <span id="policy-rbac" class="visual-pill safe">RBAC enforced</span>
+              <span id="policy-masking" class="visual-pill warn">Masking enabled</span>
+            </div>
+          </div>
         </div>
-        <div class="comparison-card">
-          <h3>Authorization</h3>
-          <p>Authorization decides which records and fields the authenticated role can access.</p>
-        </div>
-        <div class="comparison-card">
-          <h3>Masking</h3>
-          <p>Masking reduces displayed sensitivity, such as showing only part of an email or phone number.</p>
-        </div>
-        <div class="comparison-card">
-          <h3>Least privilege</h3>
-          <p>Least privilege returns only the data needed for the current role and task.</p>
+        <div class="grid grid-2">
+          <div class="comparison-card">
+            <h3>Authentication</h3>
+            <p>Authentication proves who the user is. It does not automatically grant access to every field.</p>
+          </div>
+          <div class="comparison-card">
+            <h3>Authorization</h3>
+            <p>Authorization decides which records and fields the authenticated role can access.</p>
+          </div>
+          <div class="comparison-card">
+            <h3>Masking</h3>
+            <p>Masking reduces displayed sensitivity only for fields the role is allowed to receive.</p>
+          </div>
+          <div class="comparison-card">
+            <h3>Least privilege</h3>
+            <p>Least privilege returns only the data needed for the current role and task.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -137,8 +155,19 @@
     const rows = document.getElementById("customer-rows");
     const roleBadge = document.getElementById("role-badge");
     const warning = document.getElementById("rbac-warning");
+    const policyRole = document.getElementById("policy-role");
+    const policySummary = document.getElementById("policy-summary");
+    const policyFields = document.getElementById("policy-fields");
+    const policyRbac = document.getElementById("policy-rbac");
+    const policyMasking = document.getElementById("policy-masking");
     let currentRole = "app_user";
     const roleLabels = { guest: "Guest", app_user: "App User", analyst: "Analyst", admin: "Admin" };
+    const roleSummaries = {
+      guest: "Public overview fields only",
+      app_user: "Operational view with reduced contact data",
+      analyst: "Business reporting fields only",
+      admin: "Full record access"
+    };
 
     function maskEmail(email) {
       const [user, domain] = email.split("@");
@@ -170,11 +199,46 @@
       }
 
       if (role === "analyst") {
-        if (field === "email" || field === "phone") return "Not needed";
+        if (field === "email" || field === "phone") return "Hidden by RBAC";
         return record[field];
       }
 
       return record[field];
+    }
+
+    function statusClass(value) {
+      if (value === "Hidden by RBAC" || value === "Restricted") return "visual-hidden";
+      if (String(value).includes("*")) return "visual-masked";
+      return "visual-safe";
+    }
+
+    function statusLabel(value) {
+      if (value === "Hidden by RBAC") return "Hidden by RBAC";
+      if (value === "Restricted") return "Restricted";
+      if (String(value).includes("*")) return "Masked";
+      return "Allowed";
+    }
+
+    function renderPolicyVisual(role, rbacEnabled, maskingEnabled) {
+      const sample = customers[0];
+      policyRole.textContent = roleLabels[role];
+      policySummary.textContent = rbacEnabled ? roleSummaries[role] : "RBAC disabled: role boundary removed";
+      policyFields.innerHTML = "";
+      ["revenue", "email", "phone"].forEach((field) => {
+        const value = valueFor(sample, field, role, rbacEnabled, maskingEnabled);
+        const row = document.createElement("div");
+        const label = document.createElement("span");
+        const status = document.createElement("strong");
+        label.textContent = field === "revenue" ? "Revenue" : field === "email" ? "Email" : "Phone";
+        status.textContent = statusLabel(value);
+        status.className = statusClass(value);
+        row.append(label, status);
+        policyFields.appendChild(row);
+      });
+      policyRbac.textContent = rbacEnabled ? "RBAC enforced" : "RBAC disabled";
+      policyRbac.className = rbacEnabled ? "visual-pill safe" : "visual-pill danger";
+      policyMasking.textContent = maskingEnabled ? "Masking enabled" : "Masking disabled";
+      policyMasking.className = maskingEnabled ? "visual-pill warn" : "visual-pill danger";
     }
 
     function render() {
@@ -186,13 +250,20 @@
       roleBadge.className = role === "admin" ? "badge badge-safe" : "badge badge-role";
       warning.classList.toggle("hidden", rbacEnabled);
       roleCards.forEach((card) => card.setAttribute("aria-pressed", String(card.dataset.role === role)));
+      renderPolicyVisual(role, rbacEnabled, maskingEnabled);
 
       rows.innerHTML = "";
       customers.forEach((record) => {
         const row = document.createElement("tr");
         ["name", "segment", "revenue", "email", "phone", "notes"].forEach((field) => {
           const cell = document.createElement("td");
-          cell.textContent = valueFor(record, field, role, rbacEnabled, maskingEnabled);
+          const value = valueFor(record, field, role, rbacEnabled, maskingEnabled);
+          cell.textContent = value;
+          if (value === "Hidden by RBAC" || value === "Restricted") {
+            cell.className = "cell-restricted";
+          } else if (String(value).includes("*")) {
+            cell.className = "cell-masked";
+          }
           row.appendChild(cell);
         });
         rows.appendChild(row);

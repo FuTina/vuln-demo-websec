@@ -65,14 +65,19 @@
 
     <div id="config-tab-baseline" class="config-tab-panel">
     <section class="module-section">
-      <p class="module-kicker">Try it yourself</p>
-      <h2>Build a safer database baseline</h2>
-      <div class="network-actions" style="margin-bottom:14px">
-        <button type="button" class="btn btn-primary" id="review-config">Review configuration</button>
-        <button type="button" class="btn btn-safe" id="apply-baseline">Show hardened answer</button>
-        <button type="button" class="btn btn-danger" id="apply-risky">Start insecure demo</button>
+      <div class="workbench-header config-workbench-header">
+        <div>
+          <p class="module-kicker">Try it yourself</p>
+          <h2>Build a safer database baseline</h2>
+          <p class="muted">Pick one block per area, watch the generated config change, then run the review gate.</p>
+        </div>
+        <div class="toolbar-actions">
+          <button type="button" class="btn btn-primary" id="review-config">Review configuration</button>
+          <button type="button" class="btn btn-safe" id="apply-baseline">Show hardened answer</button>
+          <button type="button" class="btn btn-danger" id="apply-risky">Start insecure demo</button>
+        </div>
       </div>
-      <div id="security-impact" data-security-impact class="security-impact impact-warning" style="margin-bottom:14px">
+      <div id="security-impact" data-security-impact class="security-impact impact-warning config-impact">
         <strong>Security Impact</strong>
         <span>Secure Configuration disabled: risky defaults can undermine otherwise good controls.</span>
       </div>
@@ -87,7 +92,10 @@
         </div>
         <div class="builder-workspace">
           <div class="builder-palette" aria-label="Available configuration blocks">
-            <h3>Available blocks</h3>
+            <div class="builder-zone-head">
+              <h3>Available blocks</h3>
+              <span>Unsorted options</span>
+            </div>
             <div class="builder-blocks">
               <button type="button" draggable="true" data-builder-option data-builder-key="user" data-builder-value="risk"><strong>POSTGRES_USER=root</strong><span>Default administrative identity</span></button>
               <button type="button" draggable="true" data-builder-option data-builder-key="network" data-builder-value="safe"><strong>expose: 5432</strong><span>Backend network only</span></button>
@@ -105,19 +113,30 @@
               <button type="button" draggable="true" data-builder-option data-builder-key="secrets" data-builder-value="safe"><strong>POSTGRES_PASSWORD_FILE</strong><span>Secret file reference</span></button>
             </div>
           </div>
-          <div class="builder-slots" aria-label="Configuration target slots">
-            <h3>Target config</h3>
-            <div class="builder-slot" data-builder-slot="user"><strong>Database identity</strong><span>Drop identity block here</span></div>
-            <div class="builder-slot" data-builder-slot="privilege"><strong>Privileges</strong><span>Drop grants block here</span></div>
-            <div class="builder-slot" data-builder-slot="network"><strong>Network exposure</strong><span>Drop network block here</span></div>
-            <div class="builder-slot" data-builder-slot="tls"><strong>Transport policy</strong><span>Drop TLS/auth block here</span></div>
-            <div class="builder-slot" data-builder-slot="audit"><strong>Monitoring</strong><span>Drop audit block here</span></div>
-            <div class="builder-slot" data-builder-slot="backups"><strong>Recovery</strong><span>Drop backup block here</span></div>
-            <div class="builder-slot" data-builder-slot="secrets"><strong>Secrets</strong><span>Drop secrets block here</span></div>
+          <div class="builder-target-frame" aria-label="Configuration target slots">
+            <div class="builder-zone-head">
+              <div>
+                <h3>Target config</h3>
+                <p>Build the release baseline here.</p>
+              </div>
+              <span>7 required slots</span>
+            </div>
+            <div class="builder-slots">
+              <div class="builder-slot" data-builder-slot="user"><strong>Database identity</strong><span>Drop identity block here</span></div>
+              <div class="builder-slot" data-builder-slot="privilege"><strong>Privileges</strong><span>Drop grants block here</span></div>
+              <div class="builder-slot" data-builder-slot="network"><strong>Network exposure</strong><span>Drop network block here</span></div>
+              <div class="builder-slot" data-builder-slot="tls"><strong>Transport policy</strong><span>Drop TLS/auth block here</span></div>
+              <div class="builder-slot" data-builder-slot="audit"><strong>Monitoring</strong><span>Drop audit block here</span></div>
+              <div class="builder-slot" data-builder-slot="backups"><strong>Recovery</strong><span>Drop backup block here</span></div>
+              <div class="builder-slot" data-builder-slot="secrets"><strong>Secrets</strong><span>Drop secrets block here</span></div>
+            </div>
           </div>
         </div>
-        <div>
-          <h3>Generated configuration preview</h3>
+        <div class="builder-preview-panel">
+          <div class="builder-zone-head">
+            <h3>Generated configuration preview</h3>
+            <span>Updates while building</span>
+          </div>
           <pre id="builder-code" class="query-box builder-code"></pre>
         </div>
       </div>
@@ -151,6 +170,41 @@
       <p class="module-kicker">Configuration review</p>
       <h2>Findings update from the selected controls</h2>
       <div id="finding-grid" class="finding-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">What happens?</p>
+      <h2>Configuration is assembled first, then reviewed</h2>
+      <div class="explain-layout">
+        <div class="explainer-visual" aria-hidden="true">
+          <div class="visual-title">Release baseline</div>
+          <div class="visual-stack">
+            <div class="visual-node"><strong>Config blocks</strong><span>Identity, grants, network, TLS</span></div>
+            <div class="visual-arrow">-></div>
+            <div class="visual-node"><strong>Generated config</strong><span>Preview updates while building</span></div>
+            <div class="visual-arrow">-></div>
+            <div class="visual-node"><strong>Review gate</strong><span>Ship or block decision</span></div>
+            <div class="visual-pill-row">
+              <span class="visual-pill warn">Risk appears on review</span>
+              <span class="visual-pill safe">Hardened baseline can complete</span>
+            </div>
+          </div>
+        </div>
+        <div class="split-note">
+          <div class="comparison-card">
+            <span class="badge badge-warning">Before review</span>
+            <p>
+              The builder stays neutral while you assemble the baseline. Seeing the generated config immediately helps connect each block to the actual deployment settings.
+            </p>
+          </div>
+          <div class="comparison-card">
+            <span class="badge badge-safe">After review</span>
+            <p>
+              The review evaluates release blockers such as public database ports, root users, broad grants, missing TLS, hardcoded secrets, and missing audit coverage.
+            </p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="module-section security-takeaway">

@@ -124,7 +124,7 @@
           <div>
             <p class="module-kicker">Packet lab</p>
             <h2>Send a sample database packet</h2>
-            <p class="muted">Choose the source and payload. The payload is not executed; this only shows whether the network path lets it reach the database.</p>
+            <p class="muted">Choose the source and payload. The payload is not executed; this only shows whether the network path lets it reach the database. Application controls still decide whether the input can affect SQL behavior.</p>
           </div>
         </div>
         <div class="packet-controls">
@@ -153,12 +153,49 @@
         <div class="packet-lane">
           <div id="packet-source-label" class="lane-label">Internet client</div>
           <div id="lane-track" class="lane-track">
-            <div id="packet" class="packet" aria-hidden="true">SQL</div>
+            <div id="packet" class="packet" aria-hidden="true"><span class="packet-icon">SQL</span></div>
             <div class="packet-blocker">blocked</div>
           </div>
           <div class="lane-label">Database</div>
         </div>
         <p id="packet-status" class="packet-status">Send a packet to see where the selected payload stops.</p>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <p class="module-kicker">What happens?</p>
+      <h2>Segmentation controls routes, not query intent</h2>
+      <div class="explain-layout">
+        <div class="explainer-visual" aria-hidden="true">
+          <div class="visual-title">Layered path</div>
+          <div class="visual-stack">
+            <div class="visual-node"><strong>Internet</strong><span>Untrusted source</span></div>
+            <div class="visual-arrow">-></div>
+            <div class="visual-node"><strong>API</strong><span>Expected service path</span></div>
+            <div class="visual-arrow">-></div>
+            <div class="visual-node"><strong>Database</strong><span>Private listener</span></div>
+            <div class="visual-pill-row">
+              <span class="visual-pill safe">Network path restricted</span>
+              <span class="visual-pill warn">Payload needs app controls</span>
+            </div>
+          </div>
+        </div>
+        <div class="split-note">
+          <div class="comparison-card">
+            <span class="badge badge-safe">Segmented</span>
+            <p>
+              The database should not be reachable directly from the internet. External users reach the web app and API;
+              only approved service traffic reaches the database network.
+            </p>
+          </div>
+          <div class="comparison-card">
+            <span class="badge badge-warning">Layered control</span>
+            <p>
+              A harmful request can still enter through the API because the API is the intended route. Prepared statements,
+              authorization, least privilege, and logging are the controls that keep that request from becoming a database compromise.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -224,6 +261,7 @@
     };
     let selectedPacketSource = "internet";
     let selectedPacketPayload = "normal";
+    let packetRunId = 0;
     const savedControls = window.DBSEC?.readControls();
     if (savedControls && Object.prototype.hasOwnProperty.call(savedControls, "network")) {
       controls.exposed.checked = !savedControls.network;
@@ -301,12 +339,26 @@
     function renderPayloadPreview() {
       packetPayloadPreview.textContent = packetPayloads[selectedPacketPayload];
       packet.classList.toggle("is-risk-payload", selectedPacketPayload !== "normal");
+      packet.querySelector(".packet-icon").textContent = selectedPacketPayload === "normal" ? "SQL" : "";
+    }
+
+    function resetPacket(messageText) {
+      packetRunId += 1;
+      document.getElementById("database-node").classList.remove("is-impacted");
+      document.querySelectorAll(".route-card").forEach((card) => card.classList.remove("is-active-route"));
+      laneTrack.className = "lane-track";
+      packet.className = `packet ${selectedPacketPayload !== "normal" ? "is-risk-payload" : ""}`;
+      packet.style.left = "18px";
+      packet.querySelector(".packet-icon").textContent = selectedPacketPayload === "normal" ? "SQL" : "";
+      if (messageText) packetStatus.textContent = messageText;
     }
 
     function sendPacket() {
       const current = state();
       const source = selectedPacketSource;
       const malicious = selectedPacketPayload !== "normal";
+      const payloadName = packetPayloadLabels[selectedPacketPayload];
+      const runId = ++packetRunId;
       const evaluation = evaluate(source, current);
       document.getElementById("database-node").classList.remove("is-impacted");
       renderRoutes(current);
@@ -316,20 +368,26 @@
       packetSourceLabel.textContent = sourceLabel(source);
       laneTrack.className = `lane-track ${evaluation.allowed ? "allowed" : "blocked"}`;
       packet.className = `packet ${malicious ? "is-risk-payload" : ""}`;
+      packet.style.left = "18px";
+      packet.querySelector(".packet-icon").textContent = malicious ? "" : "SQL";
       void packet.offsetWidth;
       packet.classList.add("running", evaluation.allowed ? "allowed" : "blocked");
       window.setTimeout(() => {
-        const payloadName = packetPayloadLabels[selectedPacketPayload];
+        if (runId !== packetRunId) return;
         if (evaluation.allowed && malicious) {
           const databaseNode = document.getElementById("database-node");
           void databaseNode.offsetWidth;
           databaseNode.classList.add("is-impacted");
         }
-        packetStatus.textContent = evaluation.allowed
-          ? malicious
-            ? `${payloadName} reached the database path. Network controls allowed a harmful packet to reach the database.`
-            : `${payloadName} reached the database path. Network controls allowed the expected service traffic.`
-          : `${payloadName} was blocked before reaching the database. ${evaluation.text}`;
+        if (evaluation.allowed && malicious && source === "api") {
+          packetStatus.textContent = `${payloadName} reached the database path through the API. That route is expected; prepared statements, authorization, least privilege, and logging must stop the payload from becoming harmful.`;
+        } else if (evaluation.allowed && malicious) {
+          packetStatus.textContent = `${payloadName} reached the database path. Network controls allowed a harmful packet to reach the database.`;
+        } else if (evaluation.allowed) {
+          packetStatus.textContent = `${payloadName} reached the database path. Network controls allowed the expected service traffic.`;
+        } else {
+          packetStatus.textContent = `${payloadName} was blocked before reaching the database. ${evaluation.text}`;
+        }
         renderRoute(
           routeCardFor(source),
           evaluation,
@@ -404,6 +462,7 @@
       renderRoutes(current);
       document.querySelectorAll(".route-card").forEach((card) => card.classList.remove("is-active-route"));
       document.getElementById("database-node").classList.remove("is-impacted");
+      resetPacket("Settings changed. Send a packet to validate the current path.");
 
       if (directPathOpen) {
         message.className = "notice notice-danger";
@@ -439,6 +498,7 @@
         selectedPacketSource = button.dataset.packetSource;
         packetSourceButtons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
         packetSourceLabel.textContent = sourceLabel(selectedPacketSource);
+        resetPacket("Source changed. Send the packet again from the start.");
       });
     });
     packetPayloadButtons.forEach((button) => {
@@ -446,6 +506,7 @@
         selectedPacketPayload = button.dataset.packetPayload;
         packetPayloadButtons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
         renderPayloadPreview();
+        resetPacket("Payload changed. Send the packet again from the start.");
       });
     });
     document.getElementById("secure-preset").addEventListener("click", () => {
@@ -464,6 +525,7 @@
     });
     renderPayloadPreview();
     render();
+    resetPacket("Send a packet to see where the selected payload stops.");
   </script>
   <script src="/presenter.js"></script>
 </body>

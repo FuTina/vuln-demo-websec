@@ -14,16 +14,17 @@
         <span>Database Security Playground</span>
       </a>
       <nav class="app-nav" aria-label="Main navigation">
-        <a href="/" data-path="/">Overview</a>
-        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
-        <a href="/users.html" data-path="/users.html">Data Masking</a>
-        <a href="/xss.html" data-path="/xss.html">XSS</a>
-        <a href="/audit.html" data-path="/audit.html">Audit</a>
-        <a href="/network.html" data-path="/network.html">Network</a>
-        <a href="/config.html" data-path="/config.html">Config</a>
+        <a href="/" data-path="/"><span>Overview</span></a>
+        <a href="/sqli.html" data-path="/sqli.html" data-nav-control="prepared"><span>SQL Injection</span></a>
+        <a href="/xss.html" data-path="/xss.html" data-nav-control="encoding"><span>XSS</span></a>
+        <a href="/users.html" data-path="/users.html" data-nav-control="rbac"><span>Data Masking</span></a>
+        <a href="/audit.html" data-path="/audit.html" data-nav-control="audit"><span>Audit</span></a>
+        <a href="/network.html" data-path="/network.html" data-nav-control="network"><span>Network</span></a>
+        <a href="/config.html" data-path="/config.html" data-nav-control="config"><span>Config</span></a>
       </nav>
     </div>
   </header>
+  <script src="/security-state.js"></script>
 
   <main class="page">
     <section class="module-section">
@@ -88,6 +89,10 @@
           </form>
         </div>
       </div>
+      <div id="security-impact" data-security-impact class="security-impact impact-danger">
+        <strong>Security Impact</strong>
+        <span>Prepared Statements disabled: user input can change SQL query structure in vulnerable paths.</span>
+      </div>
 
       <div class="grid grid-2" style="margin-top:18px">
         <section class="stack">
@@ -148,20 +153,19 @@
       </div>
     </section>
 
-    <section class="module-section">
-      <p class="module-kicker">Security control that fixes it</p>
-      <h2>Use prepared statements for every database query</h2>
-      <p>
-        Prepared statements separate SQL code from values. The defense exists across common stacks such as Node.js,
-        PHP, Python, Java, C#, Ruby, and Go. Validation and rate limits still matter, but they do not replace
-        parameterized queries.
-      </p>
-    </section>
-
     <section class="module-section security-takeaway">
-      <p class="module-kicker">Security takeaway</p>
-      <h2>Never concatenate login input into SQL.</h2>
-      <p>No destructive payloads are needed to demonstrate the risk: read-only login bypass is enough.</p>
+      <div class="takeaway-grid">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <h2>Prepared statements prevent user-controlled query manipulation.</h2>
+          <p>No destructive payloads are needed to demonstrate the risk: read-only login bypass is enough.</p>
+        </div>
+        <div>
+          <p class="module-kicker">Operational takeaway</p>
+          <h2>Make parameterized queries a default code review requirement.</h2>
+          <p>Validation and rate limits help, but they do not replace fixed SQL structure.</p>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -204,6 +208,11 @@
       protectedButton.setAttribute("aria-pressed", String(!vulnerable));
       modeBadge.textContent = vulnerable ? "Vulnerable" : "Protected";
       modeBadge.className = vulnerable ? "badge badge-danger" : "badge badge-safe";
+      window.DBSEC?.updateControl(
+        "prepared",
+        !vulnerable,
+        vulnerable ? window.DBSEC.controlModel.prepared.disabled : window.DBSEC.controlModel.prepared.enabled
+      );
       renderQuery();
       renderResult("Ready", "Run the login check with the current input.", "warning", []);
     }
@@ -304,7 +313,7 @@
       });
     });
 
-    setMode("vulnerable");
+    setMode(window.DBSEC?.readControls().prepared ? "protected" : "vulnerable");
   </script>
   <script src="/presenter.js"></script>
 </body>

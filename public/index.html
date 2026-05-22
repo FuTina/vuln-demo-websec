@@ -14,16 +14,17 @@
         <span>Database Security Playground</span>
       </a>
       <nav class="app-nav" aria-label="Main navigation">
-        <a href="/" data-path="/">Overview</a>
-        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
-        <a href="/users.html" data-path="/users.html">Data Masking</a>
-        <a href="/xss.html" data-path="/xss.html">XSS</a>
-        <a href="/audit.html" data-path="/audit.html">Audit</a>
-        <a href="/network.html" data-path="/network.html">Network</a>
-        <a href="/config.html" data-path="/config.html">Config</a>
+        <a href="/" data-path="/"><span>Overview</span></a>
+        <a href="/sqli.html" data-path="/sqli.html" data-nav-control="prepared"><span>SQL Injection</span></a>
+        <a href="/xss.html" data-path="/xss.html" data-nav-control="encoding"><span>XSS</span></a>
+        <a href="/users.html" data-path="/users.html" data-nav-control="rbac"><span>Data Masking</span></a>
+        <a href="/audit.html" data-path="/audit.html" data-nav-control="audit"><span>Audit</span></a>
+        <a href="/network.html" data-path="/network.html" data-nav-control="network"><span>Network</span></a>
+        <a href="/config.html" data-path="/config.html" data-nav-control="config"><span>Config</span></a>
       </nav>
     </div>
   </header>
+  <script src="/security-state.js"></script>
 
   <main class="page">
     <section class="hero" aria-labelledby="page-title">
@@ -57,6 +58,25 @@
           <span class="badge badge-safe" data-control-badge="config">Secure Configuration</span>
         </div>
       </aside>
+    </section>
+
+    <section class="surface" aria-labelledby="flow-title" style="margin-bottom:18px">
+      <div class="module-header">
+        <div>
+          <p class="module-kicker">Presentation flow</p>
+          <h2 id="flow-title">Move from exposure to mitigation</h2>
+          <p class="muted">The guided path keeps the demo focused on visible risk, control impact, and operational evidence.</p>
+        </div>
+      </div>
+      <div class="flow-grid">
+        <article class="flow-step"><span class="flow-number">1</span><strong>Observe insecure baseline</strong><span>Start with controls disabled and risk visible.</span></article>
+        <article class="flow-step"><span class="flow-number">2</span><strong>Try attack</strong><span>Use the safe demo payloads in a module.</span></article>
+        <article class="flow-step"><span class="flow-number">3</span><strong>Observe exposure</strong><span>Show what data, route, or event is exposed.</span></article>
+        <article class="flow-step"><span class="flow-number">4</span><strong>Enable control</strong><span>Turn on the matching mitigation.</span></article>
+        <article class="flow-step"><span class="flow-number">5</span><strong>Observe mitigation</strong><span>Confirm the same action is contained.</span></article>
+        <article class="flow-step"><span class="flow-number">6</span><strong>Review auditability</strong><span>Check whether the activity is traceable.</span></article>
+        <article class="flow-step"><span class="flow-number">7</span><strong>Apply secure baseline</strong><span>Finish with a hardened posture.</span></article>
+      </div>
     </section>
 
     <details class="presenter-dock presenter-overview" id="presenter-dock">
@@ -310,6 +330,7 @@
     const presenterProgressBar = document.getElementById("presenter-progress-bar");
     const controlStorageKey = "dbsec.presenter.controls";
     const presenterStorageKey = "dbsec.presenter.state";
+    const evidenceStorageKey = "dbsec.presenter.evidence";
     const presenterSteps = {
       1: {
         title: "Step 1: Start insecure baseline",
@@ -433,6 +454,14 @@
       localStorage.setItem(presenterStorageKey, JSON.stringify({ active, step }));
     }
 
+    function readEvidence() {
+      try {
+        return JSON.parse(localStorage.getItem(evidenceStorageKey)) || {};
+      } catch {
+        return {};
+      }
+    }
+
     function readSavedControls() {
       try {
         return JSON.parse(localStorage.getItem(controlStorageKey));
@@ -521,6 +550,19 @@
         list.appendChild(floor);
       }
       details.appendChild(list);
+      const reduced = Object.keys(riskModel).filter((control) => !missing.includes(control));
+      if (reduced.length > 0) {
+        const reducedList = document.createElement("div");
+        reducedList.className = "impact-detail-list";
+        reduced.forEach((control) => {
+          const model = riskModel[control];
+          const item = document.createElement("div");
+          item.className = "impact-item impact-safe";
+          item.innerHTML = `<strong>${model.name} reducing risk (-${model.points})</strong><span>${model.enabled}</span>`;
+          reducedList.appendChild(item);
+        });
+        details.appendChild(reducedList);
+      }
       causes.appendChild(details);
     }
 
@@ -558,6 +600,7 @@
 
     function renderPresenterState(missing) {
       const state = readPresenterState();
+      const evidence = readEvidence();
       const controlSteps = { prepared: 2, encoding: 3, rbac: 4, audit: 5, network: 6, config: 7 };
       const controlsByStep = {
         2: "prepared",
@@ -567,21 +610,24 @@
         6: "network",
         7: "config"
       };
-      const earliestMissingStep = missing.length
-        ? Math.min(...missing.map((control) => controlSteps[control] || 7))
+      const incompleteControls = Object.keys(controlSteps).filter((control) => {
+        return missing.includes(control) || !evidence[control];
+      });
+      const earliestMissingStep = incompleteControls.length
+        ? Math.min(...incompleteControls.map((control) => controlSteps[control] || 7))
         : null;
       let activeStep = state.active ? Number(state.step) || 1 : 1;
       if (state.active && earliestMissingStep && activeStep > earliestMissingStep) {
         activeStep = earliestMissingStep;
         writePresenterState(activeStep);
       }
-      if (state.active && !missing.length && activeStep < 8) {
+      if (state.active && !incompleteControls.length && activeStep < 8) {
         activeStep = 8;
         writePresenterState(activeStep);
       }
       const current = presenterSteps[activeStep] || presenterSteps[1];
-      const completedControls = Object.keys(controlSteps).filter((control) => !missing.includes(control)).length;
-      const isComplete = state.active && (activeStep >= 8 || missing.length === 0);
+      const completedControls = Object.keys(controlSteps).filter((control) => !missing.includes(control) && evidence[control]).length;
+      const isComplete = state.active && (activeStep >= 8 || incompleteControls.length === 0);
       const completedSteps = isComplete ? 7 : state.active ? Math.min(7, 1 + completedControls) : 0;
       presenterStepPill.textContent = isComplete ? "Complete" : `Step ${activeStep}/7`;
       presenterDock.classList.toggle("is-complete", isComplete);
@@ -612,7 +658,7 @@
       document.querySelectorAll(".presenter-step").forEach((step) => {
         const number = Number(step.dataset.step);
         const stepControl = controlsByStep[number];
-        const stepComplete = state.active && (number === 1 ? true : stepControl && !missing.includes(stepControl));
+        const stepComplete = state.active && (number === 1 ? true : stepControl && !missing.includes(stepControl) && evidence[stepControl]);
         if (stepComplete) step.classList.add("is-complete");
         if (number === activeStep) step.classList.add("is-active");
       });
@@ -634,18 +680,18 @@
       scoreValue.textContent = score;
       meter.style.width = `${score}%`;
 
-      let label = "Low risk";
+      let label = "Low Risk";
       let detail = "Core preventive controls are enabled. The remaining score represents residual demo risk.";
       let className = "result-box result-safe";
       let color = "linear-gradient(90deg, #22c55e, #15803d)";
 
       if (score >= 70) {
-        label = "High risk";
+        label = "High Risk";
         detail = `Critical gap${missing.length > 1 ? "s" : ""}: ${missingNames.join(", ")}. In practice this would normally require remediation before production use.`;
         className = "result-box result-danger";
         color = "linear-gradient(90deg, #dc2626, #f97316)";
       } else if (score >= 35) {
-        label = "Medium risk";
+        label = "Medium Risk";
         detail = `Missing control${missing.length > 1 ? "s" : ""}: ${missingNames.join(", ")}. Risk is elevated because prevention, containment, or visibility is weaker.`;
         className = "result-box result-warning";
         color = "linear-gradient(90deg, #f59e0b, #facc15)";
@@ -680,10 +726,11 @@
       });
     });
     document.getElementById("presenter-insecure").addEventListener("click", () => {
+      localStorage.removeItem(evidenceStorageKey);
       setAllControls(false, "Guided Mode step 1: insecure baseline is active. Next, open SQL Injection from step 2.", 2);
     });
     document.getElementById("presenter-secure").addEventListener("click", () => {
-      setAllControls(true, "Guided Mode close: secure baseline is active for the executive summary.", 8);
+      setAllControls(true, "Secure baseline is active. Guided Mode will still stop at any module that has not been tried yet.", 8);
     });
     document.querySelectorAll("[data-presenter-link]").forEach((link) => {
       link.addEventListener("click", () => {

@@ -14,16 +14,17 @@
         <span>Database Security Playground</span>
       </a>
       <nav class="app-nav" aria-label="Main navigation">
-        <a href="/" data-path="/">Overview</a>
-        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
-        <a href="/users.html" data-path="/users.html">Data Masking</a>
-        <a href="/xss.html" data-path="/xss.html">XSS</a>
-        <a href="/audit.html" data-path="/audit.html">Audit</a>
-        <a href="/network.html" data-path="/network.html">Network</a>
-        <a href="/config.html" data-path="/config.html">Config</a>
+        <a href="/" data-path="/"><span>Overview</span></a>
+        <a href="/sqli.html" data-path="/sqli.html" data-nav-control="prepared"><span>SQL Injection</span></a>
+        <a href="/xss.html" data-path="/xss.html" data-nav-control="encoding"><span>XSS</span></a>
+        <a href="/users.html" data-path="/users.html" data-nav-control="rbac"><span>Data Masking</span></a>
+        <a href="/audit.html" data-path="/audit.html" data-nav-control="audit"><span>Audit</span></a>
+        <a href="/network.html" data-path="/network.html" data-nav-control="network"><span>Network</span></a>
+        <a href="/config.html" data-path="/config.html" data-nav-control="config"><span>Config</span></a>
       </nav>
     </div>
   </header>
+  <script src="/security-state.js"></script>
 
   <main class="page">
     <section class="module-section">
@@ -64,7 +65,7 @@
           <form id="comment-form" class="stack">
             <label>
               Comment
-              <input id="comment-input" class="input" value="Hello database team" autocomplete="off" />
+              <textarea id="comment-input" class="input" autocomplete="off">Hello database team</textarea>
             </label>
             <div>
               <p class="small muted choice-label">Optional demo payloads</p>
@@ -85,6 +86,10 @@
       <div class="badge-row" style="margin-top:14px">
         <span id="csp-badge" class="badge badge-warning">Simulated CSP: report-only</span>
         <span class="small muted">CSP is shown as a teaching badge; rendering behavior is controlled by the switch.</span>
+      </div>
+      <div id="security-impact" data-security-impact class="security-impact impact-danger">
+        <strong>Security Impact</strong>
+        <span>Output Encoding disabled: untrusted content can become active page markup.</span>
       </div>
 
       <div class="grid grid-2" style="margin-top:18px">
@@ -136,9 +141,18 @@
     </section>
 
     <section class="module-section security-takeaway">
-      <p class="module-kicker">Security takeaway</p>
-      <h2>Default to safe text output for user-generated content.</h2>
-      <p>If rich text is required, sanitize it with a proven library and pair it with CSP.</p>
+      <div class="takeaway-grid">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <h2>Default to safe text output for user-generated content.</h2>
+          <p>If rich text is required, sanitize it with a proven library and pair it with CSP.</p>
+        </div>
+        <div>
+          <p class="module-kicker">Operational takeaway</p>
+          <h2>Use safe rendering APIs as the normal implementation path.</h2>
+          <p>Keep risky rendering APIs narrow, reviewed, and covered by tests.</p>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -175,6 +189,11 @@
       renderButtonText.textContent = vulnerable ? "Render in vulnerable mode" : "Render in protected mode";
       renderButton.className = vulnerable ? "btn btn-danger" : "btn btn-safe";
       renderButton.classList.add("action-submit");
+      window.DBSEC?.updateControl(
+        "encoding",
+        !vulnerable,
+        vulnerable ? window.DBSEC.controlModel.encoding.disabled : window.DBSEC.controlModel.encoding.enabled
+      );
     }
 
     function renderComment(text) {
@@ -209,7 +228,7 @@
     });
     vulnerableButton.addEventListener("click", () => setMode("vulnerable"));
     safeButton.addEventListener("click", () => setMode("safe"));
-    setMode("vulnerable");
+    setMode(window.DBSEC?.readControls().encoding ? "safe" : "vulnerable");
   </script>
   <script src="/presenter.js"></script>
 </body>

@@ -1,6 +1,7 @@
 (function () {
   const stateKey = "dbsec.presenter.state";
   const controlsKey = "dbsec.presenter.controls";
+  const evidenceKey = "dbsec.presenter.evidence";
   const path = location.pathname.replace(/\/+$/, "") || "/";
   const guidedControls = ["prepared", "encoding", "rbac", "audit", "network", "config"];
   const modules = {
@@ -11,6 +12,7 @@
       primary: "Enable protected mode and continue",
       nextStep: 3,
       control: "prepared",
+      evidenceText: "Run a login check in Vulnerable mode before completing this step.",
       click: "#protected-mode",
       href: "/xss.html",
       completeLabel: "Continue to XSS"
@@ -22,6 +24,7 @@
       primary: "Enable protected output and continue",
       nextStep: 4,
       control: "encoding",
+      evidenceText: "Render a comment in Vulnerable mode before completing this step.",
       click: "#safe-render",
       href: "/users.html",
       completeLabel: "Continue to Data Masking"
@@ -33,6 +36,7 @@
       primary: "Continue with RBAC + masking enabled",
       nextStep: 5,
       control: "rbac",
+      evidenceText: "Change a role or toggle RBAC/masking to observe the data exposure before continuing.",
       clickAll: ["#rbac-toggle", "#mask-toggle"],
       href: "/audit.html",
       completeLabel: "Continue to Audit"
@@ -44,6 +48,7 @@
       primary: "Continue to Network",
       nextStep: 6,
       control: "audit",
+      evidenceText: "Trigger at least one audit-relevant event before continuing.",
       clickAll: ["#audit-toggle"],
       href: "/network.html",
       completeLabel: "Continue to Network"
@@ -55,6 +60,7 @@
       primary: "Apply secure network and continue",
       nextStep: 7,
       control: "network",
+      evidenceText: "Run connection tests in the risky network state before applying the secure network baseline.",
       click: "#secure-preset",
       href: "/config.html",
       completeLabel: "Continue to Config"
@@ -66,6 +72,7 @@
       primary: "Apply config and finish",
       nextStep: 8,
       control: "config",
+      evidenceText: "Inspect the Postgres runtime tab or change the checklist before finishing.",
       click: "#apply-baseline",
       finish: true,
       href: "/",
@@ -104,6 +111,30 @@
     }
   }
 
+  function readEvidence() {
+    try {
+      return JSON.parse(localStorage.getItem(evidenceKey)) || {};
+    } catch {
+      return {};
+    }
+  }
+
+  function writeEvidence(evidence) {
+    localStorage.setItem(evidenceKey, JSON.stringify(evidence));
+  }
+
+  function hasEvidence(config) {
+    return Boolean(readEvidence()[config.control]);
+  }
+
+  function markEvidence(config) {
+    if (!config?.control) return;
+    const evidence = readEvidence();
+    evidence[config.control] = true;
+    writeEvidence(evidence);
+    renderGuide(config, readState());
+  }
+
   function dispatchChange(input) {
     input?.dispatchEvent(new Event("change", { bubbles: true }));
   }
@@ -127,17 +158,22 @@
   }
 
   function runPageAction(config) {
+    if (!hasEvidence(config)) {
+      renderGuide(config, readState());
+      return false;
+    }
     if (config.click) ensureChecked(config.click);
     if (config.clickAll) config.clickAll.forEach(ensureChecked);
     if (config.control) updateControl(config.control, true);
     writeState(config.nextStep);
+    return true;
   }
 
   function syncControl(config, enabled) {
     if (config.control) updateControl(config.control, enabled);
     const state = readState();
     const currentStep = Number(state.step) || config.step;
-    if (enabled && (!state.active || currentStep <= config.step)) {
+    if (enabled && hasEvidence(config) && (!state.active || currentStep <= config.step)) {
       writeState(config.nextStep);
     } else if (!enabled && (!state.active || currentStep <= config.nextStep)) {
       writeState(config.step);
@@ -184,6 +220,38 @@
     }
   }
 
+  function bindEvidence(config) {
+    const mark = () => window.setTimeout(() => markEvidence(config), 0);
+
+    if (path === "/sqli.html") {
+      document.getElementById("login-form")?.addEventListener("submit", () => {
+        if (document.getElementById("vulnerable-mode")?.getAttribute("aria-pressed") === "true") mark();
+      });
+    } else if (path === "/xss.html") {
+      document.getElementById("comment-form")?.addEventListener("submit", () => {
+        if (document.getElementById("vulnerable-render")?.getAttribute("aria-pressed") === "true") mark();
+      });
+    } else if (path === "/users.html") {
+      document.querySelectorAll("[data-role], #rbac-toggle, #mask-toggle").forEach((item) => {
+        item.addEventListener("click", mark);
+        item.addEventListener("change", mark);
+      });
+    } else if (path === "/audit.html") {
+      document.querySelectorAll("[data-event]").forEach((button) => button.addEventListener("click", mark));
+    } else if (path === "/network.html") {
+      document.getElementById("run-tests")?.addEventListener("click", () => {
+        if (document.getElementById("exposed-toggle")?.checked) mark();
+      });
+      document.getElementById("send-packet")?.addEventListener("click", () => {
+        if (document.getElementById("exposed-toggle")?.checked) mark();
+      });
+    } else if (path === "/config.html") {
+      document.querySelector("[data-config-tab='postgres']")?.addEventListener("click", mark);
+      document.querySelector("[data-open-config-tab='postgres']")?.addEventListener("click", mark);
+      document.getElementById("checklist")?.addEventListener("change", mark);
+    }
+  }
+
   function bindManualSync(config) {
     if (path === "/sqli.html") {
       document.getElementById("protected-mode")?.addEventListener("click", () => syncControl(config, true));
@@ -223,18 +291,21 @@
     guide.open = false;
     const currentStep = Number(state.step) || 1;
     const controls = readControls();
-    const completedThisModule = Boolean(controls[config.control]);
+    const evidenceComplete = hasEvidence(config);
+    const controlComplete = Boolean(controls[config.control]);
+    const completedThisModule = controlComplete && evidenceComplete;
     const previousControls = guidedControls.slice(0, Math.max(0, guidedControls.indexOf(config.control)));
-    const previousControlsComplete = previousControls.every((control) => controls[control]);
-    const completedSteps = Math.min(7, (state.active ? 1 : 0) + guidedControls.filter((control) => controls[control]).length);
+    const evidence = readEvidence();
+    const previousControlsComplete = previousControls.every((control) => controls[control] && evidence[control]);
+    const completedSteps = Math.min(7, (state.active ? 1 : 0) + guidedControls.filter((control) => controls[control] && evidence[control]).length);
     const progress = Math.round((completedSteps / 7) * 100);
     const navigationStep = completedThisModule ? Math.max(currentStep, config.nextStep) : currentStep;
     guide.className = `presenter-module-guide ${completedThisModule ? "is-complete" : "is-active"}`;
     const title = completedThisModule ? `${config.title} complete` : config.title;
     const text = completedThisModule
       ? previousControlsComplete
-        ? "This step is complete because the matching control is already enabled. Continue with the next module or return to the overview."
-        : "This configuration step is complete. Earlier Guided Mode steps are still open, so the overview will continue at the first missing control."
+        ? "This step is complete because the demo action was observed and the matching control is enabled. Continue with the next module or return to the overview."
+        : "This step is complete. Earlier Guided Mode steps still need a hands-on action before the overview marks the flow complete."
       : config.text;
 
     guide.innerHTML = `
@@ -250,6 +321,7 @@
         <p class="module-kicker">Guided Mode</p>
         <h2>${title}</h2>
         <p>${text}</p>
+        ${evidenceComplete ? '<div class="guide-requirement is-met"><strong>Observed</strong><span>Hands-on action completed for this module.</span></div>' : `<div class="guide-requirement"><strong>Required before continue</strong><span>${config.evidenceText}</span></div>`}
         <div class="presenter-progress" aria-hidden="true"><span style="width: ${progress}%"></span></div>
       </div>
     `;
@@ -265,9 +337,11 @@
       primary.type = "button";
       primary.className = config.finish ? "btn btn-safe" : "btn btn-primary";
       primary.textContent = config.finish && !previousControlsComplete ? "Apply config and return to open steps" : config.primary;
+      primary.disabled = !evidenceComplete;
+      if (!evidenceComplete) primary.title = config.evidenceText;
       primary.addEventListener("click", () => {
-        runPageAction(config);
-        if (config.href) location.href = config.href;
+        const completed = runPageAction(config);
+        if (completed && config.href) location.href = config.href;
         else renderGuide(config, readState());
       });
       actions.appendChild(primary);
@@ -281,6 +355,7 @@
   const config = modules[path];
   if (!config) return;
   applyStoredControlState();
+  bindEvidence(config);
   bindManualSync(config);
   renderGuide(config, readState());
 })();

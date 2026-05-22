@@ -14,16 +14,17 @@
         <span>Database Security Playground</span>
       </a>
       <nav class="app-nav" aria-label="Main navigation">
-        <a href="/" data-path="/">Overview</a>
-        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
-        <a href="/users.html" data-path="/users.html">Data Masking</a>
-        <a href="/xss.html" data-path="/xss.html">XSS</a>
-        <a href="/audit.html" data-path="/audit.html">Audit</a>
-        <a href="/network.html" data-path="/network.html">Network</a>
-        <a href="/config.html" data-path="/config.html">Config</a>
+        <a href="/" data-path="/"><span>Overview</span></a>
+        <a href="/sqli.html" data-path="/sqli.html" data-nav-control="prepared"><span>SQL Injection</span></a>
+        <a href="/xss.html" data-path="/xss.html" data-nav-control="encoding"><span>XSS</span></a>
+        <a href="/users.html" data-path="/users.html" data-nav-control="rbac"><span>Data Masking</span></a>
+        <a href="/audit.html" data-path="/audit.html" data-nav-control="audit"><span>Audit</span></a>
+        <a href="/network.html" data-path="/network.html" data-nav-control="network"><span>Network</span></a>
+        <a href="/config.html" data-path="/config.html" data-nav-control="config"><span>Config</span></a>
       </nav>
     </div>
   </header>
+  <script src="/security-state.js"></script>
 
   <main class="page">
     <section class="module-section">
@@ -59,6 +60,10 @@
           <span><strong>Data masking enabled</strong><span>Hide sensitive values where possible.</span></span>
           <span class="switch"><input id="mask-toggle" type="checkbox" checked /><span class="slider"></span></span>
         </label>
+      </div>
+      <div id="security-impact" data-security-impact class="security-impact impact-safe">
+        <strong>Security Impact</strong>
+        <span>RBAC and masking enabled: records and sensitive fields are restricted by role.</span>
       </div>
 
       <div id="rbac-warning" class="notice notice-warning hidden" style="margin-top:16px">
@@ -128,8 +133,18 @@
     </section>
 
     <section class="module-section security-takeaway">
-      <p class="module-kicker">Security takeaway</p>
-      <h2>Authorize first, then minimize and mask the data returned.</h2>
+      <div class="takeaway-grid">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <h2>Least privilege limits blast radius.</h2>
+          <p>Authorize first, then minimize and mask the data returned.</p>
+        </div>
+        <div>
+          <p class="module-kicker">Operational takeaway</p>
+          <h2>Separate authorization policy from presentation masking.</h2>
+          <p>Masking reduces displayed sensitivity, but RBAC decides whether the data should be returned at all.</p>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -161,6 +176,11 @@
     const policyRbac = document.getElementById("policy-rbac");
     const policyMasking = document.getElementById("policy-masking");
     let currentRole = "app_user";
+    const savedControls = window.DBSEC?.readControls();
+    if (savedControls && Object.prototype.hasOwnProperty.call(savedControls, "rbac")) {
+      rbacToggle.checked = Boolean(savedControls.rbac);
+      maskToggle.checked = Boolean(savedControls.rbac);
+    }
     const roleLabels = { guest: "Guest", app_user: "App User", analyst: "Analyst", admin: "Admin" };
     const roleSummaries = {
       guest: "Public overview fields only",
@@ -276,7 +296,15 @@
         render();
       });
     });
-    [rbacToggle, maskToggle].forEach((control) => control.addEventListener("change", render));
+    [rbacToggle, maskToggle].forEach((control) => control.addEventListener("change", () => {
+      const protectedState = rbacToggle.checked && maskToggle.checked;
+      window.DBSEC?.updateControl(
+        "rbac",
+        protectedState,
+        protectedState ? window.DBSEC.controlModel.rbac.enabled : window.DBSEC.controlModel.rbac.disabled
+      );
+      render();
+    }));
     render();
   </script>
   <script src="/presenter.js"></script>

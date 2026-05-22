@@ -14,16 +14,17 @@
         <span>Database Security Playground</span>
       </a>
       <nav class="app-nav" aria-label="Main navigation">
-        <a href="/" data-path="/">Overview</a>
-        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
-        <a href="/users.html" data-path="/users.html">Data Masking</a>
-        <a href="/xss.html" data-path="/xss.html">XSS</a>
-        <a href="/audit.html" data-path="/audit.html">Audit</a>
-        <a href="/network.html" data-path="/network.html">Network</a>
-        <a href="/config.html" data-path="/config.html">Config</a>
+        <a href="/" data-path="/"><span>Overview</span></a>
+        <a href="/sqli.html" data-path="/sqli.html" data-nav-control="prepared"><span>SQL Injection</span></a>
+        <a href="/xss.html" data-path="/xss.html" data-nav-control="encoding"><span>XSS</span></a>
+        <a href="/users.html" data-path="/users.html" data-nav-control="rbac"><span>Data Masking</span></a>
+        <a href="/audit.html" data-path="/audit.html" data-nav-control="audit"><span>Audit</span></a>
+        <a href="/network.html" data-path="/network.html" data-nav-control="network"><span>Network</span></a>
+        <a href="/config.html" data-path="/config.html" data-nav-control="config"><span>Config</span></a>
       </nav>
     </div>
   </header>
+  <script src="/security-state.js"></script>
 
   <main class="page">
     <section class="module-section">
@@ -36,7 +37,7 @@
           </p>
         </div>
         <div class="module-actions">
-          <span id="config-badge" class="badge badge-warning">Needs hardening</span>
+          <span id="config-badge" class="badge badge-warning">Unsafe</span>
           <button type="button" class="btn btn-primary" data-open-config-tab="postgres">Open Postgres runtime</button>
         </div>
       </div>
@@ -67,12 +68,62 @@
       <p class="module-kicker">Try it yourself</p>
       <h2>Build a safer database baseline</h2>
       <div class="network-actions" style="margin-bottom:14px">
-        <button type="button" class="btn btn-safe" id="apply-baseline">Apply secure baseline</button>
+        <button type="button" class="btn btn-primary" id="review-config">Review configuration</button>
+        <button type="button" class="btn btn-safe" id="apply-baseline">Show hardened answer</button>
         <button type="button" class="btn btn-danger" id="apply-risky">Start insecure demo</button>
       </div>
-      <div class="grid grid-2">
+      <div id="security-impact" data-security-impact class="security-impact impact-warning" style="margin-bottom:14px">
+        <strong>Security Impact</strong>
+        <span>Secure Configuration disabled: risky defaults can undermine otherwise good controls.</span>
+      </div>
+      <div class="config-builder" id="config-builder">
+        <div class="builder-head">
+          <div>
+            <p class="module-kicker">Configuration builder</p>
+            <h3>Assemble the database config from building blocks</h3>
+            <p class="muted">Move one block into each target slot. The generated config updates immediately; the review tells you whether the result is hardened.</p>
+          </div>
+          <span class="badge badge-warning" id="builder-badge">0/7 slots filled</span>
+        </div>
+        <div class="builder-workspace">
+          <div class="builder-palette" aria-label="Available configuration blocks">
+            <h3>Available blocks</h3>
+            <div class="builder-blocks">
+              <button type="button" draggable="true" data-builder-option data-builder-key="user" data-builder-value="risk"><strong>POSTGRES_USER=root</strong><span>Default administrative identity</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="network" data-builder-value="safe"><strong>expose: 5432</strong><span>Backend network only</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="tls" data-builder-value="safe"><strong>hostssl + SCRAM</strong><span>TLS and stronger password auth</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="privilege" data-builder-value="risk"><strong>GRANT ALL PRIVILEGES</strong><span>Broad schema access</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="secrets" data-builder-value="risk"><strong>POSTGRES_PASSWORD=root</strong><span>Inline credential</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="audit" data-builder-value="safe"><strong>AUDIT_LOGGING=true</strong><span>Traceable security events</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="backups" data-builder-value="risk"><strong>BACKUPS=none</strong><span>No restore point</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="user" data-builder-value="safe"><strong>POSTGRES_USER=app_user</strong><span>Application-scoped identity</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="tls" data-builder-value="risk"><strong>ssl = off</strong><span>Plain host connection</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="privilege" data-builder-value="safe"><strong>GRANT SELECT, INSERT, UPDATE</strong><span>Task-scoped access</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="network" data-builder-value="risk"><strong>ports: 5432:5432</strong><span>Published database listener</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="backups" data-builder-value="safe"><strong>RESTORE_TEST=required</strong><span>Recoverable baseline</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="audit" data-builder-value="risk"><strong>AUDIT_LOGGING=false</strong><span>No security event trail</span></button>
+              <button type="button" draggable="true" data-builder-option data-builder-key="secrets" data-builder-value="safe"><strong>POSTGRES_PASSWORD_FILE</strong><span>Secret file reference</span></button>
+            </div>
+          </div>
+          <div class="builder-slots" aria-label="Configuration target slots">
+            <h3>Target config</h3>
+            <div class="builder-slot" data-builder-slot="user"><strong>Database identity</strong><span>Drop identity block here</span></div>
+            <div class="builder-slot" data-builder-slot="privilege"><strong>Privileges</strong><span>Drop grants block here</span></div>
+            <div class="builder-slot" data-builder-slot="network"><strong>Network exposure</strong><span>Drop network block here</span></div>
+            <div class="builder-slot" data-builder-slot="tls"><strong>Transport policy</strong><span>Drop TLS/auth block here</span></div>
+            <div class="builder-slot" data-builder-slot="audit"><strong>Monitoring</strong><span>Drop audit block here</span></div>
+            <div class="builder-slot" data-builder-slot="backups"><strong>Recovery</strong><span>Drop backup block here</span></div>
+            <div class="builder-slot" data-builder-slot="secrets"><strong>Secrets</strong><span>Drop secrets block here</span></div>
+          </div>
+        </div>
         <div>
-          <div class="checklist" id="checklist">
+          <h3>Generated configuration preview</h3>
+          <pre id="builder-code" class="query-box builder-code"></pre>
+        </div>
+      </div>
+      <div class="grid grid-2 hidden" id="config-review-panel">
+        <div>
+          <div class="checklist hidden" id="checklist">
             <label class="check-item"><input type="checkbox" data-key="user" /><span><strong>Dedicated DB user</strong><span>Replace root/default login with an application identity.</span></span></label>
             <label class="check-item"><input type="checkbox" data-key="privilege" /><span><strong>Least privilege grants</strong><span>Limit the app user to required schemas and operations.</span></span></label>
             <label class="check-item"><input type="checkbox" data-key="network" /><span><strong>No public DB port</strong><span>Bind the listener to a private network path only.</span></span></label>
@@ -88,6 +139,7 @@
           <div class="meter" aria-hidden="true"><span id="config-meter"></span></div>
           <p id="config-explanation" class="muted" style="margin-top:12px"></p>
           <div id="deploy-decision" class="deploy-decision" aria-live="polite"></div>
+          <div id="blocker-note" class="notice notice-warning" style="margin-top:14px"></div>
           <p class="small muted" style="margin-top:10px">
             Demo heuristic, not a formal risk model. Critical blockers keep the status elevated.
           </p>
@@ -96,77 +148,24 @@
     </section>
 
     <section class="module-section">
-      <p class="module-kicker">Live configuration preview</p>
-      <h2>Bad defaults move toward safer settings</h2>
-      <div class="preview-grid">
-        <div>
-          <h3>Pseudo baseline</h3>
-          <pre class="query-box">DB_USER=root
-DB_PASSWORD=root
-DB_PORT=3306 exposed
-GRANTS=ALL PRIVILEGES
-TLS=false
-AUDIT_LOGGING=false</pre>
-        </div>
-        <div>
-          <h3>Current pseudo preview</h3>
-          <pre id="config-preview" class="query-box"></pre>
-        </div>
-      </div>
-      <div id="blocker-note" class="notice notice-warning" style="margin-top:14px"></div>
-    </section>
-
-    <section class="module-section">
       <p class="module-kicker">Configuration review</p>
       <h2>Findings update from the selected controls</h2>
       <div id="finding-grid" class="finding-grid" aria-live="polite"></div>
     </section>
 
-    <section class="module-section">
-      <p class="module-kicker">What happens?</p>
-      <h2>Secure configuration turns risky defaults into explicit controls</h2>
-      <div class="explain-layout">
-        <div class="explainer-visual" aria-hidden="true">
-          <div class="visual-title">Baseline controls</div>
-          <div class="visual-stack">
-            <div class="visual-table">
-              <div><span>root user</span><strong class="visual-hidden">Replace</strong></div>
-              <div><span>public port</span><strong class="visual-hidden">Close</strong></div>
-              <div><span>plain secret</span><strong class="visual-hidden">Move</strong></div>
-              <div><span>TLS + backups</span><strong class="visual-safe">Enable</strong></div>
-            </div>
-            <div class="visual-pill-row">
-              <span class="visual-pill safe">Least privilege</span>
-              <span class="visual-pill safe">Secret manager</span>
-            </div>
-          </div>
+    <section class="module-section security-takeaway">
+      <div class="takeaway-grid">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <h2>Secure defaults prevent hardening from becoming optional cleanup.</h2>
+          <p>Make the secure database configuration the normal configuration.</p>
         </div>
         <div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Risky default</th><th>Safer control</th><th>Effect</th></tr></thead>
-              <tbody>
-                <tr><td>Default/root user</td><td>Dedicated app user</td><td>Limits blast radius.</td></tr>
-                <tr><td>Broad privileges</td><td>Least privilege</td><td>Reduces abuse if credentials leak.</td></tr>
-                <tr><td>No TLS</td><td>TLS</td><td>Protects traffic in transit.</td></tr>
-                <tr><td>No backups</td><td>Tested backups</td><td>Supports recovery.</td></tr>
-                <tr><td>No monitoring</td><td>Audit logs and metrics</td><td>Makes incidents visible.</td></tr>
-                <tr><td>Plain secrets</td><td>Secret management</td><td>Supports rotation and reduces leakage.</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="small muted" style="margin-top:12px">
-            The score starts at 100 and subtracts illustrative control weights. Missing critical controls impose a minimum
-            risk floor, so hardcoded secrets, root users, public ports, or broad privileges cannot be hidden by unrelated
-            good settings.
-          </p>
+          <p class="module-kicker">Operational takeaway</p>
+          <h2>Block release on critical configuration gaps.</h2>
+          <p>Root users, broad grants, hardcoded secrets, and public database ports should remain deployment blockers.</p>
         </div>
       </div>
-    </section>
-
-    <section class="module-section security-takeaway">
-      <p class="module-kicker">Security takeaway</p>
-      <h2>Make the secure database configuration the normal configuration.</h2>
     </section>
     </div>
 
@@ -177,7 +176,7 @@ AUDIT_LOGGING=false</pre>
           <p class="module-kicker">Postgres runtime</p>
           <h2>Connected database mode</h2>
           <p class="muted">
-            This is a read-only playground view of the running demo and its reference configuration. It does not start or change containers.
+            This is a read-only view of the database client currently running behind the demo. Plain <code>npm start</code> uses SQLite; Docker Compose is the Postgres path.
           </p>
         </div>
         <span id="db-status-badge" class="badge badge-warning">Checking database</span>
@@ -228,27 +227,48 @@ AUDIT_LOGGING=false</pre>
     <section class="module-section">
       <div class="module-header">
         <div>
+          <p class="module-kicker">Connection policy tester</p>
+          <h2>Test how Postgres would treat a connection attempt</h2>
+          <p class="muted">Pick a connection shape and compare the risky policy with the hardened policy.</p>
+        </div>
+      </div>
+      <div class="policy-tester">
+        <div class="segmented policy-test-selector" role="group" aria-label="Connection attempt">
+          <button type="button" data-policy-test="local" aria-pressed="true">Local socket</button>
+          <button type="button" data-policy-test="hostnossl" aria-pressed="false">Host without TLS</button>
+          <button type="button" data-policy-test="hostssl" aria-pressed="false">Host with TLS</button>
+        </div>
+        <div class="policy-result-grid" aria-live="polite">
+          <article id="risky-policy-result" class="policy-result-card"></article>
+          <article id="hardened-policy-result" class="policy-result-card"></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <div class="module-header">
+        <div>
           <p class="module-kicker">Config files</p>
           <h2>Compare risky and hardened Postgres files</h2>
           <p class="muted">These snippets are loaded from <code>config-examples/postgres</code> and are shown for explanation only.</p>
         </div>
         <span id="config-file-engine" class="badge badge-role">Config examples</span>
       </div>
-      <div id="config-file-tabs" class="segmented" role="group" aria-label="Configuration file type"></div>
+      <div id="config-file-tabs" class="segmented config-file-selector" role="group" aria-label="Configuration file type"></div>
       <div class="file-compare-grid" style="margin-top:14px">
         <section>
           <div class="file-heading">
             <h3>Risky file</h3>
             <span id="risky-file-path" class="small muted"></span>
           </div>
-          <pre id="risky-file-preview" class="query-box"></pre>
+          <div id="risky-file-preview" class="query-box config-file-preview"></div>
         </section>
         <section>
           <div class="file-heading">
             <h3>Hardened file</h3>
             <span id="hardened-file-path" class="small muted"></span>
           </div>
-          <pre id="hardened-file-preview" class="query-box"></pre>
+          <div id="hardened-file-preview" class="query-box config-file-preview"></div>
         </section>
       </div>
       <div id="config-file-note" class="notice notice-info" style="margin-top:14px">
@@ -275,12 +295,13 @@ AUDIT_LOGGING=false</pre>
       postgres: document.getElementById("config-tab-postgres")
     };
     const checklist = document.getElementById("checklist");
+    const reviewPanel = document.getElementById("config-review-panel");
+    const reviewButton = document.getElementById("review-config");
     const score = document.getElementById("config-score");
     const meter = document.getElementById("config-meter");
     const result = document.getElementById("config-result");
     const status = document.getElementById("config-status");
     const explanation = document.getElementById("config-explanation");
-    const preview = document.getElementById("config-preview");
     const badge = document.getElementById("config-badge");
     const blockerNote = document.getElementById("blocker-note");
     const findingGrid = document.getElementById("finding-grid");
@@ -294,8 +315,17 @@ AUDIT_LOGGING=false</pre>
     const riskyFilePreview = document.getElementById("risky-file-preview");
     const hardenedFilePreview = document.getElementById("hardened-file-preview");
     const fileNote = document.getElementById("config-file-note");
+    const builderOptions = Array.from(document.querySelectorAll("[data-builder-option]"));
+    const builderSlots = Array.from(document.querySelectorAll("[data-builder-slot]"));
+    const builderCode = document.getElementById("builder-code");
+    const builderBadge = document.getElementById("builder-badge");
+    const policyTestButtons = Array.from(document.querySelectorAll("[data-policy-test]"));
+    const riskyPolicyResult = document.getElementById("risky-policy-result");
+    const hardenedPolicyResult = document.getElementById("hardened-policy-result");
     const weights = { user: 14, privilege: 16, network: 16, tls: 10, audit: 10, backups: 12, secrets: 18 };
     let activeFileId = "compose";
+    let builderSelection = {};
+    let reviewVisible = false;
     let postgresLoaded = false;
     const controls = {
       user: {
@@ -348,6 +378,53 @@ AUDIT_LOGGING=false</pre>
         severity: "critical"
       }
     };
+    const builderSnippets = {
+      user: {
+        risk: "DB_USER=root",
+        safe: "DB_USER=app_user"
+      },
+      privilege: {
+        risk: "GRANTS=ALL PRIVILEGES ON app.*",
+        safe: "GRANT SELECT, INSERT, UPDATE ON app.users TO app_user;"
+      },
+      network: {
+        risk: "ports:\n  - \"5432:5432\"",
+        safe: "expose:\n  - \"5432\"\nnetworks:\n  - backend_internal"
+      },
+      tls: {
+        risk: "ssl = off\nhost all all all md5",
+        safe: "ssl = on\nhostnossl all all all reject\nhostssl all all all scram-sha-256"
+      },
+      audit: {
+        risk: "AUDIT_LOGGING=false",
+        safe: "AUDIT_LOGGING=true\nLOG_EVENTS=login,export,privilege"
+      },
+      backups: {
+        risk: "BACKUPS=not configured",
+        safe: "BACKUPS=scheduled\nRESTORE_TEST=required"
+      },
+      secrets: {
+        risk: "POSTGRES_PASSWORD=root",
+        safe: "POSTGRES_PASSWORD_FILE=/run/secrets/postgres_app_password"
+      }
+    };
+    const policyTests = {
+      local: {
+        label: "Local socket",
+        risky: ["Allowed locally", "trust accepts local socket connections without a password check. This is convenient for bootstrap, but should be scoped carefully.", "is-risk"],
+        hardened: ["Allowed locally", "The demo keeps local socket trust for container-local bootstrap. Production teams often tighten this further.", "is-safe"]
+      },
+      hostnossl: {
+        label: "Host without TLS",
+        risky: ["Allowed with weak protection", "The risky policy accepts host connections with md5 password authentication and no TLS requirement.", "is-risk"],
+        hardened: ["Rejected", "The hardened policy rejects hostnossl before authentication, so plaintext database traffic cannot proceed.", "is-blocked"]
+      },
+      hostssl: {
+        label: "Host with TLS",
+        risky: ["Allowed, but not enforced", "The risky policy may allow host traffic, but it does not require the encrypted hostssl path.", "is-risk"],
+        hardened: ["Allowed with SCRAM", "The hardened policy allows TLS host connections and requires SCRAM password authentication.", "is-safe"]
+      }
+    };
 
     function selected() {
       return Array.from(checklist.querySelectorAll("input")).filter((item) => item.checked).map((item) => item.dataset.key);
@@ -361,7 +438,92 @@ AUDIT_LOGGING=false</pre>
       checklist.querySelectorAll("input").forEach((input) => {
         input.checked = enabled;
       });
+      builderSelection = Object.fromEntries(Object.keys(weights).map((key) => [key, enabled ? "safe" : "risk"]));
+      reviewVisible = enabled;
       render();
+    }
+
+    function setChecklistValue(key, enabled) {
+      const input = checklist.querySelector(`[data-key="${key}"]`);
+      if (!input) return;
+      input.checked = enabled;
+      checklist.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    function syncBuilderFromKeys(keys) {
+      builderOptions.forEach((option) => {
+        const selected = builderSelection[option.dataset.builderKey] === option.dataset.builderValue;
+        option.classList.toggle("is-selected", selected);
+        option.setAttribute("aria-pressed", String(selected));
+      });
+      builderSlots.forEach((slot) => {
+        const key = slot.dataset.builderSlot;
+        const value = builderSelection[key];
+        const option = builderOptions.find((item) => item.dataset.builderKey === key && item.dataset.builderValue === value);
+        const filled = Boolean(option);
+        const correct = value === "safe";
+        slot.className = filled
+          ? `builder-slot is-filled ${reviewVisible ? correct ? "is-correct" : "is-incorrect" : ""}`
+          : "builder-slot";
+        slot.innerHTML = `
+          <strong>${slotTitle(key)}</strong>
+          <span>${option?.querySelector("strong")?.textContent || `Drop ${slotTitle(key).toLowerCase()} block here`}</span>
+          <small>${option?.querySelector("span")?.textContent || "Choose a block from the palette"}</small>
+        `;
+      });
+    }
+
+    function renderBuilderCode(keys) {
+      const sections = Object.entries(builderSnippets).map(([key, snippet]) => {
+        const selectedValue = builderSelection[key];
+        const secure = selectedValue === "safe";
+        const title = controls[key]?.title || key;
+        return `# ${title}\n${selectedValue ? secure ? snippet.safe : snippet.risk : "# no block selected"}`;
+      });
+      builderCode.textContent = sections.join("\n\n");
+      const filledCount = Object.keys(weights).filter((key) => builderSelection[key]).length;
+      const safeCount = keys.length;
+      if (!reviewVisible) {
+        builderBadge.textContent = `${filledCount}/${Object.keys(weights).length} slots filled`;
+        builderBadge.className = filledCount === Object.keys(weights).length ? "badge badge-role" : "badge badge-warning";
+        return;
+      }
+      builderBadge.textContent = safeCount === Object.keys(weights).length
+        ? "Hardened config complete"
+        : `${safeCount}/${Object.keys(weights).length} hardened decisions`;
+      builderBadge.className = safeCount === Object.keys(weights).length ? "badge badge-safe" : "badge badge-warning";
+    }
+
+    function slotTitle(key) {
+      const labels = {
+        user: "Database identity",
+        privilege: "Privileges",
+        network: "Network exposure",
+        tls: "Transport policy",
+        audit: "Monitoring",
+        backups: "Recovery",
+        secrets: "Secrets"
+      };
+      return labels[key] || key;
+    }
+
+    function chooseBuilderOption(key, value) {
+      builderSelection[key] = value;
+      reviewVisible = false;
+      setChecklistValue(key, value === "safe");
+    }
+
+    function renderPolicyTest(testId) {
+      const test = policyTests[testId] || policyTests.local;
+      policyTestButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.policyTest === testId));
+      });
+      const [riskyTitle, riskyText, riskyClass] = test.risky;
+      const [hardenedTitle, hardenedText, hardenedClass] = test.hardened;
+      riskyPolicyResult.className = `policy-result-card ${riskyClass}`;
+      riskyPolicyResult.innerHTML = `<span class="badge badge-danger">Risky policy</span><h3>${riskyTitle}</h3><p>${riskyText}</p>`;
+      hardenedPolicyResult.className = `policy-result-card ${hardenedClass}`;
+      hardenedPolicyResult.innerHTML = `<span class="badge ${hardenedClass === "is-safe" ? "badge-safe" : "badge-soon"}">Hardened policy</span><h3>${hardenedTitle}</h3><p>${hardenedText}</p>`;
     }
 
     function renderFindings(keys) {
@@ -397,6 +559,10 @@ AUDIT_LOGGING=false</pre>
 
     function render() {
       const keys = selected();
+      syncBuilderFromKeys(keys);
+      renderBuilderCode(keys);
+      reviewPanel.classList.toggle("hidden", !reviewVisible);
+      reviewButton.disabled = Object.keys(weights).some((key) => !builderSelection[key]);
       const reduction = keys.reduce((total, key) => total + weights[key], 0);
       const blockers = [];
       if (!has("secrets", keys)) blockers.push("hardcoded credentials");
@@ -433,22 +599,17 @@ AUDIT_LOGGING=false</pre>
       }
       result.className = className;
       status.textContent = label;
-      badge.textContent = label.replace(" configuration", "");
+      badge.textContent = risk < 40 ? "Hardened" : "Unsafe";
       badge.className = badgeClass;
       explanation.textContent = detail;
       meter.style.background = gradient;
+      window.DBSEC?.updateControl(
+        "config",
+        reviewVisible && keys.length === Object.keys(weights).length,
+        keys.length === Object.keys(weights).length ? window.DBSEC.controlModel.config.enabled : window.DBSEC.controlModel.config.disabled
+      );
       renderDeployDecision(risk, blockers);
       renderFindings(keys);
-
-      preview.textContent = [
-        `DB_USER=${has("user", keys) ? "app_user" : "root"}`,
-        `DB_PASSWORD=${has("secrets", keys) ? "from environment / secret manager" : "root"}`,
-        `DB_PORT=${has("network", keys) ? "internal only" : "3306 exposed"}`,
-        `GRANTS=${has("privilege", keys) ? "least privilege" : "ALL PRIVILEGES"}`,
-        `TLS=${has("tls", keys) ? "required" : "false"}`,
-        `AUDIT_LOGGING=${has("audit", keys) ? "enabled" : "false"}`,
-        `BACKUPS=${has("backups", keys) ? "configured and restore-tested" : "not configured"}`
-      ].join("\n");
 
       if (blockers.length > 0) {
         blockerNote.className = "notice notice-warning";
@@ -468,7 +629,7 @@ AUDIT_LOGGING=false</pre>
         statusBadge.textContent = postgres ? "Postgres connected" : "SQLite local mode";
         statusBadge.className = postgres ? "badge badge-safe" : "badge badge-warning";
         runtime.className = postgres ? "result-box result-safe" : "result-box result-warning";
-        runtime.innerHTML = `<h3>${postgres ? "Postgres is active" : "SQLite is active"}</h3><p class="muted">Health check returned <code>client=${health.client}</code> and <code>db=${health.db}</code>.</p>`;
+        runtime.innerHTML = `<h3>${postgres ? "Postgres runtime is active" : "SQLite local runtime is active"}</h3><p class="muted">Health check returned <code>client=${health.client}</code> and <code>db=${health.db}</code>. To show Postgres here, start the app with Docker Compose instead of plain <code>npm start</code>.</p>`;
       } catch (err) {
         statusBadge.textContent = "Health check failed";
         statusBadge.className = "badge badge-danger";
@@ -484,10 +645,87 @@ AUDIT_LOGGING=false</pre>
       });
       riskyFilePath.textContent = file.riskyPath;
       hardenedFilePath.textContent = file.hardenedPath;
-      riskyFilePreview.textContent = file.risky.trim();
-      hardenedFilePreview.textContent = file.hardened.trim();
+      renderFilePreview(riskyFilePreview, file.risky, file.id);
+      renderFilePreview(hardenedFilePreview, file.hardened, file.id);
       fileNote.className = "notice notice-info";
-      fileNote.innerHTML = `<h3>${file.label}</h3><p>The left side shows the shortcut that creates risk; the right side shows the hardened reference used by this demo.</p>`;
+      fileNote.innerHTML = file.id === "hba"
+        ? "<h3>Connection policy</h3><p>Each row is evaluated as an access rule. The hardened policy explicitly rejects non-TLS host connections and only allows TLS connections with SCRAM authentication.</p>"
+        : `<h3>${file.label}</h3><p>The left side shows the shortcut that creates risk; the right side shows the hardened reference used by this demo.</p>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function parseHba(content) {
+      return content
+        .trim()
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line && !line.startsWith("#"))
+        .map((line) => {
+          const parts = line.split(/\s+/);
+          if (parts[0] === "local") {
+            return {
+              type: parts[0],
+              database: parts[1] || "-",
+              user: parts[2] || "-",
+              address: "local socket",
+              method: parts[3] || "-",
+            };
+          }
+          return {
+            type: parts[0] || "-",
+            database: parts[1] || "-",
+            user: parts[2] || "-",
+            address: parts[3] || "-",
+            method: parts[4] || "-",
+          };
+        });
+    }
+
+    function renderPolicyTable(content) {
+      const rows = parseHba(content);
+      return `
+        <div class="policy-table-wrap">
+          <table class="policy-table">
+            <thead>
+              <tr>
+                <th>Connection</th>
+                <th>Database</th>
+                <th>User</th>
+                <th>Source</th>
+                <th>Decision / Auth</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((row) => `
+                <tr class="${row.method === "reject" ? "policy-reject" : row.type === "hostnossl" || row.method === "md5" ? "policy-risk" : "policy-allow"}">
+                  <td><code>${escapeHtml(row.type)}</code></td>
+                  <td>${escapeHtml(row.database)}</td>
+                  <td>${escapeHtml(row.user)}</td>
+                  <td>${escapeHtml(row.address)}</td>
+                  <td><span class="policy-method">${escapeHtml(row.method)}</span></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderFilePreview(target, content, fileId) {
+      if (fileId === "hba") {
+        target.className = "policy-preview";
+        target.innerHTML = renderPolicyTable(content);
+        return;
+      }
+      target.className = "query-box config-file-preview";
+      target.textContent = content.trim();
     }
 
     async function loadConfigFiles() {
@@ -536,7 +774,49 @@ AUDIT_LOGGING=false</pre>
       }
     }
 
+    const savedControls = window.DBSEC?.readControls();
+    if (savedControls && Object.prototype.hasOwnProperty.call(savedControls, "config")) {
+      const enabled = Boolean(savedControls.config);
+      checklist.querySelectorAll("input").forEach((input) => {
+        input.checked = enabled;
+      });
+      builderSelection = Object.fromEntries(Object.keys(weights).map((key) => [key, enabled ? "safe" : "risk"]));
+      reviewVisible = enabled;
+    }
     checklist.addEventListener("change", render);
+    builderOptions.forEach((option) => {
+      option.addEventListener("click", () => chooseBuilderOption(option.dataset.builderKey, option.dataset.builderValue));
+      option.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/plain", JSON.stringify({
+          key: option.dataset.builderKey,
+          value: option.dataset.builderValue
+        }));
+      });
+    });
+    builderSlots.forEach((slot) => {
+      slot.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        slot.classList.add("is-hover");
+      });
+      slot.addEventListener("dragleave", () => slot.classList.remove("is-hover"));
+      slot.addEventListener("drop", (event) => {
+        event.preventDefault();
+        slot.classList.remove("is-hover");
+        try {
+          const dropped = JSON.parse(event.dataTransfer.getData("text/plain"));
+          if (dropped.key === slot.dataset.builderSlot) chooseBuilderOption(dropped.key, dropped.value);
+        } catch {
+          // Ignore malformed drag data from outside the builder.
+        }
+      });
+    });
+    policyTestButtons.forEach((button) => {
+      button.addEventListener("click", () => renderPolicyTest(button.dataset.policyTest));
+    });
+    reviewButton.addEventListener("click", () => {
+      reviewVisible = true;
+      render();
+    });
     document.getElementById("apply-baseline").addEventListener("click", () => setAllControls(true));
     document.getElementById("apply-risky").addEventListener("click", () => setAllControls(false));
     tabButtons.forEach((button) => {
@@ -548,6 +828,7 @@ AUDIT_LOGGING=false</pre>
     if (location.hash === "#postgres" || location.hash === "#postgres-runtime") {
       openConfigTab("postgres", "postgres-runtime");
     }
+    renderPolicyTest("local");
     render();
   </script>
   <script src="/presenter.js"></script>

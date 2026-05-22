@@ -14,16 +14,17 @@
         <span>Database Security Playground</span>
       </a>
       <nav class="app-nav" aria-label="Main navigation">
-        <a href="/" data-path="/">Overview</a>
-        <a href="/sqli.html" data-path="/sqli.html">SQL Injection</a>
-        <a href="/users.html" data-path="/users.html">Data Masking</a>
-        <a href="/xss.html" data-path="/xss.html">XSS</a>
-        <a href="/audit.html" data-path="/audit.html">Audit</a>
-        <a href="/network.html" data-path="/network.html">Network</a>
-        <a href="/config.html" data-path="/config.html">Config</a>
+        <a href="/" data-path="/"><span>Overview</span></a>
+        <a href="/sqli.html" data-path="/sqli.html" data-nav-control="prepared"><span>SQL Injection</span></a>
+        <a href="/xss.html" data-path="/xss.html" data-nav-control="encoding"><span>XSS</span></a>
+        <a href="/users.html" data-path="/users.html" data-nav-control="rbac"><span>Data Masking</span></a>
+        <a href="/audit.html" data-path="/audit.html" data-nav-control="audit"><span>Audit</span></a>
+        <a href="/network.html" data-path="/network.html" data-nav-control="network"><span>Network</span></a>
+        <a href="/config.html" data-path="/config.html" data-nav-control="config"><span>Config</span></a>
       </nav>
     </div>
   </header>
+  <script src="/security-state.js"></script>
 
   <main class="page">
     <section class="module-section">
@@ -36,7 +37,7 @@
             to see whether the team has evidence for investigation.
           </p>
         </div>
-        <span id="audit-badge" class="badge badge-safe">Protected</span>
+        <span id="audit-badge" class="badge badge-safe">Logged</span>
       </div>
     </section>
 
@@ -52,6 +53,10 @@
           <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></span>
           Clear log
         </button>
+      </div>
+      <div id="security-impact" data-security-impact class="security-impact impact-safe">
+        <strong>Security Impact</strong>
+        <span>Audit Logging enabled: security-relevant actions are now traceable.</span>
       </div>
 
       <div class="action-grid" style="margin-top:14px">
@@ -117,8 +122,18 @@
     </section>
 
     <section class="module-section security-takeaway">
-      <p class="module-kicker">Security takeaway</p>
-      <h2>Log security-relevant database events centrally and protect logs from tampering.</h2>
+      <div class="takeaway-grid">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <h2>Audit logs support incident response and compliance.</h2>
+          <p>Log security-relevant database events centrally and protect logs from tampering.</p>
+        </div>
+        <div>
+          <p class="module-kicker">Operational takeaway</p>
+          <h2>Alerts need enough context to become evidence.</h2>
+          <p>Track actor, action, object, result, and signal so responders can reconstruct events.</p>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -139,6 +154,10 @@
     const suspicious = document.getElementById("suspicious-banner");
     let sensitiveCount = 0;
     let logCount = 0;
+    const savedControls = window.DBSEC?.readControls();
+    if (savedControls && Object.prototype.hasOwnProperty.call(savedControls, "audit")) {
+      auditToggle.checked = Boolean(savedControls.audit);
+    }
 
     const events = {
       success: ["app_user", "LOGIN", "database session", "success", "Normal login"],
@@ -158,15 +177,16 @@
 
     function appendLog(type) {
       const action = events[type];
-      if (["failed", "export", "privilege"].includes(type)) sensitiveCount += 1;
-      suspicious.classList.toggle("hidden", sensitiveCount < 3);
 
       if (!auditToggle.checked) {
         warning.classList.remove("hidden");
+        suspicious.classList.add("hidden");
         return;
       }
 
       warning.classList.add("hidden");
+      if (["failed", "export", "privilege"].includes(type)) sensitiveCount += 1;
+      suspicious.classList.toggle("hidden", sensitiveCount < 3);
       if (logCount === 0) rows.innerHTML = "";
       const row = document.createElement("tr");
       [now(), ...action].forEach((value) => {
@@ -180,9 +200,15 @@
 
     auditToggle.addEventListener("change", () => {
       const enabled = auditToggle.checked;
-      badge.textContent = enabled ? "Protected" : "Vulnerable";
+      badge.textContent = enabled ? "Logged" : "Unsafe";
       badge.className = enabled ? "badge badge-safe" : "badge badge-danger";
       warning.classList.toggle("hidden", enabled);
+      if (!enabled) suspicious.classList.add("hidden");
+      window.DBSEC?.updateControl(
+        "audit",
+        enabled,
+        enabled ? window.DBSEC.controlModel.audit.enabled : window.DBSEC.controlModel.audit.disabled
+      );
     });
     document.querySelectorAll("[data-event]").forEach((button) => {
       button.addEventListener("click", () => appendLog(button.dataset.event));
@@ -195,6 +221,7 @@
       suspicious.classList.add("hidden");
       renderEmpty();
     });
+    auditToggle.dispatchEvent(new Event("change"));
   </script>
   <script src="/presenter.js"></script>
 </body>

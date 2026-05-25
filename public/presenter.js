@@ -2,8 +2,10 @@
   const stateKey = "dbsec.presenter.state";
   const controlsKey = "dbsec.presenter.controls";
   const evidenceKey = "dbsec.presenter.evidence";
+  const sidekickPositionKey = "dbsec.presenter.sidekickPosition";
   const path = location.pathname.replace(/\/+$/, "") || "/";
   const guidedControls = ["prepared", "encoding", "rbac", "audit", "network", "config"];
+  const sidekickStepClasses = ["step-1", "step-2", "step-3", "step-4", "step-5", "step-6", "step-complete"];
   const modules = {
     "/sqli.html": {
       step: 1,
@@ -297,6 +299,9 @@
       document.getElementById("checklist")?.addEventListener("change", () => syncConfig(config));
       document.getElementById("apply-risky")?.addEventListener("click", () => syncConfig(config));
       document.getElementById("review-config")?.addEventListener("click", () => window.setTimeout(() => syncConfig(config), 0));
+      document.querySelectorAll("[data-config-tab], [data-open-config-tab]").forEach((button) => {
+        button.addEventListener("click", () => window.setTimeout(() => renderGuide(config, readState()), 0));
+      });
     }
   }
 
@@ -319,7 +324,48 @@
     return config.completeLabel || `Go to Step ${config.nextStep}`;
   }
 
+  function animateOwl(sidekick) {
+    const toggle = sidekick.querySelector(".sidekick-toggle");
+    if (!toggle) return;
+    const current = Number(sidekick.dataset.tapIndex || "0");
+    let next = Math.floor(Math.random() * 3) + 1;
+    if (next === current) next = (next % 3) + 1;
+    sidekick.dataset.tapIndex = String(next);
+    toggle.classList.remove("owl-tap-1", "owl-tap-2", "owl-tap-3");
+    void toggle.offsetWidth;
+    toggle.classList.add(`owl-tap-${next}`);
+    window.setTimeout(() => toggle.classList.remove(`owl-tap-${next}`), 520);
+  }
+
+  function animateOwlTravel(sidekick) {
+    const toggle = sidekick.querySelector(".sidekick-toggle");
+    if (!toggle) return;
+    toggle.classList.add("is-flying");
+    window.setTimeout(() => toggle.classList.remove("is-flying"), 760);
+  }
+
+  function positionSidekick(sidekick, nextClass) {
+    const previousClass = localStorage.getItem(sidekickPositionKey);
+    const shouldTravel = previousClass && previousClass !== nextClass && sidekickStepClasses.includes(previousClass);
+    const canTravel = shouldTravel && window.matchMedia("(min-width: 801px)").matches;
+    sidekick.classList.remove(...sidekickStepClasses);
+    sidekick.classList.add(canTravel ? previousClass : nextClass);
+    if (canTravel) {
+      window.requestAnimationFrame(() => {
+        sidekick.classList.remove(...sidekickStepClasses);
+        sidekick.classList.add(nextClass);
+        localStorage.setItem(sidekickPositionKey, nextClass);
+        animateOwlTravel(sidekick);
+      });
+    } else {
+      localStorage.setItem(sidekickPositionKey, nextClass);
+    }
+  }
+
   function assistantText(config) {
+    if (path === "/config.html" && document.body.dataset.configTab === "postgres") {
+      return "Postgres runtime is only the reference view. Go back to Baseline review, build the Target config with drag and drop, then run Review configuration.";
+    }
     const tips = {
       prepared: "Run the vulnerable login once first. Then switch to Protected and compare the query boundary.",
       encoding: "Post the demo comment in Vulnerable mode, then switch to Protected to see the same text contained.",
@@ -336,8 +382,9 @@
     const controls = readControls();
     const evidence = readEvidence();
     const guideConfig = nextOpenConfig(controls, evidence);
-    const guideIsComplete = guideConfig.step >= 8;
+    const guideIsComplete = guideConfig.step > guidedControls.length;
     const currentPageIsGuideStep = guideConfig.route === path;
+    const configPostgresTabActive = path === "/config.html" && document.body.dataset.configTab === "postgres" && guideConfig.control === "config";
     const evidenceComplete = guideIsComplete || hasEvidence(guideConfig);
     const controlComplete = guideIsComplete || Boolean(controls[guideConfig.control]);
     const completedThisModule = guideIsComplete || (currentPageIsGuideStep && controlComplete && evidenceComplete);
@@ -348,13 +395,16 @@
     const navigationStep = guideIsComplete ? 7 : guideConfig.step;
     const sidekickText = guideIsComplete
       ? "All steps are complete. Review the overview as your closing summary."
-      : currentPageIsGuideStep
+      : configPostgresTabActive
+        ? "You are viewing the Postgres runtime reference. The step is completed in Baseline review with the drag-and-drop Target config."
+        : currentPageIsGuideStep
         ? guideConfig.text.replace(/^Step \d+:\s*/, "")
         : `Next unfinished step: ${guideConfig.title.replace(/^Step \d+:\s*/, "")}.`;
     const sidekickTip = guideIsComplete
       ? "Nice work. The posture is now ready for the final walkthrough."
       : assistantText(guideConfig);
 
+    const sidekickStepClass = guideIsComplete ? "step-complete" : `step-${Math.min(guidedControls.length, Math.max(1, guideConfig.step))}`;
     sidekick.className = `guide-sidekick ${guideIsComplete ? "is-complete" : completedThisModule ? "is-happy" : ""}`;
     sidekick.setAttribute("role", "region");
     sidekick.setAttribute("aria-label", guideIsComplete ? "Guided flow complete" : `Guided step ${guideConfig.step}`);
@@ -369,14 +419,15 @@
         <div class="sidekick-actions"></div>
       </div>
     `;
-    const toggleTip = () => {
+    const toggleTip = (animate = false) => {
+      if (animate) animateOwl(sidekick);
       const textNode = sidekick.querySelector("[data-sidekick-text]");
       const showingTip = sidekick.classList.toggle("is-showing-tip");
       textNode.textContent = showingTip ? sidekickTip : sidekickText;
     };
-    sidekick.querySelector(".sidekick-toggle").addEventListener("click", toggleTip);
+    sidekick.querySelector(".sidekick-toggle").addEventListener("click", () => toggleTip(true));
     sidekick.querySelector(".assistant-speech").addEventListener("click", (event) => {
-      if (!event.target.closest(".sidekick-actions")) toggleTip();
+      if (!event.target.closest(".sidekick-actions")) toggleTip(false);
     });
 
     const actions = document.createElement("div");
@@ -385,7 +436,18 @@
     if (!currentPageIsGuideStep && !guideIsComplete) {
       actions.appendChild(createLink(guideConfig.route, stepActionLabel(guideConfig), guideConfig.step));
     } else if (guideIsComplete) {
-      actions.hidden = true;
+      actions.appendChild(createLink("/", "Back to overview", 7, "safe"));
+    } else if (configPostgresTabActive) {
+      const back = document.createElement("button");
+      back.type = "button";
+      back.className = "btn btn-primary";
+      back.textContent = "Back to config builder";
+      back.addEventListener("click", () => {
+        document.querySelector("[data-config-tab='baseline']")?.click();
+        document.getElementById("config-builder")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        renderGuide(config, readState());
+      });
+      actions.appendChild(back);
     } else if (completedThisModule && guideConfig.href) {
       actions.appendChild(createLink(guideConfig.href, nextActionLabel(guideConfig), guideConfig.nextStep));
     } else {
@@ -409,6 +471,7 @@
     document.querySelector(".presenter-module-guide")?.remove();
     document.querySelector(".guide-sidekick")?.remove();
     document.body.appendChild(sidekick);
+    positionSidekick(sidekick, sidekickStepClass);
   }
 
   const config = modules[path];

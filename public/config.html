@@ -228,7 +228,7 @@
           <p class="module-kicker">Postgres runtime</p>
           <h2>Connected database mode</h2>
           <p class="muted">
-            This is a read-only view of the database client currently running behind the demo. Plain <code>npm start</code> uses SQLite; Docker Compose is the Postgres path.
+            This read-only view shows the Postgres database running for the demo in Docker, together with the relevant connection and hardening configuration.
           </p>
         </div>
         <span id="db-status-badge" class="badge badge-warning">Checking database</span>
@@ -236,11 +236,11 @@
       <div class="grid grid-2">
         <div id="db-runtime" class="result-box result-warning">
           <h3>Waiting for health check</h3>
-          <p class="muted">The page checks <code>/healthz</code> to see which database client is active.</p>
+          <p class="muted">Checking the active demo database.</p>
         </div>
         <div class="result-box result-safe">
-          <h3>Expected Docker state</h3>
-          <p class="muted">Docker Compose should run the app with <code>client=postgres</code>. Plain <code>npm start</code> intentionally uses SQLite for the quickest local demo path.</p>
+          <h3>Demo container</h3>
+          <p class="muted">The Compose setup provides Postgres and the configuration examples shown below.</p>
         </div>
       </div>
     </section>
@@ -731,7 +731,9 @@
         statusBadge.textContent = postgres ? "Postgres connected" : "SQLite local mode";
         statusBadge.className = postgres ? "badge badge-safe" : "badge badge-warning";
         runtime.className = postgres ? "result-box result-safe" : "result-box result-warning";
-        runtime.innerHTML = `<h3>${postgres ? "Postgres runtime is active" : "SQLite local runtime is active"}</h3><p class="muted">Health check returned <code>client=${health.client}</code> and <code>db=${health.db}</code>. To show Postgres here, start the app with Docker Compose instead of plain <code>npm start</code>.</p>`;
+        runtime.innerHTML = postgres
+          ? '<h3>Postgres runtime is active</h3><p class="muted">The demo is connected to the Postgres container. Use the sections below to inspect the related hardening configuration.</p>'
+          : `<h3>SQLite local runtime is active</h3><p class="muted">Health check returned <code>client=${health.client}</code>. Start with Docker Compose to view the Postgres container runtime.</p>`;
       } catch (err) {
         statusBadge.textContent = "Health check failed";
         statusBadge.className = "badge badge-danger";
@@ -866,6 +868,7 @@
       Object.entries(tabPanels).forEach(([key, panel]) => {
         panel.classList.toggle("hidden", key !== tab);
       });
+      document.body.dataset.configTab = tab;
       if (tab === "postgres" && !postgresLoaded) loadPostgresTab();
     }
 

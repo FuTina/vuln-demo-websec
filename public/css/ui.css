@@ -24,6 +24,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -384,6 +388,96 @@ h3 {
   margin-bottom: 0;
   color: var(--muted);
   font-size: 1.06rem;
+}
+
+.hero-start-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+  border: 1px solid rgba(191, 219, 254, .9);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(239, 246, 255, .78), rgba(255, 255, 255, .76));
+  padding: 16px;
+}
+
+.hero-start-copy {
+  display: grid;
+  gap: 10px;
+}
+
+.hero-start-copy p {
+  max-width: 720px;
+  margin-bottom: 0;
+  color: #405268;
+  font-size: .95rem;
+}
+
+.hero-next-step {
+  display: grid;
+  gap: 3px;
+  border: 1px solid rgba(15, 118, 110, .28);
+  border-radius: 8px;
+  background: rgba(240, 253, 250, .78);
+  box-shadow: inset 4px 0 0 var(--petrol);
+  padding: 12px 14px;
+}
+
+.hero-next-step span {
+  color: var(--petrol-dark);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.hero-next-step strong {
+  color: #0f3f5f;
+  font-size: 1rem;
+}
+
+.hero-next-step small {
+  color: #405268;
+  font-size: .84rem;
+  font-weight: 800;
+}
+
+.hero-path {
+  display: grid;
+  grid-template-columns: minmax(92px, auto) minmax(28px, 1fr) minmax(92px, auto) minmax(28px, 1fr) minmax(92px, auto);
+  gap: 8px;
+  align-items: center;
+}
+
+.hero-path-node {
+  display: inline-flex;
+  justify-content: center;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  padding: 7px 10px;
+  font-size: .78rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.hero-path-node.is-risk {
+  border-color: #fecaca;
+  color: var(--red);
+  background: var(--red-bg);
+}
+
+.hero-path-node.is-safe {
+  border-color: #bbf7d0;
+  color: var(--green);
+  background: var(--green-bg);
+}
+
+.hero-path-connector {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #fca5a5, #93c5fd, #86efac);
 }
 
 .hero-actions {
@@ -837,7 +931,6 @@ h3 {
   box-shadow:
     inset 0 -5px 0 rgba(15, 118, 110, .16),
     0 5px 12px rgba(15, 118, 110, .16);
-  animation: assistantFloat 3.6s ease-in-out infinite;
 }
 
 .assistant-avatar::before,
@@ -953,18 +1046,6 @@ h3 {
   animation: resetPulse 2.6s ease-in-out infinite;
 }
 
-.hero-reset-action::after {
-  content: "< Start here";
-  position: absolute;
-  left: calc(100% + 12px);
-  top: 50%;
-  white-space: nowrap;
-  color: var(--red);
-  font-size: .75rem;
-  font-weight: 900;
-  transform: translateY(-50%);
-}
-
 .assistant-speech strong {
   color: #0f766e;
   font-size: .86rem;
@@ -980,8 +1061,8 @@ h3 {
 .guide-sidekick {
   position: fixed;
   right: 18px;
-  bottom: 92px;
-  z-index: 35;
+  top: 112px;
+  z-index: 80;
   display: grid;
   grid-template-columns: minmax(190px, 280px) 52px;
   gap: 10px;
@@ -991,7 +1072,17 @@ h3 {
   cursor: pointer;
   padding: 0;
   text-align: left;
+  transform-origin: 82% 50%;
+  transition: top .42s cubic-bezier(.2, .8, .25, 1);
 }
+
+.guide-sidekick.step-1 { top: 112px; }
+.guide-sidekick.step-2 { top: 166px; }
+.guide-sidekick.step-3 { top: 220px; }
+.guide-sidekick.step-4 { top: 274px; }
+.guide-sidekick.step-5 { top: 328px; }
+.guide-sidekick.step-6 { top: 382px; }
+.guide-sidekick.step-complete { top: 436px; }
 
 .sidekick-toggle {
   display: grid;
@@ -1001,6 +1092,23 @@ h3 {
   background: transparent;
   cursor: pointer;
   padding: 0;
+  transform-origin: 50% 70%;
+}
+
+.sidekick-toggle.is-flying .assistant-avatar {
+  animation: owlStepArrive .72s cubic-bezier(.2, .9, .24, 1.12);
+}
+
+.sidekick-toggle.owl-tap-1 .assistant-avatar {
+  animation: owlTapNod .38s ease both;
+}
+
+.sidekick-toggle.owl-tap-2 .assistant-avatar {
+  animation: owlTapSpin .46s ease both;
+}
+
+.sidekick-toggle.owl-tap-3 .assistant-avatar {
+  animation: owlTapHop .42s ease both;
 }
 
 .guide-sidekick .assistant-avatar {
@@ -1010,7 +1118,10 @@ h3 {
 .guide-sidekick .assistant-speech {
   grid-column: 1;
   grid-row: 1;
-  box-shadow: 0 14px 34px rgba(2, 8, 23, .18);
+  box-shadow:
+    0 26px 70px rgba(2, 8, 23, .3),
+    0 10px 22px rgba(15, 118, 110, .18),
+    0 0 0 1px rgba(15, 118, 110, .08);
   cursor: pointer;
 }
 
@@ -1025,11 +1136,17 @@ h3 {
 }
 
 .guide-sidekick .assistant-avatar i::after {
-  animation: assistantWingWave 2.8s ease-in-out infinite;
+  transform-origin: 16px 16px;
+}
+
+.sidekick-toggle.is-flying .assistant-avatar i::after,
+.sidekick-toggle.owl-tap-2 .assistant-avatar i::after,
+.sidekick-toggle.owl-tap-3 .assistant-avatar i::after {
+  animation: assistantWingWave .46s ease-in-out 2;
 }
 
 .guide-sidekick:hover .assistant-avatar {
-  animation-duration: 1.8s;
+  transform: translateY(-1px);
 }
 
 .sidekick-actions {
@@ -1101,6 +1218,31 @@ h3 {
 @keyframes assistantBlink {
   0%, 92%, 100% { transform: scaleY(1); }
   95% { transform: scaleY(.15); }
+}
+
+@keyframes owlStepArrive {
+  0% { opacity: 0; transform: translate(22px, -18px) rotate(12deg) scale(.88); }
+  45% { opacity: 1; transform: translate(-4px, 5px) rotate(-8deg) scale(1.06); }
+  72% { transform: translate(2px, -2px) rotate(4deg) scale(.98); }
+  100% { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
+}
+
+@keyframes owlTapNod {
+  0%, 100% { transform: rotate(0) translateY(0); }
+  36% { transform: rotate(7deg) translateY(2px); }
+  68% { transform: rotate(-5deg) translateY(-1px); }
+}
+
+@keyframes owlTapSpin {
+  0%, 100% { transform: rotate(0) scale(1); }
+  42% { transform: rotate(-12deg) scale(1.05); }
+  72% { transform: rotate(8deg) scale(.98); }
+}
+
+@keyframes owlTapHop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(-8px) scale(1.04); }
+  72% { transform: translateY(2px) scale(.98); }
 }
 
 @keyframes assistantWingWave {
@@ -3908,6 +4050,17 @@ tr:last-child td {
     grid-template-columns: 1fr;
   }
 
+  .hero-path {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-path-connector {
+    width: 2px;
+    height: 18px;
+    justify-self: center;
+    background: linear-gradient(180deg, #fca5a5, #93c5fd, #86efac);
+  }
+
   .role-grid,
   .action-grid {
     grid-template-columns: 1fr;
@@ -3935,8 +4088,8 @@ tr:last-child td {
     margin: -2px auto 16px;
   }
 
-  .hero-reset-action::after {
-    display: none;
+  .sidekick-toggle {
+    animation: none;
   }
 
   .presenter-dock-body {

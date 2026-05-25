@@ -6,11 +6,11 @@
   const guidedControls = ["prepared", "encoding", "rbac", "audit", "network", "config"];
   const modules = {
     "/sqli.html": {
-      step: 2,
-      title: "Step 2: SQL injection + prepared statements",
+      step: 1,
+      title: "Step 1: SQL injection + prepared statements",
       text: "Run a bypass example in Vulnerable mode. Then enable Protected mode to show that input can no longer change query logic.",
       primary: "Enable protected mode and continue",
-      nextStep: 3,
+      nextStep: 2,
       control: "prepared",
       evidenceText: "Run a login check in Vulnerable mode before completing this step.",
       click: "#protected-mode",
@@ -18,23 +18,23 @@
       completeLabel: "Continue to XSS"
     },
     "/xss.html": {
-      step: 3,
-      title: "Step 3: XSS + output encoding",
-      text: "Render one harmless demo payload in Vulnerable mode. Then enable Protected output to keep the same input as text.",
+      step: 2,
+      title: "Step 2: XSS + output encoding",
+      text: "Post one harmless demo payload in Vulnerable mode. Then enable Protected output to keep the same input as text.",
       primary: "Enable protected output and continue",
-      nextStep: 4,
+      nextStep: 3,
       control: "encoding",
-      evidenceText: "Render a comment in Vulnerable mode before completing this step.",
+      evidenceText: "Post a comment in Vulnerable mode before completing this step.",
       click: "#safe-render",
       href: "/users.html",
       completeLabel: "Continue to Data Masking"
     },
     "/users.html": {
-      step: 4,
-      title: "Step 4: Review RBAC/data masking",
+      step: 3,
+      title: "Step 3: Review RBAC/data masking",
       text: "Compare roles, briefly disable RBAC if you want to show the risk, then continue with RBAC and masking enabled.",
       primary: "Continue with RBAC + masking enabled",
-      nextStep: 5,
+      nextStep: 4,
       control: "rbac",
       evidenceText: "Change a role or toggle RBAC/masking to observe the data exposure before continuing.",
       clickAll: ["#rbac-toggle", "#mask-toggle"],
@@ -42,11 +42,11 @@
       completeLabel: "Continue to Audit"
     },
     "/audit.html": {
-      step: 5,
-      title: "Step 5: Run audit events",
+      step: 4,
+      title: "Step 4: Run audit events",
       text: "Trigger failed login, export, and privilege events. Continue when the evidence trail is visible.",
       primary: "Continue to Network",
-      nextStep: 6,
+      nextStep: 5,
       control: "audit",
       evidenceText: "Trigger at least one audit-relevant event before continuing.",
       clickAll: ["#audit-toggle"],
@@ -54,37 +54,47 @@
       completeLabel: "Continue to Network"
     },
     "/network.html": {
-      step: 6,
-      title: "Step 6: Show network segmentation",
-      text: "Run the connection tests in the risky state, then apply the secure network baseline before continuing.",
-      primary: "Apply secure network and continue",
-      nextStep: 7,
+      step: 5,
+      title: "Step 5: Show network segmentation",
+      text: "Send a packet from the exposed baseline, then change the controls until direct database access is blocked.",
+      primary: "Continue to Config",
+      nextStep: 6,
       control: "network",
-      evidenceText: "Run connection tests in the risky network state before applying the secure network baseline.",
-      click: "#secure-preset",
+      evidenceText: "Send a packet while the database is exposed, then make the network segmented before continuing.",
       href: "/config.html",
       completeLabel: "Continue to Config"
     },
     "/config.html": {
-      step: 7,
-      title: "Step 7: Finish with secure configuration",
-      text: "Apply the secure checklist, inspect the Postgres runtime tab, then finish back on the executive summary.",
-      primary: "Apply config and finish",
-      nextStep: 8,
+      step: 6,
+      title: "Step 6: Finish with secure configuration",
+      text: "Build the config from blocks, review the live findings, inspect the Postgres runtime tab, then finish back on the executive summary.",
+      primary: "Finish flow",
+      nextStep: 7,
       control: "config",
-      evidenceText: "Inspect the Postgres runtime tab or change the checklist before finishing.",
-      click: "#apply-baseline",
+      evidenceText: "Build or change at least one config block, then review the result before finishing.",
       finish: true,
       href: "/",
       completeLabel: "Finish on Overview"
     }
   };
+  const modulesByControl = Object.fromEntries(
+    Object.entries(modules).map(([route, config]) => [config.control, { ...config, route }])
+  );
+  const completeConfig = {
+    step: 7,
+    title: "Guided demo complete",
+    text: "The secure baseline is applied. Use the overview as the closing summary.",
+    primary: "Return to Overview",
+    route: "/",
+    href: "/",
+    completeLabel: "Return to Overview"
+  };
 
   function readState() {
     try {
-      return JSON.parse(localStorage.getItem(stateKey)) || { active: false, step: 1 };
+      return JSON.parse(localStorage.getItem(stateKey)) || { active: true, step: 1 };
     } catch {
-      return { active: false, step: 1 };
+      return { active: true, step: 1 };
     }
   }
 
@@ -125,6 +135,15 @@
 
   function hasEvidence(config) {
     return Boolean(readEvidence()[config.control]);
+  }
+
+  function isStepComplete(control, controls = readControls(), evidence = readEvidence()) {
+    return Boolean(controls[control] && evidence[control]);
+  }
+
+  function nextOpenConfig(controls = readControls(), evidence = readEvidence()) {
+    const openControl = guidedControls.find((control) => !isStepComplete(control, controls, evidence));
+    return openControl ? modulesByControl[openControl] : completeConfig;
   }
 
   function markEvidence(config) {
@@ -214,9 +233,14 @@
     } else if (path === "/audit.html") {
       setCheckbox("#audit-toggle", Boolean(controls.audit));
     } else if (path === "/network.html") {
-      document.getElementById(controls.network ? "secure-preset" : "risky-preset")?.click();
-    } else if (path === "/config.html") {
-      document.getElementById(controls.config ? "apply-baseline" : "apply-risky")?.click();
+      const evidence = readEvidence();
+      if (controls.network && !evidence.network) return;
+      if (controls.network) {
+        setCheckbox("#exposed-toggle", false);
+        setCheckbox("#internal-toggle", true);
+        setCheckbox("#firewall-toggle", true);
+        setCheckbox("#tls-toggle", true);
+      }
     }
   }
 
@@ -239,9 +263,6 @@
     } else if (path === "/audit.html") {
       document.querySelectorAll("[data-event]").forEach((button) => button.addEventListener("click", mark));
     } else if (path === "/network.html") {
-      document.getElementById("run-tests")?.addEventListener("click", () => {
-        if (document.getElementById("exposed-toggle")?.checked) mark();
-      });
       document.getElementById("send-packet")?.addEventListener("click", () => {
         if (document.getElementById("exposed-toggle")?.checked) mark();
       });
@@ -249,6 +270,10 @@
       document.querySelector("[data-config-tab='postgres']")?.addEventListener("click", mark);
       document.querySelector("[data-open-config-tab='postgres']")?.addEventListener("click", mark);
       document.getElementById("checklist")?.addEventListener("change", mark);
+      document.getElementById("review-config")?.addEventListener("click", mark);
+      document.querySelectorAll("[data-builder-slot], #builder-target-frame").forEach((item) => {
+        item.addEventListener("drop", mark);
+      });
     }
   }
 
@@ -268,12 +293,10 @@
       ["#exposed-toggle", "#internal-toggle", "#firewall-toggle", "#tls-toggle"].forEach((selector) => {
         document.querySelector(selector)?.addEventListener("change", () => syncNetwork(config));
       });
-      document.getElementById("secure-preset")?.addEventListener("click", () => window.setTimeout(() => syncNetwork(config), 0));
-      document.getElementById("risky-preset")?.addEventListener("click", () => window.setTimeout(() => syncNetwork(config), 0));
     } else if (path === "/config.html") {
       document.getElementById("checklist")?.addEventListener("change", () => syncConfig(config));
-      document.getElementById("apply-baseline")?.addEventListener("click", () => syncConfig(config));
       document.getElementById("apply-risky")?.addEventListener("click", () => syncConfig(config));
+      document.getElementById("review-config")?.addEventListener("click", () => window.setTimeout(() => syncConfig(config), 0));
     }
   }
 
@@ -286,70 +309,106 @@
     return link;
   }
 
-  function renderGuide(config, state) {
-    const guide = document.createElement("details");
-    guide.open = false;
-    const currentStep = Number(state.step) || 1;
-    const controls = readControls();
-    const evidenceComplete = hasEvidence(config);
-    const controlComplete = Boolean(controls[config.control]);
-    const completedThisModule = controlComplete && evidenceComplete;
-    const previousControls = guidedControls.slice(0, Math.max(0, guidedControls.indexOf(config.control)));
-    const evidence = readEvidence();
-    const previousControlsComplete = previousControls.every((control) => controls[control] && evidence[control]);
-    const completedSteps = Math.min(7, (state.active ? 1 : 0) + guidedControls.filter((control) => controls[control] && evidence[control]).length);
-    const progress = Math.round((completedSteps / 7) * 100);
-    const navigationStep = completedThisModule ? Math.max(currentStep, config.nextStep) : currentStep;
-    guide.className = `presenter-module-guide ${completedThisModule ? "is-complete" : "is-active"}`;
-    const title = completedThisModule ? `${config.title} complete` : config.title;
-    const text = completedThisModule
-      ? previousControlsComplete
-        ? "This step is complete because the demo action was observed and the matching control is enabled. Continue with the next module or return to the overview."
-        : "This step is complete. Earlier Guided Mode steps still need a hands-on action before the overview marks the flow complete."
-      : config.text;
+  function stepActionLabel(config) {
+    if (!config || config.step > guidedControls.length) return "Open Overview";
+    return `Go to Step ${config.step}`;
+  }
 
-    guide.innerHTML = `
-      <summary aria-label="Open Guided Mode">
-        <span class="guided-summary">
-          <span class="guided-icon" aria-hidden="true">G</span>
-          <span>Guided Mode</span>
-        </span>
-        <strong>${completedThisModule ? "Complete" : `Step ${config.step}/7`}</strong>
-        <span class="guided-tooltip" role="tooltip">Guided demo flow: complete this page's control, then continue with the next module.</span>
-      </summary>
-      <div class="presenter-dock-body">
-        <p class="module-kicker">Guided Mode</p>
-        <h2>${title}</h2>
-        <p>${text}</p>
-        ${evidenceComplete ? '<div class="guide-requirement is-met"><strong>Observed</strong><span>Hands-on action completed for this module.</span></div>' : `<div class="guide-requirement"><strong>Required before continue</strong><span>${config.evidenceText}</span></div>`}
-        <div class="presenter-progress" aria-hidden="true"><span style="width: ${progress}%"></span></div>
+  function nextActionLabel(config) {
+    if (!config || config.nextStep > guidedControls.length) return config.completeLabel || "Finish on Overview";
+    return config.completeLabel || `Go to Step ${config.nextStep}`;
+  }
+
+  function assistantText(config) {
+    const tips = {
+      prepared: "Run the vulnerable login once first. Then switch to Protected and compare the query boundary.",
+      encoding: "Post the demo comment in Vulnerable mode, then switch to Protected to see the same text contained.",
+      rbac: "Switch roles and look at which fields disappear. Then leave RBAC and masking enabled.",
+      audit: "Trigger one event and inspect whether there is enough evidence to investigate it.",
+      network: "Send an Internet packet first. Then change Internal network, Firewall, and TLS until direct database access is blocked.",
+      config: "Drag blocks into Target config. Watch Live findings turn red or green, then run Review configuration."
+    };
+    return tips[config.control] || config.evidenceText;
+  }
+
+  function renderGuide(config, state) {
+    const sidekick = document.createElement("div");
+    const controls = readControls();
+    const evidence = readEvidence();
+    const guideConfig = nextOpenConfig(controls, evidence);
+    const guideIsComplete = guideConfig.step >= 8;
+    const currentPageIsGuideStep = guideConfig.route === path;
+    const evidenceComplete = guideIsComplete || hasEvidence(guideConfig);
+    const controlComplete = guideIsComplete || Boolean(controls[guideConfig.control]);
+    const completedThisModule = guideIsComplete || (currentPageIsGuideStep && controlComplete && evidenceComplete);
+    const completedSteps = guideIsComplete
+      ? guidedControls.length
+      : Math.min(guidedControls.length, guidedControls.filter((control) => controls[control] && evidence[control]).length);
+    const progress = Math.round((completedSteps / guidedControls.length) * 100);
+    const navigationStep = guideIsComplete ? 7 : guideConfig.step;
+    const sidekickText = guideIsComplete
+      ? "All steps are complete. Review the overview as your closing summary."
+      : currentPageIsGuideStep
+        ? guideConfig.text.replace(/^Step \d+:\s*/, "")
+        : `Next unfinished step: ${guideConfig.title.replace(/^Step \d+:\s*/, "")}.`;
+    const sidekickTip = guideIsComplete
+      ? "Nice work. The posture is now ready for the final walkthrough."
+      : assistantText(guideConfig);
+
+    sidekick.className = `guide-sidekick ${guideIsComplete ? "is-complete" : completedThisModule ? "is-happy" : ""}`;
+    sidekick.setAttribute("role", "region");
+    sidekick.setAttribute("aria-label", guideIsComplete ? "Guided flow complete" : `Guided step ${guideConfig.step}`);
+    sidekick.innerHTML = `
+      <button type="button" class="sidekick-toggle" aria-label="Show guide tip">
+        <span class="assistant-avatar assistant-avatar-large" aria-hidden="true"><i></i></span>
+      </button>
+      <div class="assistant-speech">
+        <strong>${guideIsComplete ? "Party mode" : `Step ${guideConfig.step}/6`}</strong>
+        <span data-sidekick-text>${sidekickText}</span>
+        <div class="presenter-progress sidekick-progress" aria-hidden="true"><span style="width: ${progress}%"></span></div>
+        <div class="sidekick-actions"></div>
       </div>
     `;
+    const toggleTip = () => {
+      const textNode = sidekick.querySelector("[data-sidekick-text]");
+      const showingTip = sidekick.classList.toggle("is-showing-tip");
+      textNode.textContent = showingTip ? sidekickTip : sidekickText;
+    };
+    sidekick.querySelector(".sidekick-toggle").addEventListener("click", toggleTip);
+    sidekick.querySelector(".assistant-speech").addEventListener("click", (event) => {
+      if (!event.target.closest(".sidekick-actions")) toggleTip();
+    });
 
     const actions = document.createElement("div");
-    actions.className = "toolbar-actions";
-    actions.appendChild(createLink("/", "Back to Overview", navigationStep, "ghost"));
+    actions.className = "sidekick-actions";
 
-    if (completedThisModule && config.href) {
-      actions.appendChild(createLink(config.href, config.completeLabel || "Continue", navigationStep));
+    if (!currentPageIsGuideStep && !guideIsComplete) {
+      actions.appendChild(createLink(guideConfig.route, stepActionLabel(guideConfig), guideConfig.step));
+    } else if (guideIsComplete) {
+      actions.hidden = true;
+    } else if (completedThisModule && guideConfig.href) {
+      actions.appendChild(createLink(guideConfig.href, nextActionLabel(guideConfig), guideConfig.nextStep));
     } else {
       const primary = document.createElement("button");
       primary.type = "button";
-      primary.className = config.finish ? "btn btn-safe" : "btn btn-primary";
-      primary.textContent = config.finish && !previousControlsComplete ? "Apply config and return to open steps" : config.primary;
-      primary.disabled = !evidenceComplete;
-      if (!evidenceComplete) primary.title = config.evidenceText;
+      primary.className = guideConfig.finish ? "btn btn-safe" : "btn btn-primary";
+      primary.textContent = guideConfig.primary;
+      const requiresManualControl = !guideConfig.click && !guideConfig.clickAll && guideConfig.control;
+      primary.disabled = !evidenceComplete || (requiresManualControl && !controlComplete);
+      if (!evidenceComplete) primary.title = guideConfig.evidenceText;
+      else if (requiresManualControl && !controlComplete) primary.title = "Enable the required control before continuing.";
       primary.addEventListener("click", () => {
-        const completed = runPageAction(config);
-        if (completed && config.href) location.href = config.href;
+        const completed = runPageAction(guideConfig);
+        if (completed && guideConfig.href) location.href = guideConfig.href;
         else renderGuide(config, readState());
       });
       actions.appendChild(primary);
     }
 
-    guide.querySelector(".presenter-dock-body").appendChild(actions);
+    sidekick.querySelector(".sidekick-actions").replaceWith(actions);
     document.querySelector(".presenter-module-guide")?.remove();
-    document.querySelector(".app-header")?.after(guide);
+    document.querySelector(".guide-sidekick")?.remove();
+    document.body.appendChild(sidekick);
   }
 
   const config = modules[path];

@@ -21,6 +21,15 @@ Do not expose it to the internet or use it as a production pattern.
 
 ## Run Locally
 
+`npm start` loads local environment variables from `.env` automatically.
+Copy the example file first if you want to change the default database mode:
+
+```bash
+cp .env.example .env
+```
+
+The default example uses SQLite:
+
 ```bash
 npm install
 npm start
@@ -38,6 +47,21 @@ Run the lightweight smoke test:
 npm test
 ```
 
+To run `npm start` against a local PostgreSQL database, set these values in `.env`:
+
+```dotenv
+DB_CLIENT=postgres
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=playground
+POSTGRES_USER=app_user
+POSTGRES_PASSWORD=change-me
+POSTGRES_SSLMODE=disable
+```
+
+Use `POSTGRES_SSLMODE=disable` for a typical local Docker or laptop PostgreSQL instance without TLS.
+For hosted PostgreSQL providers such as Render, use the provider's SSL requirement instead.
+
 ## Docker Database Mode
 
 The app still runs with SQLite by default for the fastest local demo path.
@@ -50,6 +74,7 @@ Docker Compose runs the same app with a connected PostgreSQL database service:
 
 The PostgreSQL container uses a self-signed demo certificate and `pg_hba.conf` rejects non-TLS TCP connections.
 This is suitable for the local security demo, not a production certificate pattern.
+When the app runs inside Docker Compose, `docker-compose.yml` sets `POSTGRES_SSLMODE=require` and reads the password through `POSTGRES_PASSWORD_FILE`.
 
 The Compose file also applies demo-friendly container hardening:
 
@@ -78,6 +103,22 @@ Open:
 ```text
 http://localhost:5173/config.html
 ```
+
+## Render Deployment Notes
+
+Render does not need a `.env` file. Set environment variables in the Render dashboard.
+Render-provided environment variables override anything that might exist in a local `.env` file because `dotenv` does not overwrite existing process environment values by default.
+
+For Render PostgreSQL, use:
+
+```dotenv
+DB_CLIENT=postgres
+DATABASE_URL=<Render internal database URL>
+POSTGRES_SSLMODE=require
+```
+
+If you do not use `DATABASE_URL`, set `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` in the dashboard.
+Never put actual Render passwords in the repository.
 
 ## Pages
 

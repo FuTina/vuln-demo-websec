@@ -1,6 +1,7 @@
 // Database Security Playground server.
 // Demo/education only: intentionally vulnerable endpoints are marked below.
 
+import "dotenv/config";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -19,6 +20,31 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Role switch via env for demo purposes: "user" (default) or "admin"
 const DEMO_ROLE = process.env.DEMO_ROLE || "user";
+
+function passwordSource() {
+  if (process.env.POSTGRES_PASSWORD) return "POSTGRES_PASSWORD";
+  if (process.env.POSTGRES_PASSWORD_FILE) return "POSTGRES_PASSWORD_FILE";
+  return "none";
+}
+
+function logStartupConfig() {
+  const dbClient = process.env.DB_CLIENT || "sqlite";
+  const host = process.env.HOST || "localhost";
+  const port = process.env.PORT || "5173";
+
+  console.log("Startup configuration:");
+  console.log(`  DB_CLIENT=${dbClient}`);
+  console.log(`  HOST=${host}`);
+  console.log(`  PORT=${port}`);
+
+  if (dbClient === "postgres") {
+    console.log(`  POSTGRES_HOST=${process.env.POSTGRES_HOST || "(from DATABASE_URL or default)"}`);
+    console.log(`  POSTGRES_DB=${process.env.POSTGRES_DB || "playground"}`);
+    console.log(`  POSTGRES_USER=${process.env.POSTGRES_USER || "app_user"}`);
+    console.log(`  POSTGRES_SSLMODE=${process.env.POSTGRES_SSLMODE || "disable"}`);
+    console.log(`  password source=${passwordSource()}`);
+  }
+}
 
 // --- Health and configuration metadata ---
 app.get("/healthz", async (_req, res) => {
@@ -134,6 +160,7 @@ app.get("/api/users/safe", async (_req, res) => {
 const PORT = process.env.PORT || 5173;
 const HOST = process.env.HOST || "localhost";
 try {
+  logStartupConfig();
   await db.init();
   app.listen(PORT, HOST, () => {
     console.log(`Vuln demo running on http://${HOST}:${PORT}`);

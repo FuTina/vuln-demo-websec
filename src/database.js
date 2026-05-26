@@ -7,11 +7,37 @@ sqlite3.verbose();
 
 const { Pool } = pg;
 
-function readSecret(fileEnv, valueEnv) {
-  if (process.env[valueEnv]) return process.env[valueEnv];
-  const file = process.env[fileEnv];
+export function resolvePostgresPassword(env = process.env) {
+  if (env.POSTGRES_PASSWORD) return env.POSTGRES_PASSWORD;
+  const file = env.POSTGRES_PASSWORD_FILE;
   if (!file) return undefined;
   return fs.readFileSync(file, "utf8").trim();
+}
+
+export function createPostgresPoolConfig(env = process.env) {
+  const sslMode = env.POSTGRES_SSLMODE || "disable";
+  const baseConfig = {
+    options: "-c search_path=app,public",
+    ssl: sslMode === "disable" ? false : { rejectUnauthorized: false },
+  };
+  const password = resolvePostgresPassword(env);
+
+  if (env.DATABASE_URL) {
+    return {
+      ...baseConfig,
+      connectionString: env.DATABASE_URL,
+      ...(password ? { password } : {}),
+    };
+  }
+
+  return {
+    ...baseConfig,
+    host: env.POSTGRES_HOST,
+    port: Number(env.POSTGRES_PORT || 5432),
+    database: env.POSTGRES_DB || "playground",
+    user: env.POSTGRES_USER || "app_user",
+    password,
+  };
 }
 
 function toPgParams(sql) {
@@ -63,17 +89,7 @@ export function createDatabase({ rootDir }) {
 
   function connect() {
     if (client === "postgres") {
-      const sslMode = process.env.POSTGRES_SSLMODE || "disable";
-      pgPool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        host: process.env.POSTGRES_HOST,
-        port: Number(process.env.POSTGRES_PORT || 5432),
-        database: process.env.POSTGRES_DB || "playground",
-        user: process.env.POSTGRES_USER || "app_user",
-        password: readSecret("POSTGRES_PASSWORD_FILE", "POSTGRES_PASSWORD"),
-        options: "-c search_path=app,public",
-        ssl: sslMode === "disable" ? false : { rejectUnauthorized: false },
-      });
+      pgPool = new Pool(createPostgresPoolConfig());
       return;
     }
 

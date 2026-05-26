@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "node scripts/smoke-test.js"
+    "test": "node scripts/db-config-test.js && node scripts/smoke-test.js"
   },
   "engines": {
     "node": ">=18"

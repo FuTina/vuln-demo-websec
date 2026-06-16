@@ -27,7 +27,7 @@
   <script src="/security-state.js"></script>
 
   <main class="page">
-    <section class="module-section">
+    <section class="module-section scenario-card">
       <div class="module-header">
         <div>
           <div class="module-kicker-row">
@@ -35,19 +35,19 @@
             <p class="module-kicker">Scenario</p>
           </div>
           <h1>Secure Database Configuration</h1>
-          <p>
-            Review a risky database baseline, approve hardening controls, and decide whether this configuration can ship.
-          </p>
+          <p>A release review should prove whether database hardening choices are shippable or blocked.</p>
         </div>
         <div class="module-actions">
           <span id="config-badge" class="badge badge-warning">Unsafe</span>
-          <button type="button" class="btn btn-primary" data-open-config-tab="postgres">Open Postgres runtime</button>
+          <button type="button" class="btn btn-ghost" data-open-config-tab="postgres">Open Postgres runtime</button>
         </div>
       </div>
     </section>
 
-    <section class="module-section">
-      <div class="module-header">
+    <details class="module-section info-disclosure optional-details" id="config-details-drawer">
+      <summary><span><span class="module-kicker">Optional details</span><strong>Configuration areas and Postgres runtime</strong></span></summary>
+      <div class="disclosure-body">
+      <div class="module-header compact-module-header">
         <div>
           <p class="module-kicker">Configuration areas</p>
           <h2>Choose the part of the configuration to inspect</h2>
@@ -64,19 +64,20 @@
           </button>
         </div>
       </div>
-    </section>
+      </div>
+    </details>
 
     <div id="config-tab-baseline" class="config-tab-panel">
-    <section class="module-section">
+    <section class="module-section lab-action-card">
       <div class="workbench-header config-workbench-header">
         <div>
-          <p class="module-kicker">Try it yourself</p>
+          <p class="module-kicker">Action</p>
           <h2>Build a safer database baseline</h2>
           <p class="muted">Drag one block per area into the empty target config, then run the review gate.</p>
         </div>
         <div class="toolbar-actions">
           <button type="button" class="btn btn-primary" id="review-config">Review configuration</button>
-          <button type="button" class="btn btn-danger" id="apply-risky">Start insecure demo</button>
+          <button type="button" class="btn btn-ghost" id="apply-risky">Load risky blocks</button>
         </div>
       </div>
       <div id="security-impact" data-security-impact data-review-output class="security-impact impact-warning config-impact hidden">
@@ -135,13 +136,14 @@
               </div>
             </div>
           </div>
-          <div class="builder-review-area hidden" data-review-output aria-label="Live configuration findings">
+          <div class="builder-review-area result-card hidden" data-review-output aria-label="Live configuration findings">
             <div class="builder-zone-head">
               <div>
-                <h3>Check current config</h3>
-                <p>See what is already satisfied before running the final review.</p>
+                <p class="module-kicker">Result</p>
+                <h3>Evidence from the review gate</h3>
+                <p>See what is satisfied, blocked, or still risky after running the final review.</p>
               </div>
-              <span>Review gate below</span>
+              <span>Review gate</span>
             </div>
             <div class="builder-review-grid">
               <div class="builder-preview-panel">
@@ -176,8 +178,8 @@
       </div>
     </section>
 
-    <details class="module-section info-disclosure">
-      <summary><span><span class="module-kicker">What happens?</span><strong>Build first, review second</strong></span></summary>
+    <details class="module-section info-disclosure explanation-card">
+      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -203,6 +205,16 @@
             <span class="badge badge-safe">After review</span>
             <p>The review turns the current choices into release blockers or approved controls.</p>
           </div>
+        </div>
+      </div>
+      <div class="takeaway-note">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <p>Secure defaults prevent hardening from becoming optional cleanup.</p>
+        </div>
+        <div>
+          <p class="module-kicker">Operational takeaway</p>
+          <p>Block release on critical configuration gaps.</p>
         </div>
       </div>
       </div>

@@ -27,7 +27,7 @@
   <script src="/security-state.js"></script>
 
   <main class="page">
-    <section class="module-section">
+    <section class="module-section scenario-card">
       <div class="module-header">
         <div>
           <div class="module-kicker-row">
@@ -35,17 +35,14 @@
             <p class="module-kicker">Scenario</p>
           </div>
           <h1>Role-Based Access &amp; Data Masking</h1>
-          <p>
-            Customer records contain useful business data and sensitive contact data. Select a role and toggle controls
-            to see why authorization and masking solve different parts of the problem.
-          </p>
+          <p>Customer records should prove that authorization and masking solve different exposure problems.</p>
         </div>
         <span id="role-badge" class="badge badge-role">Role: App User</span>
       </div>
     </section>
 
-    <section class="module-section">
-      <p class="module-kicker">Try it yourself</p>
+    <section class="module-section lab-action-card">
+      <p class="module-kicker">Action</p>
       <h2>Change role and controls</h2>
       <div class="role-grid" role="group" aria-label="Select role">
         <button type="button" class="role-card" data-role="guest" aria-pressed="false"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>Guest</strong><span>No sensitive fields.</span></button>
@@ -65,12 +62,21 @@
         </label>
         <button type="button" class="btn btn-primary" id="review-access">Review selected role</button>
       </div>
-      <div id="security-impact" data-security-impact data-demo-output class="security-impact impact-safe hidden">
+    </section>
+
+    <section class="module-section result-card hidden" data-demo-output aria-live="polite">
+      <div class="result-card-head">
+        <div>
+          <p class="module-kicker">Result</p>
+          <h2>Evidence from the selected role</h2>
+        </div>
+      </div>
+      <div id="security-impact" data-security-impact class="security-impact impact-safe">
         <strong>Security Impact</strong>
         <span>RBAC and masking enabled: records and sensitive fields are restricted by role.</span>
       </div>
 
-      <div id="rbac-warning" data-demo-output class="notice notice-warning hidden" style="margin-top:16px">
+      <div id="rbac-warning" class="notice notice-warning hidden" style="margin-top:14px">
         <h3>Masking alone is not authorization</h3>
         <p>
           RBAC is disabled, so every role can reach the underlying records. Masking may hide some fields, but it does not
@@ -78,7 +84,7 @@
         </p>
       </div>
 
-      <div class="table-wrap hidden" data-demo-output style="margin-top:18px">
+      <div class="table-wrap" style="margin-top:14px">
         <table>
           <thead>
             <tr>
@@ -95,8 +101,8 @@
       </div>
     </section>
 
-    <details class="module-section info-disclosure">
-      <summary><span><span class="module-kicker">What happens?</span><strong>Least privilege changes what each role can see</strong></span></summary>
+    <details class="module-section info-disclosure explanation-card">
+      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -132,6 +138,16 @@
             <h3>Least privilege</h3>
             <p>Least privilege returns only the data needed for the current role and task.</p>
           </div>
+        </div>
+      </div>
+      <div class="takeaway-note">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <p>Least privilege limits blast radius: authorize first, then minimize and mask returned data.</p>
+        </div>
+        <div>
+          <p class="module-kicker">Operational takeaway</p>
+          <p>Separate authorization policy from presentation masking.</p>
         </div>
       </div>
       </div>

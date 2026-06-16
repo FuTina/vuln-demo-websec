@@ -27,7 +27,7 @@
   <script src="/security-state.js"></script>
 
   <main class="page">
-    <section class="module-section">
+    <section class="module-section scenario-card">
       <div class="module-header">
         <div>
           <div class="module-kicker-row">
@@ -35,17 +35,14 @@
             <p class="module-kicker">Scenario</p>
           </div>
           <h1>Database Audit Logging</h1>
-          <p>
-            A support application is seeing suspicious access to customer data. Toggle audit logging and trigger actions
-            to see whether the team has evidence for investigation.
-          </p>
+          <p>Suspicious database actions should prove whether the team has investigation evidence.</p>
         </div>
         <span id="audit-badge" class="badge badge-safe">Logged</span>
       </div>
     </section>
 
-    <section class="module-section">
-      <p class="module-kicker">Try it yourself</p>
+    <section class="module-section lab-action-card">
+      <p class="module-kicker">Action</p>
       <h2>Trigger database-relevant actions</h2>
       <div class="controls">
         <label class="switch-card">
@@ -57,10 +54,6 @@
           Clear log
         </button>
       </div>
-      <div id="security-impact" data-security-impact data-demo-output class="security-impact impact-safe hidden">
-        <strong>Security Impact</strong>
-        <span>Audit Logging enabled: security-relevant actions are now traceable.</span>
-      </div>
 
       <div class="action-grid" style="margin-top:14px">
         <button type="button" class="action-card" data-event="success"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span>Successful login</strong><span>Normal authenticated session.</span></button>
@@ -68,6 +61,19 @@
         <button type="button" class="action-card" data-event="read"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></svg></span>Read customer data</strong><span>Sensitive table read.</span></button>
         <button type="button" class="action-card risk-action" data-event="export"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>Export customer data</strong><span>Large data movement.</span></button>
         <button type="button" class="action-card risk-action" data-event="privilege"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></span>Privilege escalation attempt</strong><span>Denied admin-level action.</span></button>
+      </div>
+    </section>
+
+    <section class="module-section result-card hidden" id="audit-result-card" aria-live="polite">
+      <div class="result-card-head">
+        <div>
+          <p class="module-kicker">Result</p>
+          <h2>Evidence trail</h2>
+        </div>
+      </div>
+      <div id="security-impact" data-security-impact class="security-impact impact-safe">
+        <strong>Security Impact</strong>
+        <span>Audit Logging enabled: security-relevant actions are now traceable.</span>
       </div>
 
       <div id="audit-warning" class="notice notice-danger hidden" style="margin-top:16px">
@@ -80,7 +86,7 @@
         <p>Multiple failed or sensitive actions occurred. In a real system this should alert a responder.</p>
       </div>
 
-      <div class="table-wrap hidden" id="audit-output" style="margin-top:18px">
+      <div class="table-wrap hidden" id="audit-output" style="margin-top:14px">
         <table>
           <thead>
             <tr>
@@ -99,8 +105,8 @@
       </div>
     </section>
 
-    <details class="module-section info-disclosure">
-      <summary><span><span class="module-kicker">Why audit logs matter</span><strong>Logs turn suspicious behavior into evidence</strong></span></summary>
+    <details class="module-section info-disclosure explanation-card">
+      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -120,6 +126,16 @@
           <div class="comparison-card"><h3>Incident response</h3><p>Reconstruct what happened and which records may be affected.</p></div>
           <div class="comparison-card"><h3>Anomaly detection</h3><p>Spot unusual failures, privileged actions, and large exports.</p></div>
           <div class="comparison-card"><h3>Compliance</h3><p>Show that sensitive data access is monitored and reviewable.</p></div>
+        </div>
+      </div>
+      <div class="takeaway-note">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <p>Audit logs support incident response and compliance when they include enough context.</p>
+        </div>
+        <div>
+          <p class="module-kicker">Operational takeaway</p>
+          <p>Track actor, action, object, result, and signal so responders can reconstruct events.</p>
         </div>
       </div>
       </div>
@@ -157,7 +173,7 @@
     const warning = document.getElementById("audit-warning");
     const suspicious = document.getElementById("suspicious-banner");
     const auditOutput = document.getElementById("audit-output");
-    const impact = document.getElementById("security-impact");
+    const auditResultCard = document.getElementById("audit-result-card");
     let sensitiveCount = 0;
     let logCount = 0;
     let auditInteracted = false;
@@ -184,7 +200,7 @@
 
     function appendLog(type) {
       const action = events[type];
-      impact.classList.remove("hidden");
+      auditResultCard.classList.remove("hidden");
 
       if (!auditToggle.checked) {
         warning.classList.remove("hidden");
@@ -209,7 +225,7 @@
 
     auditToggle.addEventListener("change", () => {
       const enabled = auditToggle.checked;
-      if (auditInteracted) impact.classList.remove("hidden");
+      if (auditInteracted) auditResultCard.classList.remove("hidden");
       badge.textContent = enabled ? "Logged" : "Unsafe";
       badge.className = enabled ? "badge badge-safe" : "badge badge-danger";
       warning.classList.toggle("hidden", enabled);
@@ -236,7 +252,7 @@
       suspicious.classList.add("hidden");
       renderEmpty();
       auditOutput.classList.add("hidden");
-      impact.classList.add("hidden");
+      auditResultCard.classList.add("hidden");
     });
     const initialEnabled = auditToggle.checked;
     badge.textContent = initialEnabled ? "Logged" : "Unsafe";

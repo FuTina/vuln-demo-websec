@@ -27,7 +27,7 @@
   <script src="/security-state.js"></script>
 
   <main class="page">
-    <section class="module-section">
+    <section class="module-section scenario-card">
       <div class="module-header">
         <div>
           <div class="module-kicker-row">
@@ -35,17 +35,14 @@
             <p class="module-kicker">Scenario</p>
           </div>
           <h1>Database Network Exposure</h1>
-          <p>
-            Public users should reach the web app. The API uses the database path. Direct internet access to the database
-            should be discovered and removed.
-          </p>
+          <p>Packet routing should prove that the database is reachable only through intended service paths.</p>
         </div>
         <span id="network-badge" class="badge badge-warning">Review required</span>
       </div>
     </section>
 
-    <section class="module-section">
-      <p class="module-kicker">Try it yourself</p>
+    <section class="module-section lab-action-card">
+      <p class="module-kicker">Action</p>
       <h2>Change network controls</h2>
       <div class="switch-grid">
         <label class="switch-card">
@@ -64,18 +61,6 @@
           <span><strong>TLS enabled</strong><span>Database traffic is encrypted.</span></span>
           <span class="switch"><input id="tls-toggle" type="checkbox" checked /><span class="slider"></span></span>
         </label>
-      </div>
-
-      <div class="network-board hidden" data-demo-output aria-label="Network architecture simulation">
-        <div class="network-row">
-          <div class="network-node"><strong>Internet</strong><span class="muted">Untrusted clients</span></div>
-          <div class="network-edge allowed" id="edge-web" aria-hidden="true"></div>
-          <div class="network-node"><strong>Web App</strong><span class="muted">Public entry point</span></div>
-          <div class="network-edge allowed" id="edge-api" aria-hidden="true"></div>
-          <div class="network-node"><strong>API</strong><span class="muted">Application service</span></div>
-          <div class="network-edge allowed" id="edge-db" aria-hidden="true"></div>
-          <div id="database-node" class="network-node database-node"><strong>Database</strong><span id="db-network-state" class="muted">Public port exposed</span></div>
-        </div>
       </div>
 
       <div class="packet-simulator">
@@ -106,24 +91,44 @@
             </div>
           </div>
         </div>
-        <div class="packet-lane hidden" data-demo-output>
-          <div id="packet-source-label" class="lane-label">Internet client</div>
-          <div id="lane-track" class="lane-track">
-            <div id="packet" class="packet" aria-hidden="true"><span class="packet-icon">SQL</span></div>
-            <div class="packet-blocker">blocked</div>
-          </div>
-          <div class="lane-label">Database</div>
-        </div>
-        <p id="packet-status" class="packet-status hidden" data-demo-output>Send a packet to see where the selected payload stops.</p>
-        <details class="packet-preview-toggle hidden" data-demo-output>
-          <summary>Payload preview</summary>
-          <pre id="packet-payload-preview" class="query-box packet-payload-preview"></pre>
-        </details>
       </div>
     </section>
 
-    <details class="module-section info-disclosure">
-      <summary><span><span class="module-kicker">What happens?</span><strong>Segmentation controls routes, not query intent</strong></span></summary>
+    <section class="module-section result-card hidden" data-demo-output aria-live="polite">
+      <div class="result-card-head">
+        <div>
+          <p class="module-kicker">Result</p>
+          <h2>Evidence from packet routing</h2>
+        </div>
+      </div>
+      <div class="network-board" aria-label="Network architecture simulation">
+        <div class="network-row">
+          <div class="network-node"><strong>Internet</strong><span class="muted">Untrusted clients</span></div>
+          <div class="network-edge allowed" id="edge-web" aria-hidden="true"></div>
+          <div class="network-node"><strong>Web App</strong><span class="muted">Public entry point</span></div>
+          <div class="network-edge allowed" id="edge-api" aria-hidden="true"></div>
+          <div class="network-node"><strong>API</strong><span class="muted">Application service</span></div>
+          <div class="network-edge allowed" id="edge-db" aria-hidden="true"></div>
+          <div id="database-node" class="network-node database-node"><strong>Database</strong><span id="db-network-state" class="muted">Public port exposed</span></div>
+        </div>
+      </div>
+      <div class="packet-lane">
+        <div id="packet-source-label" class="lane-label">Internet client</div>
+        <div id="lane-track" class="lane-track">
+          <div id="packet" class="packet" aria-hidden="true"><span class="packet-icon">SQL</span></div>
+          <div class="packet-blocker">blocked</div>
+        </div>
+        <div class="lane-label">Database</div>
+      </div>
+      <p id="packet-status" class="packet-status">Send a packet to see where the selected payload stops.</p>
+      <details class="packet-preview-toggle">
+        <summary>Payload preview</summary>
+        <pre id="packet-payload-preview" class="query-box packet-payload-preview"></pre>
+      </details>
+    </section>
+
+    <details class="module-section info-disclosure explanation-card">
+      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -155,6 +160,16 @@
               authorization, least privilege, and logging are the controls that keep that request from becoming a database compromise.
             </p>
           </div>
+        </div>
+      </div>
+      <div class="takeaway-note">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <p>Network segmentation removes direct database exposure.</p>
+        </div>
+        <div>
+          <p class="module-kicker">Operational takeaway</p>
+          <p>Keep allowed paths explicit and testable.</p>
         </div>
       </div>
       </div>

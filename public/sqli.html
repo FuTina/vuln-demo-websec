@@ -27,7 +27,7 @@
   <script src="/security-state.js"></script>
 
   <main class="page">
-    <section class="module-section">
+    <section class="module-section scenario-card">
       <div class="module-header">
         <div>
           <div class="module-kicker-row">
@@ -35,19 +35,16 @@
             <p class="module-kicker">Scenario</p>
           </div>
           <h1>SQL Injection Login Bypass</h1>
-          <p>
-            A login form checks a username and password against a users table. Toggle the query mode and run the same
-            input to see why string concatenation is dangerous and prepared statements are safer.
-          </p>
+          <p>A login form should prove that prepared statements keep user input out of SQL query logic.</p>
         </div>
         <span id="mode-badge" class="badge badge-danger">Vulnerable</span>
       </div>
     </section>
 
-    <section class="module-section">
+    <section class="module-section lab-action-card">
       <div class="workbench-header">
         <div>
-          <p class="module-kicker">Try it yourself</p>
+          <p class="module-kicker">Action</p>
           <h2>Attempt a login</h2>
         </div>
         <div class="toolbar-actions">
@@ -92,12 +89,21 @@
           </form>
         </div>
       </div>
-      <div id="security-impact" data-security-impact data-demo-output class="security-impact impact-danger hidden">
+    </section>
+
+    <section class="module-section result-card hidden" data-demo-output aria-live="polite">
+      <div class="result-card-head">
+        <div>
+          <p class="module-kicker">Result</p>
+          <h2>Evidence from the login check</h2>
+        </div>
+      </div>
+      <div id="security-impact" data-security-impact class="security-impact impact-danger">
         <strong>Security Impact</strong>
         <span>Prepared Statements disabled: user input can change SQL query structure in vulnerable paths.</span>
       </div>
 
-      <div class="grid grid-2 hidden" data-demo-output style="margin-top:18px">
+      <div class="grid grid-2" style="margin-top:14px">
         <section class="stack">
           <h3>Generated query</h3>
           <pre id="query-preview" class="query-box"></pre>
@@ -108,7 +114,7 @@
         </section>
       </div>
 
-      <div class="table-wrap hidden" data-demo-output style="margin-top:18px">
+      <div class="table-wrap" style="margin-top:14px">
         <table>
           <thead>
             <tr><th>ID</th><th>Username</th><th>Role</th><th>Email</th></tr>
@@ -120,8 +126,8 @@
       </div>
     </section>
 
-    <details class="module-section info-disclosure">
-      <summary><span><span class="module-kicker">What changed?</span><strong>String concatenation lets input become SQL logic</strong></span></summary>
+    <details class="module-section info-disclosure explanation-card">
+      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -152,6 +158,16 @@
               so it does not alter the query and the login fails.
             </p>
           </div>
+        </div>
+      </div>
+      <div class="takeaway-note">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <p>Prepared statements prevent user-controlled query manipulation.</p>
+        </div>
+        <div>
+          <p class="module-kicker">Operational takeaway</p>
+          <p>Make parameterized queries a default code review requirement.</p>
         </div>
       </div>
       </div>

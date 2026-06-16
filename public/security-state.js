@@ -179,22 +179,18 @@
         <div class="posture-summary">
           <span class="posture-label">Risk score</span>
           <div class="posture-title-row">
-            <strong class="posture-title">${posture}</strong>
-            <span class="badge badge-${postureClass === "danger" ? "danger" : postureClass === "warning" ? "warning" : "safe"}">${score}/100 risk score</span>
+            <strong class="posture-title">${score}/100</strong>
+            <span class="badge badge-${postureClass === "danger" ? "danger" : postureClass === "warning" ? "warning" : "safe"}">${posture}</span>
           </div>
         </div>
         <div class="posture-stat">
-          <span class="posture-label">Controls</span>
-          <strong>${enabled.length}/6 enabled</strong>
-        </div>
-        <div class="posture-stat">
-          <span class="posture-label">Guide</span>
+          <span class="posture-label">Current step</span>
           <strong>${guideLabel}</strong>
         </div>
         <button type="button" class="btn btn-ghost posture-guide-toggle" data-guide-toggle>${guideDismissed() ? "Show guide" : "Hide guide"}</button>
         <details class="posture-details"${detailsOpen ? " open" : ""}>
           <summary>Status details</summary>
-          <p class="posture-detail-note">Guide status: ${guideLabel}. Owl guide is ${guideDismissed() ? "hidden" : "visible"}.</p>
+          <p class="posture-detail-note">Guide status: ${guideLabel}. ${enabled.length}/6 controls are currently enabled.</p>
           <div class="posture-columns">
             <div>
               <strong class="posture-label">Enabled protections</strong>
@@ -214,7 +210,7 @@
               const complete = items.filter((control) => controls[control]).length;
               const percent = Math.round((complete / items.length) * 100);
               return `
-                <div class="category-bar">
+                <div class="category-bar${percent === 100 ? " is-complete" : ""}">
                   <span>${name}</span>
                   <div class="category-track" aria-hidden="true"><i style="width:${percent}%"></i></div>
                   <strong>${percent}%</strong>

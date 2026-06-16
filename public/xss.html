@@ -27,7 +27,7 @@
   <script src="/security-state.js"></script>
 
   <main class="page">
-    <section class="module-section">
+    <section class="module-section scenario-card">
       <div class="module-header">
         <div>
           <div class="module-kicker-row">
@@ -35,19 +35,16 @@
             <p class="module-kicker">Scenario</p>
           </div>
           <h1>Cross-Site Scripting Rendering</h1>
-          <p>
-            Comments are harmless only if the application renders them safely. In vulnerable mode, demo links and a fake
-            download become clickable page elements. In safe mode, the exact same input stays visible as text.
-          </p>
+          <p>Comments should prove that safe output APIs keep untrusted markup as visible text.</p>
         </div>
         <span id="render-badge" class="badge badge-danger">Vulnerable</span>
       </div>
     </section>
 
-    <section class="module-section">
+    <section class="module-section lab-action-card">
       <div class="workbench-header">
         <div>
-          <p class="module-kicker">Try it yourself</p>
+          <p class="module-kicker">Action</p>
           <h2>Post a comment</h2>
         </div>
         <div class="toolbar-actions">
@@ -85,17 +82,25 @@
           </form>
         </div>
       </div>
+    </section>
 
-      <div class="badge-row hidden" data-demo-output style="margin-top:14px">
+    <section class="module-section result-card hidden" data-demo-output aria-live="polite">
+      <div class="result-card-head">
+        <div>
+          <p class="module-kicker">Result</p>
+          <h2>Evidence from browser rendering</h2>
+        </div>
+      </div>
+      <div class="badge-row" style="margin-top:0">
         <span id="csp-badge" class="badge badge-warning">Simulated CSP: report-only</span>
         <span class="small muted">CSP is shown as a teaching badge; rendering behavior is controlled by the switch.</span>
       </div>
-      <div id="security-impact" data-security-impact data-demo-output class="security-impact impact-danger hidden">
+      <div id="security-impact" data-security-impact class="security-impact impact-danger">
         <strong>Security Impact</strong>
         <span>Output Encoding disabled: untrusted content can become active page markup.</span>
       </div>
 
-      <div class="grid grid-2 hidden" data-demo-output style="margin-top:18px">
+      <div class="grid grid-2" style="margin-top:14px">
         <section class="feed">
           <div class="badge-row">
             <h3>Comment output</h3>
@@ -123,8 +128,8 @@
       </div>
     </section>
 
-    <details class="module-section info-disclosure">
-      <summary><span><span class="module-kicker">What happens?</span><strong>Rendering API choice changes the security outcome</strong></span></summary>
+    <details class="module-section info-disclosure explanation-card">
+      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -152,6 +157,16 @@
             <h3>Output encoding prevents injection</h3>
             <p>Encoding or safe rendering ensures user content is displayed in the intended context only.</p>
           </div>
+        </div>
+      </div>
+      <div class="takeaway-note">
+        <div>
+          <p class="module-kicker">Security takeaway</p>
+          <p>Default to safe text output for user-generated content.</p>
+        </div>
+        <div>
+          <p class="module-kicker">Operational takeaway</p>
+          <p>Keep risky rendering APIs narrow, reviewed, and covered by tests.</p>
         </div>
       </div>
       </div>

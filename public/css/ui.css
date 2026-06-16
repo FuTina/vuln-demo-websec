@@ -315,20 +315,16 @@ video {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--green);
+  background: #38bdf8;
   transition: width .2s ease;
 }
 
-.posture-danger .category-track i {
-  background: var(--red);
-}
-
-.posture-warning .category-track i {
-  background: #f59e0b;
+.category-bar.is-complete .category-track i {
+  background: var(--green);
 }
 
 .posture-compact .posture-inner {
-  grid-template-columns: minmax(150px, .8fr) minmax(92px, auto) minmax(96px, auto) auto minmax(92px, auto);
+  grid-template-columns: minmax(150px, 1fr) minmax(110px, auto) auto minmax(92px, auto);
   gap: 10px;
   padding: 8px 0;
 }
@@ -1512,7 +1508,7 @@ h3 {
   width: 0;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--blue), var(--green));
+  background: linear-gradient(90deg, var(--blue), #06b6d4);
   transition: width .2s ease;
 }
 
@@ -2329,6 +2325,146 @@ body.landing .overview-sidekick {
   gap: 8px;
   margin: 0;
   padding: 14px 16px 16px;
+}
+
+body.module-page .page {
+  display: grid;
+  gap: 12px;
+  padding-top: 22px;
+}
+
+body.module-page .module-section + .module-section,
+body.module-page .module-section + .config-tab-panel,
+body.module-page .config-tab-panel + .module-section {
+  margin-top: 0;
+}
+
+.scenario-card,
+.lab-action-card,
+.result-card,
+.explanation-card,
+.optional-details {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .97), rgba(248, 250, 252, .94));
+}
+
+.scenario-card,
+.lab-action-card {
+  padding: 18px 20px;
+}
+
+.scenario-card::before {
+  background: linear-gradient(90deg, #f59e0b, #2563eb);
+}
+
+.lab-action-card::before {
+  background: linear-gradient(90deg, #2563eb, #06b6d4);
+}
+
+.result-card::before {
+  background: linear-gradient(90deg, #2563eb, #0f766e);
+}
+
+.explanation-card::before,
+.optional-details::before {
+  display: none;
+}
+
+.scenario-card .module-header,
+.lab-action-card .module-header,
+.optional-details .module-header,
+.compact-module-header {
+  margin-bottom: 0;
+}
+
+.scenario-card h1 {
+  margin-bottom: 8px;
+  font-size: clamp(1.62rem, 3vw, 2.4rem);
+}
+
+.scenario-card p {
+  max-width: 720px;
+  font-size: .98rem;
+}
+
+.lab-action-card h2 {
+  margin-bottom: 8px;
+}
+
+.lab-action-card .workbench-header {
+  margin-bottom: 12px;
+}
+
+.result-card {
+  padding: 18px 20px;
+  border-color: #bfdbfe;
+  background: #ffffff;
+}
+
+.result-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.result-card-head h2,
+.result-card-head p {
+  margin-bottom: 0;
+}
+
+.result-card .security-impact {
+  margin-top: 0;
+}
+
+.explanation-card summary::after {
+  content: "Open explanation";
+}
+
+.explanation-card[open] > summary::after {
+  content: "Close explanation";
+}
+
+.takeaway-note {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.takeaway-note > div {
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  padding: 12px;
+}
+
+.takeaway-note p:last-child {
+  margin-bottom: 0;
+  color: #334155;
+  font-weight: 700;
+}
+
+body.module-page .security-takeaway {
+  display: none;
+}
+
+.compact-warning {
+  margin: 0;
+  border-color: #fed7aa;
+  background: var(--amber-bg);
+  color: #7c2d12;
+  box-shadow: none;
+}
+
+.hero-reset-action {
+  animation: none;
+}
+
+.optional-details .config-tab-selector {
+  max-width: 620px;
 }
 
 .compact-details summary {
@@ -4665,7 +4801,7 @@ tr:last-child td {
   .app-nav {
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     justify-content: stretch;
     overflow: visible;
     border-radius: 12px;
@@ -4713,17 +4849,18 @@ tr:last-child td {
   }
 
   .posture-compact .posture-inner {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 8px;
   }
 
   .posture-compact .posture-summary {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 
   .posture-guide-toggle,
   .posture-details {
     justify-self: stretch;
+    width: 100%;
   }
 
   .posture-details summary {
@@ -4751,6 +4888,7 @@ tr:last-child td {
   .file-compare-grid,
   .preview-grid,
   .takeaway-grid,
+  .takeaway-note,
   .policy-result-grid,
   .packet-controls,
   .split-note,
@@ -5057,6 +5195,7 @@ tr:last-child td {
   .action-grid,
   .preview-grid,
   .takeaway-grid,
+  .takeaway-note,
   .posture-inner,
   .posture-columns,
   .builder-stage,
@@ -5111,7 +5250,11 @@ tr:last-child td {
 
   .app-nav {
     width: 100%;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+    overflow: visible;
+    border-radius: 12px;
   }
 
   .choice-grid,

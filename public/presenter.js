@@ -130,6 +130,32 @@
       next: "Fill each target slot, run Review configuration, then inspect the runtime reference."
     }
   };
+  const owlHints = {
+    prepared: {
+      prompt: "Use the bypass payload while Vulnerable is selected.",
+      hint: "Watch the generated SQL. The payload changes the WHERE clause before protection is enabled."
+    },
+    encoding: {
+      prompt: "Post one red payload before switching modes.",
+      hint: "Look for active UI in the comment output. Protected mode should show the same text without turning it into HTML."
+    },
+    rbac: {
+      prompt: "Review one role before changing controls.",
+      hint: "Compare what disappears when RBAC and masking are enabled. Masking is not a substitute for authorization."
+    },
+    audit: {
+      prompt: "Trigger an event and inspect the trail.",
+      hint: "A useful log answers who acted, what changed, what object was touched, and whether it succeeded."
+    },
+    network: {
+      prompt: "Send the internet packet before tightening controls.",
+      hint: "The lesson is the route, not the payload. Direct database access should stop while the API path remains intentional."
+    },
+    config: {
+      prompt: "Fill the target config, then run the review.",
+      hint: "Focus first on blockers: public port, root user, broad grants, and hardcoded secrets."
+    }
+  };
 
   function readState() {
     try {
@@ -432,14 +458,11 @@
     const guideConfig = nextOpenConfig(controls, evidence);
     const guideIsComplete = guideConfig.step > guidedControls.length;
     const currentPageIsGuideStep = guideConfig.route === path;
+    const currentModuleTitle = config?.title?.replace(/^Step \d+:\s*/, "") || "this exercise";
     const configPostgresTabActive = path === "/config.html" && document.body.dataset.configTab === "postgres" && guideConfig.control === "config";
     const evidenceComplete = guideIsComplete || hasEvidence(guideConfig);
     const controlComplete = guideIsComplete || Boolean(controls[guideConfig.control]);
     const completedThisModule = guideIsComplete || (currentPageIsGuideStep && controlComplete && evidenceComplete);
-    const completedSteps = guideIsComplete
-      ? guidedControls.length
-      : Math.min(guidedControls.length, guidedControls.filter((control) => controls[control] && evidence[control]).length);
-    const progress = Math.round((completedSteps / guidedControls.length) * 100);
     const statusText = guideIsComplete
       ? "All steps are complete. Review the overview as your closing summary."
       : configPostgresTabActive
@@ -483,11 +506,7 @@
             <div><dt>Success</dt><dd>${details.success}</dd></div>
             <div><dt>Next</dt><dd>${details.next}</dd></div>
           </dl>
-          <div class="presenter-progress guide-progress" aria-hidden="true"><span style="width: ${progress}%"></span></div>
-          <details class="guide-tip">
-            <summary>Need a hint?</summary>
-            <p>${guideTip}</p>
-          </details>
+          <button type="button" class="guide-hint-button" data-guide-hint aria-controls="security-owl-speech" aria-expanded="${guideDismissed() ? "false" : "true"}" aria-label="Need a hint from Security Owl">Need a hint?</button>
         </div>
         <div class="guided-step-action"></div>
       </div>
@@ -551,16 +570,20 @@
     ].filter(Boolean).join(" ");
     owl.setAttribute("role", "region");
     owl.setAttribute("aria-label", guideIsComplete ? "Security Owl lab complete" : `Security Owl guidance for step ${guideConfig.step}`);
+    const owlHint = owlHints[guideConfig.control] || {
+      prompt: guideIsComplete ? "Guided lab complete." : "Focus on the next required action.",
+      hint: guideTip
+    };
     const owlText = guideIsComplete
       ? "You completed the guided lab. Return to the start screen for the closing summary."
       : currentPageIsGuideStep
-      ? details.next
-      : `Your next exercise is ${guideConfig.title.replace(/^Step \d+:\s*/, "")}.`;
+      ? owlHint.prompt
+      : `You are reviewing ${currentModuleTitle}. The guided path is at ${guideConfig.title.replace(/^Step \d+:\s*/, "")}.`;
     owl.innerHTML = `
       <button type="button" class="sidekick-toggle" aria-label="Show Security Owl guidance">
         <span class="assistant-avatar assistant-avatar-large" aria-hidden="true"><i></i></span>
       </button>
-      <div class="assistant-speech">
+      <div class="assistant-speech" id="security-owl-speech">
         <button type="button" class="guide-close" aria-label="Minimize Security Owl">&times;</button>
         <strong>Security Owl</strong>
         <span data-sidekick-text>${owlText}</span>
@@ -577,16 +600,21 @@
       owlActions.appendChild(createLink(guideConfig.href, nextActionLabel(guideConfig), guideConfig.nextStep));
     }
     owl.querySelector(".sidekick-actions").replaceWith(owlActions);
-    const toggleTip = (animate = false) => {
+    const showOwlMessage = (message, showingTip = false, animate = false) => {
       if (animate) animateOwl(owl);
       const textNode = owl.querySelector("[data-sidekick-text]");
-      const showingTip = owl.classList.toggle("is-showing-tip");
-      textNode.textContent = showingTip ? guideTip : owlText;
+      textNode.textContent = message;
+      owl.classList.toggle("is-showing-tip", showingTip);
+    };
+    const toggleTip = (animate = false) => {
+      const showingTip = !owl.classList.contains("is-showing-tip");
+      showOwlMessage(showingTip ? owlHint.hint : owlText, showingTip, animate);
     };
     owl.querySelector(".sidekick-toggle").addEventListener("click", () => {
       if (owl.classList.contains("is-collapsed")) {
         setGuideDismissed(false);
         owl.classList.remove("is-collapsed");
+        panel.querySelector("[data-guide-hint]")?.setAttribute("aria-expanded", "true");
         return;
       }
       toggleTip(true);
@@ -598,9 +626,23 @@
       event.stopPropagation();
       setGuideDismissed(true);
       owl.classList.add("is-collapsed");
+      panel.querySelector("[data-guide-hint]")?.setAttribute("aria-expanded", "false");
     });
-    document.body.appendChild(owl);
+    const mobileOwlQuery = window.matchMedia("(max-width: 560px)");
+    const mountOwl = () => {
+      const inlineTarget = panel.querySelector(".guided-step-copy");
+      const target = mobileOwlQuery.matches && inlineTarget ? inlineTarget : document.body;
+      if (owl.parentElement !== target) target.appendChild(owl);
+    };
+    mountOwl();
     positionSidekick(owl, sidekickStepClass);
+    panel.querySelector("[data-guide-hint]")?.addEventListener("click", () => {
+      setGuideDismissed(false);
+      owl.classList.remove("is-collapsed");
+      panel.querySelector("[data-guide-hint]")?.setAttribute("aria-expanded", "true");
+      showOwlMessage(owlHint.hint, true, true);
+      owl.querySelector(".assistant-speech")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
   }
 
   const config = modules[path];

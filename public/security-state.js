@@ -3,6 +3,7 @@
   const evidenceKey = "dbsec.presenter.evidence";
   const presenterStateKey = "dbsec.presenter.state";
   const guideDismissedKey = "dbsec.presenter.guideDismissed";
+  const baselineStartedKey = "dbsec.presenter.baselineStarted";
   const defaultControls = {
     prepared: true,
     rbac: true,
@@ -95,6 +96,22 @@
     Monitoring: ["audit"]
   };
   const guidedControls = ["prepared", "encoding", "rbac", "audit", "network", "config"];
+  const moduleLinks = [
+    { label: "SQL Injection", href: "/sqli.html" },
+    { label: "XSS", href: "/xss.html" },
+    { label: "Data Masking", href: "/users.html" },
+    { label: "Audit", href: "/audit.html" },
+    { label: "Network", href: "/network.html" },
+    { label: "Config", href: "/config.html" }
+  ];
+  const exerciseLabels = {
+    prepared: "SQL Injection",
+    encoding: "XSS Rendering",
+    rbac: "Data Masking",
+    audit: "Audit Logging",
+    network: "Network Exposure",
+    config: "Secure Configuration"
+  };
 
   function readControls() {
     try {
@@ -111,6 +128,10 @@
     } catch {
       return {};
     }
+  }
+
+  function writeEvidence(evidence) {
+    localStorage.setItem(evidenceKey, JSON.stringify(evidence));
   }
 
   function writeControls(controls) {
@@ -155,10 +176,40 @@
     window.setTimeout(renderPosture, 0);
   }
 
+  function navigateOverview() {
+    if (location.pathname === "/" || location.pathname === "/index.html") {
+      history.replaceState(null, "", "/#guided-path");
+      location.reload();
+      return;
+    }
+    location.assign("/#guided-path");
+  }
+
+  function resetInsecureBaseline() {
+    writeEvidence({});
+    localStorage.setItem(baselineStartedKey, "true");
+    localStorage.setItem(presenterStateKey, JSON.stringify({ active: true, step: 1 }));
+    writeControls(Object.fromEntries(guidedControls.map((control) => [control, false])));
+    renderPosture();
+    window.dispatchEvent(new CustomEvent("dbsec:controls-changed", { detail: readControls() }));
+    navigateOverview();
+  }
+
+  function applySecureBaseline() {
+    writeControls(Object.fromEntries(guidedControls.map((control) => [control, true])));
+    writeEvidence(Object.fromEntries(guidedControls.map((control) => [control, true])));
+    localStorage.setItem(baselineStartedKey, "true");
+    localStorage.setItem(presenterStateKey, JSON.stringify({ active: true, step: guidedControls.length + 1 }));
+    renderPosture();
+    window.dispatchEvent(new CustomEvent("dbsec:controls-changed", { detail: readControls() }));
+    navigateOverview();
+  }
+
   function renderPosture() {
     const root = document.getElementById("global-security-posture");
     if (!root) return;
-    const detailsOpen = root.querySelector(".posture-details")?.open || false;
+    const riskDetailsOpen = root.querySelector(".posture-details")?.open || false;
+    const toolsOpen = root.querySelector(".posture-tools")?.open || riskDetailsOpen || false;
 
     const controls = readControls();
     const evidence = readEvidence();
@@ -173,58 +224,94 @@
     const guideStep = nextGuideStep(controls, evidence);
     const guideLabel = guideStep > guidedControls.length ? "Complete" : `Step ${guideStep} of 6`;
     const nextControl = guidedControls[guideStep - 1];
-    const nextLabel = nextControl ? controlModel[nextControl].name : "Closing summary";
+    const nextLabel = nextControl ? exerciseLabels[nextControl] : "Closing summary";
     const completedSteps = guidedControls.filter((control) => controls[control] && evidence[control]).length;
-    const progress = Math.round((completedSteps / guidedControls.length) * 100);
+    const remainingSteps = Math.max(0, guidedControls.length - completedSteps);
+    const remainingLabel = remainingSteps === 0
+      ? "All exercises complete"
+      : `${remainingSteps} ${remainingSteps === 1 ? "exercise" : "exercises"} remaining`;
+    const currentStep = Math.min(guidedControls.length, guideStep);
+    const stepMarkers = guidedControls.map((control, index) => {
+      const stepNumber = index + 1;
+      const complete = Boolean(controls[control] && evidence[control]);
+      const current = !complete && stepNumber === currentStep && guideStep <= guidedControls.length;
+      const className = complete ? "is-complete" : current ? "is-current" : "is-upcoming";
+      const label = complete ? `Step ${stepNumber} complete` : current ? `Step ${stepNumber} current` : `Step ${stepNumber} upcoming`;
+      return `<span class="${className}" role="listitem" aria-label="${label}"${current ? ' aria-current="step"' : ""}>${stepNumber}</span>`;
+    }).join("");
 
     root.className = `global-posture lab-progress-bar posture-${postureClass}`;
     root.innerHTML = `
       <div class="posture-inner">
-        <div class="posture-summary">
-          <span class="posture-label">Guided lab</span>
-          <div class="posture-title-row">
-            <strong class="posture-title">${guideLabel}</strong>
-            <span class="badge badge-role">${completedSteps}/6 complete</span>
+        <div class="posture-focus" aria-label="Current guided exercise">
+          <span class="posture-label">Current exercise</span>
+          <strong class="posture-title">${nextLabel}</strong>
+          <span class="posture-context">${guideLabel} · ${remainingLabel}</span>
+        </div>
+        <div class="posture-progress-panel" aria-label="Guided lab progress">
+          <div class="posture-progress-head">
+            <span>Learning progress</span>
+            <strong>${completedSteps}/6 complete</strong>
+          </div>
+          <div class="posture-step-track" role="list" aria-label="${completedSteps} of 6 guided exercises complete">
+            ${stepMarkers}
           </div>
         </div>
-        <div class="posture-stat">
-          <span class="posture-label">Next focus</span>
-          <strong>${nextLabel}</strong>
-        </div>
-        <div class="presenter-progress posture-progress" aria-hidden="true"><span style="width:${progress}%"></span></div>
-        <details class="posture-details"${detailsOpen ? " open" : ""}>
-          <summary>Risk summary</summary>
-          <p class="posture-detail-note">Risk score: ${score}/100 (${posture}). ${enabled.length}/6 controls are currently enabled.</p>
-          <div class="posture-columns">
-            <div>
-              <strong class="posture-label">Enabled protections</strong>
-              <div class="posture-chip-row">
-                ${enabled.map((control) => `<span class="badge badge-safe">${controlModel[control].protected}: ${controlModel[control].name}</span>`).join("") || '<span class="badge badge-warning">No controls enabled</span>'}
-              </div>
+        <details class="posture-tools"${toolsOpen ? " open" : ""}>
+          <summary>Lab options</summary>
+          <div class="posture-tools-panel">
+            <div class="posture-actions" aria-label="Baseline actions">
+              <a class="btn btn-primary" href="/#guided-path" data-overview-action>Back to overview</a>
+              <button type="button" class="btn btn-ghost" data-reset-baseline>Reset lab</button>
+              <button type="button" class="btn btn-safe" data-secure-baseline>Secure baseline</button>
             </div>
-            <div>
-              <strong class="posture-label">Active risks</strong>
-              <div class="posture-chip-row">
-                ${topMissing.map((control) => `<span class="badge badge-danger">${controlModel[control].risk}: ${controlModel[control].name}</span>`).join("") || '<span class="badge badge-safe">No active demo risks</span>'}
+            <details class="posture-module-picker">
+              <summary>Open a specific exercise</summary>
+              <div class="posture-module-links" aria-label="Direct exercise access">
+                ${moduleLinks.map((item) => `<a href="${item.href}">${item.label}</a>`).join("")}
               </div>
-            </div>
-          </div>
-          <div class="category-bars" aria-label="Security category coverage">
-            ${Object.entries(categories).map(([name, items]) => {
-              const complete = items.filter((control) => controls[control]).length;
-              const percent = Math.round((complete / items.length) * 100);
-              return `
-                <div class="category-bar${percent === 100 ? " is-complete" : ""}">
-                  <span>${name}</span>
-                  <div class="category-track" aria-hidden="true"><i style="width:${percent}%"></i></div>
-                  <strong>${percent}%</strong>
+            </details>
+            <details class="posture-details"${riskDetailsOpen ? " open" : ""}>
+              <summary>Risk summary</summary>
+              <p class="posture-detail-note">Risk score: ${score}/100 (${posture}). ${enabled.length}/6 controls are currently enabled.</p>
+              <div class="posture-columns">
+                <div>
+                  <strong class="posture-label">Enabled protections</strong>
+                  <div class="posture-chip-row">
+                    ${enabled.map((control) => `<span class="badge badge-safe">${controlModel[control].protected}: ${controlModel[control].name}</span>`).join("") || '<span class="badge badge-warning">No controls enabled</span>'}
+                  </div>
                 </div>
-              `;
-            }).join("")}
+                <div>
+                  <strong class="posture-label">Active risks</strong>
+                  <div class="posture-chip-row">
+                    ${topMissing.map((control) => `<span class="badge badge-danger">${controlModel[control].risk}: ${controlModel[control].name}</span>`).join("") || '<span class="badge badge-safe">No active demo risks</span>'}
+                  </div>
+                </div>
+              </div>
+              <div class="category-bars" aria-label="Security category coverage">
+                ${Object.entries(categories).map(([name, items]) => {
+                  const complete = items.filter((control) => controls[control]).length;
+                  const percent = Math.round((complete / items.length) * 100);
+                  return `
+                    <div class="category-bar${percent === 100 ? " is-complete" : ""}">
+                      <span>${name}</span>
+                      <div class="category-track" aria-hidden="true"><i style="width:${percent}%"></i></div>
+                      <strong>${percent}%</strong>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </details>
           </div>
         </details>
       </div>
     `;
+    root.querySelector("[data-overview-action]")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      navigateOverview();
+    });
+    root.querySelector("[data-reset-baseline]")?.addEventListener("click", resetInsecureBaseline);
+    root.querySelector("[data-secure-baseline]")?.addEventListener("click", applySecureBaseline);
     renderNavigationState(controls);
   }
 

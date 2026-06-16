@@ -70,7 +70,7 @@
         <div class="presenter-dock-body" aria-labelledby="presenter-title">
           <div class="guide-card-head">
             <div>
-              <p class="module-kicker">Current focus</p>
+              <p class="module-kicker">How it works</p>
               <h2 id="presenter-title">Follow the guided flow</h2>
               <p class="muted">The path opens one unfinished exercise at a time. Direct access is available below for review only.</p>
             </div>
@@ -301,6 +301,36 @@
         label: "Review Start Screen"
       }
     };
+    const overviewOwlHints = {
+      1: {
+        prompt: "Start insecure, then test the first bypass.",
+        tip: "The unsafe result makes the prepared-statement fix easier to understand."
+      },
+      2: {
+        prompt: "Post one payload before switching modes.",
+        tip: "Look for the same input changing from active markup to safe text."
+      },
+      3: {
+        prompt: "Compare one role before enabling the controls.",
+        tip: "RBAC limits records. Masking limits exposed fields."
+      },
+      4: {
+        prompt: "Trigger one event and inspect the trail.",
+        tip: "Useful evidence answers who, what, where, result, and signal."
+      },
+      5: {
+        prompt: "Send a public packet before segmenting.",
+        tip: "Success means direct database access is blocked while the intended path stays available."
+      },
+      6: {
+        prompt: "Build the target config, then review it.",
+        tip: "Fix blockers first: public port, root user, broad grants, and secrets."
+      },
+      7: {
+        prompt: "Lab complete. Use the start screen as the summary.",
+        tip: "The secure baseline is ready to present."
+      }
+    };
     const riskModel = {
       prepared: {
         points: 22,
@@ -410,6 +440,10 @@
       localStorage.setItem(controlStorageKey, JSON.stringify(state));
     }
 
+    function saveEvidence(evidence) {
+      localStorage.setItem(evidenceStorageKey, JSON.stringify(evidence));
+    }
+
     function loadSavedControls() {
       const saved = readSavedControls();
       if (!saved) return;
@@ -470,15 +504,21 @@
       list.className = "impact-detail-list";
       missing.forEach((control) => {
         const model = riskModel[control];
-        const item = document.createElement("div");
+        const item = document.createElement("details");
         item.className = "impact-item";
-        item.innerHTML = `<strong>${model.name} missing (+${model.points})</strong><span>${model.missing}</span>`;
+        item.innerHTML = `
+          <summary><strong>${model.name}</strong><span>+${model.points}</span></summary>
+          <p>${model.missing}</p>
+        `;
         list.appendChild(item);
       });
       if (score > additiveRisk + 8) {
-        const floor = document.createElement("div");
+        const floor = document.createElement("details");
         floor.className = "impact-item impact-warning";
-        floor.innerHTML = `<strong>Risk floor applied (${Math.max(singleControlFloor, combinedControlFloor)})</strong><span>Critical missing controls prevent the score from appearing artificially low.</span>`;
+        floor.innerHTML = `
+          <summary><strong>Risk floor applied</strong><span>${Math.max(singleControlFloor, combinedControlFloor)}</span></summary>
+          <p>Critical missing controls prevent the score from appearing artificially low.</p>
+        `;
         list.appendChild(floor);
       }
       details.appendChild(list);
@@ -488,9 +528,12 @@
         reducedList.className = "impact-detail-list";
         reduced.forEach((control) => {
           const model = riskModel[control];
-          const item = document.createElement("div");
+          const item = document.createElement("details");
           item.className = "impact-item impact-safe";
-          item.innerHTML = `<strong>${model.name} reducing risk (-${model.points})</strong><span>${model.enabled}</span>`;
+          item.innerHTML = `
+            <summary><strong>${model.name}</strong><span>-${model.points}</span></summary>
+            <p>${model.enabled}</p>
+          `;
           reducedList.appendChild(item);
         });
         details.appendChild(reducedList);
@@ -560,17 +603,10 @@
       presenterStepPill.textContent = isComplete ? "Complete" : `Step ${activeStep} of 6`;
       overviewSidekickStep.textContent = isComplete ? "Lab complete" : `Step ${activeStep} of 6`;
       moveOverviewSidekick(isComplete ? "step-complete" : `step-${Math.min(6, Math.max(1, activeStep))}`);
-      overviewSidekick.dataset.message = isComplete
-        ? "All six steps are complete. The secure baseline is ready to present."
-        : activeStep === 1
-          ? "Start from an insecure baseline, then open SQL Injection."
-          : current.text;
+      const owlCopy = overviewOwlHints[isComplete ? 7 : activeStep] || overviewOwlHints[1];
+      overviewSidekick.dataset.message = owlCopy.prompt;
       overviewSidekickText.textContent = overviewSidekick.dataset.message;
-      overviewSidekick.dataset.tip = isComplete
-        ? "Party mode: no next action is needed."
-        : activeStep === 1
-          ? "Use Start insecure demo only to reset the baseline; SQL Injection is the first real learning step."
-          : "Open the next unfinished step and complete the hands-on action there.";
+      overviewSidekick.dataset.tip = owlCopy.tip;
       if (isComplete || activeStep > 6) {
         overviewSidekickAction.hidden = true;
         overviewSidekickAction.textContent = "";
@@ -613,11 +649,15 @@
       document.querySelectorAll(".presenter-step").forEach((step) => {
         step.classList.remove("is-active", "is-complete", "is-upcoming", "is-warning");
         step.querySelector(".badge")?.classList.remove("badge-danger", "badge-warning", "badge-safe", "badge-soon");
+        const badge = step.querySelector(".badge");
+        if (badge) badge.textContent = `Step ${step.dataset.step}`;
       });
       if (isComplete) {
         document.querySelectorAll(".presenter-step").forEach((step) => {
           step.classList.add("is-complete");
-          step.querySelector(".badge")?.classList.add("badge-safe");
+          const badge = step.querySelector(".badge");
+          badge?.classList.add("badge-safe");
+          if (badge) badge.textContent = "Done";
         });
         document.querySelector('[data-step="6"]')?.classList.add("is-active");
         if (presenterDock.open && !presenterDock.classList.contains("dashboard-guide-card")) {
@@ -633,13 +673,16 @@
         if (stepComplete) {
           step.classList.add("is-complete");
           badge?.classList.add("badge-safe");
+          if (badge) badge.textContent = "Done";
         } else if (number === activeStep) {
           step.classList.add("is-active");
           if (!baselineStarted) step.classList.add("is-warning");
           badge?.classList.add(baselineStarted ? "badge-danger" : "badge-warning");
+          if (badge) badge.textContent = "Current";
         } else {
           step.classList.add("is-upcoming");
           badge?.classList.add("badge-soon");
+          if (badge) badge.textContent = `Step ${number}`;
         }
       });
       if (presenterDock.open && !presenterDock.classList.contains("dashboard-guide-card")) {
@@ -705,14 +748,19 @@
       });
     });
     function startInsecureDemo() {
-      localStorage.removeItem(evidenceStorageKey);
+      saveEvidence({});
       localStorage.setItem(baselineStorageKey, "true");
       setAllControls(false, "Insecure baseline is active. Step 1 starts in SQL Injection.", 1);
     }
     document.getElementById("presenter-insecure").addEventListener("click", startInsecureDemo);
     heroInsecure.addEventListener("click", startInsecureDemo);
     document.getElementById("presenter-secure").addEventListener("click", () => {
-      setAllControls(true, "Secure baseline is active. Guided Mode will still stop at any module that has not been tried yet.", 8);
+      saveEvidence(Object.keys(riskModel).reduce((state, control) => {
+        state[control] = true;
+        return state;
+      }, {}));
+      localStorage.setItem(baselineStorageKey, "true");
+      setAllControls(true, "Secure baseline is active. All guided exercises are marked complete for review.", 7);
     });
     function toggleOverviewTip(animate = false) {
       if (animate) animateOverviewOwl();

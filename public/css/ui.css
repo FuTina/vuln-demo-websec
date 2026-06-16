@@ -4739,7 +4739,7 @@ tr:last-child td {
   .page,
   .footer,
   .posture-inner {
-    width: min(100% - 28px, 1120px);
+    width: min(1120px, calc(100% - 28px));
   }
 
   .posture-inner {
@@ -5040,7 +5040,7 @@ tr:last-child td {
   .page,
   .footer,
   .posture-inner {
-    width: min(100% - 20px, 1120px);
+    width: min(1120px, calc(100% - 20px));
   }
 
   .app-nav {
@@ -5268,7 +5268,7 @@ tr:last-child td {
   .page,
   .footer,
   .posture-inner {
-    width: min(100% - 22px, 1120px);
+    width: min(1120px, calc(100% - 22px));
   }
 
   .hero-panel,
@@ -5364,7 +5364,7 @@ tr:last-child td {
   .guide-sidekick {
     position: static;
     grid-template-columns: minmax(0, 1fr) 48px;
-    width: min(100% - 22px, 1120px);
+    width: min(1120px, calc(100% - 22px));
     margin: -2px auto 16px;
   }
 
@@ -5387,7 +5387,7 @@ tr:last-child td {
   .page,
   .footer,
   .posture-inner {
-    width: min(100% - 20px, 1120px);
+    width: min(1120px, calc(100% - 20px));
   }
 
   .guide-sidekick {
@@ -5574,8 +5574,8 @@ body.module-page:not(.has-results) .explanation-card {
 
 .lab-progress-bar .posture-inner {
   display: grid;
-  grid-template-columns: minmax(160px, .55fr) minmax(180px, .7fr) minmax(180px, 1fr) auto;
-  gap: 14px;
+  grid-template-columns: minmax(150px, .55fr) minmax(180px, .7fr) minmax(160px, 1fr) auto auto;
+  gap: 12px;
   align-items: center;
   padding: 10px 0;
 }
@@ -5595,6 +5595,18 @@ body.module-page:not(.has-results) .explanation-card {
 
 .posture-progress {
   min-width: 180px;
+}
+
+.posture-actions {
+  display: inline-flex;
+  gap: 6px;
+  justify-self: end;
+}
+
+.posture-actions .btn {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: .76rem;
 }
 
 .lab-progress-bar .posture-details {
@@ -5695,6 +5707,18 @@ body.module-page:not(.has-results) .explanation-card {
   gap: 10px;
   padding: 16px;
   box-shadow: none;
+}
+
+.lab-risk-card .risk-card-head {
+  align-items: center;
+}
+
+.lab-risk-card .risk-score strong {
+  font-size: 1.75rem;
+}
+
+.lab-risk-card .meter {
+  height: 7px;
 }
 
 .advanced-access .disclosure-body {
@@ -5803,10 +5827,19 @@ body.module-page:not(.has-results) .explanation-card {
 
   .posture-progress,
   .lab-progress-bar .posture-details,
+  .posture-actions,
   .guided-step-action,
   .guided-step-action .btn,
   .guided-step-action .guide-requirement {
     width: 100%;
+  }
+
+  .posture-actions {
+    justify-content: stretch;
+  }
+
+  .posture-actions .btn {
+    flex: 1;
   }
 
   .guided-step-action {
@@ -5922,6 +5955,10 @@ body.module-page .scenario-card .step-chip {
   justify-self: end;
 }
 
+.lab-path-disclosure #presenter-step-pill {
+  display: none;
+}
+
 .lab-path-disclosure .presenter-grid {
   align-items: stretch;
 }
@@ -5970,8 +6007,58 @@ body.module-page .scenario-card .step-chip {
   margin-top: 4px;
 }
 
+.lab-path-disclosure .presenter-step.is-active {
+  border-color: #38bdf8;
+  background: #eff6ff;
+  box-shadow: inset 4px 0 0 #2563eb;
+}
+
+.lab-path-disclosure .presenter-step.is-active.is-warning {
+  border-color: #fbbf24;
+  background: var(--amber-bg);
+  box-shadow: inset 4px 0 0 #f59e0b;
+}
+
+.lab-path-disclosure .presenter-step.is-complete {
+  border-color: #86efac;
+  background: var(--green-bg);
+  box-shadow: inset 4px 0 0 var(--green);
+}
+
+.lab-path-disclosure .presenter-step.is-upcoming {
+  border-color: #d7e0ec;
+  background: #f8fafc;
+}
+
+.lab-path-disclosure .presenter-step.is-upcoming .btn {
+  border-color: #cbd5e1;
+  color: #334155;
+  background: #ffffff;
+}
+
+.lab-path-disclosure .presenter-step.is-complete .btn {
+  border-color: #86efac;
+  color: var(--green);
+  background: #ffffff;
+}
+
 .security-owl {
   pointer-events: auto;
+}
+
+.security-owl .assistant-avatar {
+  animation: assistantFloat 4.8s ease-in-out infinite;
+}
+
+.security-owl .assistant-speech {
+  min-width: 300px;
+  border-color: #5eead4;
+  background:
+    linear-gradient(180deg, #f0fdfa, #ffffff);
+}
+
+.security-owl .assistant-speech span {
+  font-size: .86rem !important;
 }
 
 .security-owl.step-1,
@@ -5988,6 +6075,18 @@ body.landing .overview-sidekick.step-5 { top: 392px; }
 body.landing .overview-sidekick.step-6 { top: 446px; }
 .security-owl.step-complete,
 body.landing .overview-sidekick.step-complete { top: 500px; }
+
+body.module-page .security-owl,
+body.module-page .security-owl.step-1,
+body.module-page .security-owl.step-2,
+body.module-page .security-owl.step-3,
+body.module-page .security-owl.step-4,
+body.module-page .security-owl.step-5,
+body.module-page .security-owl.step-6,
+body.module-page .security-owl.step-complete {
+  top: auto;
+  bottom: 24px;
+}
 
 .security-owl .assistant-speech strong {
   color: #0f766e;
@@ -6044,15 +6143,579 @@ body.landing .overview-sidekick .assistant-speech {
   body.landing .overview-sidekick.is-collapsed {
     grid-template-columns: 48px;
   }
+
+  .security-owl .assistant-speech,
+  body.landing .overview-sidekick .assistant-speech {
+    min-width: 0;
+    max-width: 250px;
+  }
+}
+
+.risk-details .impact-detail-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.risk-details .impact-detail-list .impact-item {
+  display: grid;
+  gap: 3px;
+  min-height: 76px;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  background: #ffffff;
+}
+
+.risk-details .impact-detail-list details.impact-item {
+  min-height: 0;
+  padding: 0;
+}
+
+.risk-details .impact-detail-list details.impact-item summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+  padding: 9px 10px;
+}
+
+.risk-details .impact-detail-list details.impact-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.risk-details .impact-detail-list details.impact-item summary span {
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .06);
+  color: #334155;
+  padding: 2px 7px;
+  font-size: .72rem;
+  font-weight: 900;
+}
+
+.risk-details .impact-detail-list details.impact-item p {
+  margin: 0;
+  border-top: 1px solid #edf1f6;
+  color: var(--muted);
+  padding: 8px 10px 10px;
+  font-size: .78rem;
+}
+
+.risk-details .impact-detail-list .impact-item strong {
+  font-size: .82rem;
+}
+
+.risk-details .impact-detail-list .impact-item span {
+  font-size: .78rem;
+}
+
+@media (max-width: 700px) {
+  .risk-details .impact-detail-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Final guided-lab clarity pass */
+.posture-step-track {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(24px, 1fr));
+  gap: 6px;
+  min-width: 220px;
+  align-items: center;
+}
+
+.posture-step-track span {
+  display: grid;
+  min-width: 0;
+  min-height: 26px;
+  place-items: center;
+  border: 1px solid rgba(203, 213, 225, .32);
+  border-radius: 999px;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, .42);
+  font-size: .72rem;
+  font-weight: 900;
+}
+
+.posture-step-track span.is-complete {
+  border-color: rgba(134, 239, 172, .75);
+  color: #052e16;
+  background: #86efac;
+}
+
+.posture-step-track span.is-current {
+  border-color: rgba(125, 211, 252, .9);
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--petrol), var(--blue));
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, .16);
+}
+
+.guide-hint-button {
+  width: fit-content;
+  border: 0;
+  color: var(--blue-dark);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  font-size: .84rem;
+  font-weight: 900;
+  text-align: left;
+}
+
+.guide-hint-button::before {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-right: 6px;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid currentColor;
+  vertical-align: -1px;
+}
+
+.guide-hint-button:hover,
+.guide-hint-button:focus-visible {
+  color: #0f766e;
+  text-decoration: underline;
+}
+
+.security-owl .assistant-speech {
+  min-width: 260px;
+  max-width: 320px;
+  border-color: #5eead4;
+  background: linear-gradient(180deg, #f0fdfa, #ffffff);
+}
+
+.security-owl .assistant-speech::before {
+  border-color: #5eead4;
+  background: #f0fdfa;
+}
+
+.security-owl .assistant-speech span {
+  font-size: .84rem !important;
+  line-height: 1.34;
+}
+
+.security-owl.is-showing-tip .assistant-speech {
+  border-color: #bfdbfe;
+  background: linear-gradient(180deg, #eff6ff, #ffffff);
+}
+
+.security-owl.is-showing-tip .assistant-speech::before {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.security-owl.is-showing-tip .assistant-speech strong::after {
+  content: " hint";
+  color: #2563eb;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .posture-step-track {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .security-owl .assistant-speech,
+  body.landing .overview-sidekick .assistant-speech {
+    min-width: 0;
+    max-width: min(270px, calc(100vw - 92px));
+  }
 }
 
 @media (max-width: 560px) {
+  .app-nav > *,
+  .lab-progress-bar .posture-inner > *,
+  .guided-step-panel,
+  .guided-step-layout > *,
+  .guide-brief-list > *,
+  .guide-brief-list dd {
+    min-width: 0;
+  }
+
   .guided-step-panel,
   .lab-start-card {
     padding: 16px;
   }
 
+  .posture-step-track {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .posture-step-track span {
+    min-height: 24px;
+    font-size: .68rem;
+  }
+
+  .posture-actions {
+    min-width: 0;
+  }
+
+  .posture-actions .btn {
+    min-width: 0;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  body.module-page .security-owl,
+  body.module-page .security-owl.step-1,
+  body.module-page .security-owl.step-2,
+  body.module-page .security-owl.step-3,
+  body.module-page .security-owl.step-4,
+  body.module-page .security-owl.step-5,
+  body.module-page .security-owl.step-6,
+  body.module-page .security-owl.step-complete {
+    position: static;
+    display: grid;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) 48px;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  body.module-page .security-owl.is-collapsed {
+    width: 48px;
+    justify-self: end;
+    margin-left: auto;
+  }
+
+  body.module-page .security-owl .sidekick-toggle {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  body.module-page .security-owl .assistant-speech {
+    grid-column: 1;
+    grid-row: 1;
+    max-width: none;
+    min-width: 0;
+  }
+
+  body.module-page .security-owl .assistant-speech::before {
+    top: 50%;
+    right: -7px;
+    transform: translateY(-50%) rotate(45deg);
+  }
+
   .guide-brief-list {
     gap: 8px;
+  }
+}
+
+/* Guided Lab header hierarchy pass */
+.lab-progress-bar .posture-inner {
+  grid-template-columns: minmax(260px, 1.15fr) minmax(320px, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.posture-focus {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.posture-focus .posture-label,
+.posture-progress-head span {
+  margin: 0;
+  color: #93c5fd;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.posture-focus .posture-title {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: clamp(1.12rem, 1.5vw, 1.38rem);
+  line-height: 1.12;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.posture-context {
+  overflow: hidden;
+  color: #cbd5e1;
+  font-size: .82rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.posture-progress-panel {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.posture-progress-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.posture-progress-head strong {
+  color: #f8fafc;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+
+.lab-progress-bar .posture-step-track {
+  grid-template-columns: repeat(6, minmax(28px, 1fr));
+  gap: 4px;
+  min-width: 0;
+}
+
+.lab-progress-bar .posture-step-track span {
+  min-height: 18px;
+  border-color: rgba(148, 163, 184, .36);
+  border-radius: 5px;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, .5);
+  font-size: .68rem;
+  line-height: 1;
+}
+
+.lab-progress-bar .posture-step-track span.is-complete {
+  border-color: rgba(134, 239, 172, .72);
+  color: #052e16;
+  background: #86efac;
+}
+
+.lab-progress-bar .posture-step-track span.is-current {
+  border-color: #7dd3fc;
+  color: #082f49;
+  background: #7dd3fc;
+  box-shadow: none;
+}
+
+.posture-tools {
+  position: relative;
+  justify-self: end;
+  min-width: 0;
+}
+
+.posture-tools > summary {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, .38);
+  border-radius: 8px;
+  color: #dbeafe;
+  background: rgba(15, 23, 42, .24);
+  cursor: pointer;
+  list-style: none;
+  padding: 6px 10px;
+  font-size: .76rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.posture-tools > summary::-webkit-details-marker,
+.posture-tools .posture-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.posture-tools[open] > summary,
+.posture-tools > summary:hover,
+.posture-tools > summary:focus-visible {
+  border-color: rgba(147, 197, 253, .72);
+  background: rgba(30, 64, 175, .22);
+  outline: none;
+}
+
+.posture-tools-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  display: grid;
+  width: min(560px, calc(100vw - 32px));
+  gap: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(2, 8, 23, .28);
+  padding: 12px;
+}
+
+.posture-tools .posture-actions {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.posture-tools .posture-actions .btn,
+.posture-tools .posture-actions a.btn {
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: .76rem;
+}
+
+.posture-module-picker {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 10px;
+}
+
+.posture-module-picker > summary {
+  display: inline-flex;
+  color: #334155;
+  cursor: pointer;
+  font-size: .82rem;
+  font-weight: 900;
+  list-style: none;
+}
+
+.posture-module-picker > summary::-webkit-details-marker {
+  display: none;
+}
+
+.posture-module-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.posture-module-links a {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  color: #334155;
+  background: #f8fafc;
+  padding: 6px 8px;
+  font-size: .76rem;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+}
+
+.posture-module-links a:hover,
+.posture-module-links a:focus-visible {
+  border-color: #93c5fd;
+  color: #164e9f;
+  background: #eff6ff;
+  outline: none;
+}
+
+.lab-progress-bar .posture-tools .posture-details,
+.lab-progress-bar .posture-tools .posture-details[open] {
+  width: 100%;
+  grid-column: auto;
+  justify-self: stretch;
+}
+
+.lab-progress-bar .posture-tools .posture-details,
+.lab-progress-bar .posture-tools .posture-details[open] {
+  border: 0;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 0 0;
+}
+
+.posture-tools .posture-details {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 10px;
+}
+
+.posture-tools .posture-details > summary {
+  display: inline-flex;
+  width: auto;
+  min-height: 0;
+  align-items: center;
+  justify-content: flex-start;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #334155;
+  cursor: pointer;
+  font-size: .82rem;
+  font-weight: 900;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.posture-tools .posture-details > summary::after,
+.posture-tools .posture-details[open] > summary::after {
+  display: none;
+  content: "";
+}
+
+.posture-tools .posture-details[open] > summary {
+  width: auto;
+  margin-left: 0;
+}
+
+.posture-tools .posture-detail-note {
+  margin: 8px 0 10px;
+  color: #475569;
+  font-size: .82rem;
+}
+
+.posture-tools .posture-label,
+.posture-tools .category-bar {
+  color: #475569;
+}
+
+.posture-tools .category-bar strong {
+  color: #0f172a;
+}
+
+@media (max-width: 900px) {
+  .lab-progress-bar .posture-inner {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .posture-tools {
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .posture-tools > summary {
+    width: 100%;
+  }
+
+  .posture-tools-panel {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 560px) {
+  .posture-focus .posture-title,
+  .posture-context {
+    white-space: normal;
+  }
+
+  .posture-progress-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .posture-tools .posture-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .posture-module-links {
+    grid-template-columns: 1fr;
   }
 }

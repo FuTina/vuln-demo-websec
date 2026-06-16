@@ -217,10 +217,12 @@
     const outputPanels = Array.from(document.querySelectorAll("[data-demo-output]"));
 
     function showOutputs() {
+      document.body.classList.add("has-results");
       outputPanels.forEach((panel) => panel.classList.remove("hidden"));
     }
 
     function hideOutputs() {
+      document.body.classList.remove("has-results");
       outputPanels.forEach((panel) => panel.classList.add("hidden"));
     }
 

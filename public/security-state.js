@@ -171,26 +171,30 @@
     const postureClass = stateClass(posture);
 
     const guideStep = nextGuideStep(controls, evidence);
-    const guideLabel = guideStep > guidedControls.length ? "Complete" : `Step ${guideStep}/6`;
+    const guideLabel = guideStep > guidedControls.length ? "Complete" : `Step ${guideStep} of 6`;
+    const nextControl = guidedControls[guideStep - 1];
+    const nextLabel = nextControl ? controlModel[nextControl].name : "Closing summary";
+    const completedSteps = guidedControls.filter((control) => controls[control] && evidence[control]).length;
+    const progress = Math.round((completedSteps / guidedControls.length) * 100);
 
-    root.className = `global-posture posture-${postureClass} posture-compact`;
+    root.className = `global-posture lab-progress-bar posture-${postureClass}`;
     root.innerHTML = `
       <div class="posture-inner">
         <div class="posture-summary">
-          <span class="posture-label">Risk score</span>
+          <span class="posture-label">Guided lab</span>
           <div class="posture-title-row">
-            <strong class="posture-title">${score}/100</strong>
-            <span class="badge badge-${postureClass === "danger" ? "danger" : postureClass === "warning" ? "warning" : "safe"}">${posture}</span>
+            <strong class="posture-title">${guideLabel}</strong>
+            <span class="badge badge-role">${completedSteps}/6 complete</span>
           </div>
         </div>
         <div class="posture-stat">
-          <span class="posture-label">Current step</span>
-          <strong>${guideLabel}</strong>
+          <span class="posture-label">Next focus</span>
+          <strong>${nextLabel}</strong>
         </div>
-        <button type="button" class="btn btn-ghost posture-guide-toggle" data-guide-toggle>${guideDismissed() ? "Show guide" : "Hide guide"}</button>
+        <div class="presenter-progress posture-progress" aria-hidden="true"><span style="width:${progress}%"></span></div>
         <details class="posture-details"${detailsOpen ? " open" : ""}>
-          <summary>Status details</summary>
-          <p class="posture-detail-note">Guide status: ${guideLabel}. ${enabled.length}/6 controls are currently enabled.</p>
+          <summary>Risk summary</summary>
+          <p class="posture-detail-note">Risk score: ${score}/100 (${posture}). ${enabled.length}/6 controls are currently enabled.</p>
           <div class="posture-columns">
             <div>
               <strong class="posture-label">Enabled protections</strong>
@@ -221,9 +225,6 @@
         </details>
       </div>
     `;
-    root.querySelector("[data-guide-toggle]")?.addEventListener("click", () => {
-      setGuideDismissed(!guideDismissed());
-    });
     renderNavigationState(controls);
   }
 

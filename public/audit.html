@@ -199,6 +199,7 @@
     }
 
     function appendLog(type) {
+      document.body.classList.add("has-results");
       const action = events[type];
       auditResultCard.classList.remove("hidden");
 
@@ -230,6 +231,7 @@
       badge.className = enabled ? "badge badge-safe" : "badge badge-danger";
       warning.classList.toggle("hidden", enabled);
       if (!enabled) suspicious.classList.add("hidden");
+      if (auditInteracted) document.body.classList.add("has-results");
       if (auditInteracted) {
         window.DBSEC?.updateControl(
           "audit",
@@ -253,6 +255,7 @@
       renderEmpty();
       auditOutput.classList.add("hidden");
       auditResultCard.classList.add("hidden");
+      document.body.classList.remove("has-results");
     });
     const initialEnabled = auditToggle.checked;
     badge.textContent = initialEnabled ? "Logged" : "Unsafe";

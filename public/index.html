@@ -27,75 +27,58 @@
   <script src="/security-state.js"></script>
 
   <main class="page landing-page">
-    <section class="dashboard-hero" aria-labelledby="page-title">
-      <div class="hero-panel dashboard-intro">
-        <div class="dashboard-title-row">
+    <section class="lab-start" aria-labelledby="page-title">
+      <div class="hero-panel lab-start-card">
+        <div class="lab-start-heading">
           <div>
             <p class="eyebrow">Guided security lab</p>
             <h1 id="page-title">Database Security Playground</h1>
-            <p class="lead">Walk through six local database security scenarios and see the risk score change after each action.</p>
+            <p class="lead">Complete six hands-on security exercises one step at a time. Each step asks you to act first, then reveals the evidence.</p>
           </div>
           <span id="baseline-state" class="badge badge-danger">Insecure baseline not set</span>
         </div>
-        <div class="dashboard-quickstart">
+
+        <div class="lab-current-step">
           <div class="hero-next-step">
-            <span>Next required step</span>
+            <span>Where you are</span>
             <strong id="next-step-title">Step 1: SQL Injection</strong>
             <small id="next-step-detail">Set the insecure baseline if needed, then test the login bypass.</small>
           </div>
-          <div class="hero-actions">
-            <button type="button" class="btn btn-ghost hero-reset-action" id="hero-insecure">Set insecure baseline</button>
-            <a class="btn btn-primary" id="hero-step-action" href="/sqli.html">Begin Step 1: SQL Injection</a>
-          </div>
+          <div class="presenter-progress" aria-hidden="true"><span id="presenter-progress-bar"></span></div>
         </div>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" id="hero-step-action" href="/sqli.html">Begin Step 1: SQL Injection</a>
+          <button type="button" class="btn btn-ghost hero-reset-action" id="hero-insecure">Set insecure baseline</button>
+        </div>
+
         <p class="local-lab-note compact-warning">
           <strong>Local lab only</strong> - intentionally vulnerable demo. Do not expose publicly.
         </p>
       </div>
-
-      <aside class="risk-card dashboard-risk-card" aria-labelledby="risk-title">
-        <div class="risk-card-head">
-          <div>
-            <p class="eyebrow">Current risk state</p>
-            <h2 id="risk-title">Live score</h2>
-          </div>
-          <div class="risk-score" id="risk-score" aria-live="polite">
-            <strong id="score-value">8</strong>
-            <span class="muted">/ 100</span>
-          </div>
-        </div>
-        <div class="meter" aria-hidden="true"><span id="score-meter"></span></div>
-        <details class="risk-details">
-          <summary>Risk details</summary>
-          <p id="score-explanation" class="small muted"></p>
-          <div id="score-causes" class="impact-list" aria-live="polite"></div>
-        </details>
-      </aside>
     </section>
 
-    <section class="dashboard-grid" aria-label="Demo launcher">
-      <details class="presenter-dock presenter-overview dashboard-guide-card" id="presenter-dock">
-        <summary aria-label="Open Guided Mode">
-          <span class="guided-summary">
-            <span class="assistant-avatar" aria-hidden="true"><i></i></span>
-            <span id="presenter-step-pill">Step 1/6</span>
+    <section class="landing-bottom" aria-label="Secondary lab options">
+      <details class="surface info-disclosure presenter-dock presenter-overview lab-path-disclosure" id="presenter-dock">
+        <summary aria-label="Open guided path">
+          <span>
+            <span class="module-kicker">Guided path</span>
+            <strong>View all six steps</strong>
           </span>
-          <strong>Guide</strong>
-          <span class="guided-tooltip" role="tooltip">Guided demo flow: start insecure, visit one module per step, and finish with the secure baseline.</span>
+          <span id="presenter-step-pill" class="badge badge-role">Step 1 of 6</span>
         </summary>
         <div class="presenter-dock-body" aria-labelledby="presenter-title">
           <div class="guide-card-head">
             <div>
-              <p class="module-kicker">Guided Mode</p>
-              <h2 id="presenter-title">Guided demo flow</h2>
-              <p class="muted">Start unsafe, visit one working module per step, then finish with the secure baseline.</p>
+              <p class="module-kicker">Current focus</p>
+              <h2 id="presenter-title">Follow the guided flow</h2>
+              <p class="muted">The path opens one unfinished exercise at a time. Direct access is available below for review only.</p>
             </div>
-            <div class="toolbar-actions">
-              <button type="button" class="btn btn-danger" id="presenter-insecure">Start insecure demo</button>
+            <div class="toolbar-actions secondary-actions">
+              <button type="button" class="btn btn-ghost" id="presenter-insecure">Reset insecure baseline</button>
               <button type="button" class="btn btn-safe" id="presenter-secure">Apply secure baseline</button>
             </div>
           </div>
-          <div class="presenter-progress" aria-hidden="true"><span id="presenter-progress-bar"></span></div>
           <div id="presenter-current" class="presenter-current" aria-live="polite"></div>
           <div class="presenter-grid" id="presenter-steps">
             <article class="presenter-step" data-step="1">
@@ -144,7 +127,7 @@
       </button>
       <div class="assistant-speech" id="overview-sidekick-speech">
         <button type="button" class="guide-close" id="overview-sidekick-close" aria-label="Hide guide">&times;</button>
-        <strong id="overview-sidekick-step">Step 1/6</strong>
+        <strong id="overview-sidekick-step">Step 1 of 6</strong>
         <span id="overview-sidekick-text">Start from an insecure baseline, then open SQL Injection.</span>
         <div class="sidekick-actions">
           <button type="button" class="btn btn-danger" id="overview-sidekick-action">Start insecure demo</button>
@@ -152,12 +135,12 @@
       </div>
     </div>
 
-    <section class="landing-bottom" aria-label="Additional options">
+    <section class="landing-bottom" aria-label="Advanced options">
       <details class="surface info-disclosure advanced-access">
         <summary>
           <span>
             <span class="module-kicker">Advanced</span>
-            <strong id="modules-title">Direct module access and controls</strong>
+            <strong id="modules-title">Direct module access, risk score, and controls</strong>
           </span>
         </summary>
         <div class="disclosure-body">
@@ -169,6 +152,24 @@
             <a href="/network.html">Network</a>
             <a href="/config.html">Config</a>
           </div>
+          <aside class="risk-card lab-risk-card" aria-labelledby="risk-title">
+            <div class="risk-card-head">
+              <div>
+                <p class="eyebrow">Optional risk summary</p>
+                <h2 id="risk-title">Demo score</h2>
+              </div>
+              <div class="risk-score" id="risk-score" aria-live="polite">
+                <strong id="score-value">8</strong>
+                <span class="muted">/ 100</span>
+              </div>
+            </div>
+            <div class="meter" aria-hidden="true"><span id="score-meter"></span></div>
+            <details class="risk-details">
+              <summary>Risk details</summary>
+              <p id="score-explanation" class="small muted"></p>
+              <div id="score-causes" class="impact-list" aria-live="polite"></div>
+            </details>
+          </aside>
           <div class="control-panel advanced-controls">
             <div id="risk-panel" class="result-box">
               <h3 id="risk-label">Low risk</h3>
@@ -536,7 +537,7 @@
       heroInsecure.hidden = !baselineStarted;
       if (isComplete) {
         nextStepTitle.textContent = "Flow complete";
-        nextStepDetail.textContent = "All six steps are complete. Use the risk overview as the closing view.";
+        nextStepDetail.textContent = "All six steps are complete. Use this start screen as the closing summary.";
         heroStepAction.hidden = true;
       } else if (activeStep === 1 && !baselineStarted) {
         heroStepAction.hidden = false;
@@ -556,8 +557,8 @@
         delete heroStepAction.dataset.needsBaseline;
       }
       const completedSteps = isComplete ? 6 : state.active ? Math.min(6, completedControls) : 0;
-      presenterStepPill.textContent = isComplete ? "Complete" : `Step ${activeStep}/6`;
-      overviewSidekickStep.textContent = isComplete ? "Party mode" : `Step ${activeStep}/6`;
+      presenterStepPill.textContent = isComplete ? "Complete" : `Step ${activeStep} of 6`;
+      overviewSidekickStep.textContent = isComplete ? "Lab complete" : `Step ${activeStep} of 6`;
       moveOverviewSidekick(isComplete ? "step-complete" : `step-${Math.min(6, Math.max(1, activeStep))}`);
       overviewSidekick.dataset.message = isComplete
         ? "All six steps are complete. The secure baseline is ready to present."
@@ -784,6 +785,7 @@
     });
     loadSavedControls();
     renderRisk();
+    if (location.hash === "#guided-path") presenterDock.open = true;
   </script>
 </body>
 </html>

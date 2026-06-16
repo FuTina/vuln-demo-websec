@@ -70,7 +70,7 @@
     "/config.html": {
       step: 6,
       title: "Step 6: Finish with secure configuration",
-      text: "Build the config from blocks, review the live findings, inspect the Postgres runtime tab, then finish back on the executive summary.",
+      text: "Build the config from blocks, review the findings, inspect the Postgres runtime tab, then finish on the start screen.",
       primary: "Finish flow",
       nextStep: 7,
       control: "config",
@@ -91,6 +91,44 @@
     route: "/",
     href: "/",
     completeLabel: "Return to Overview"
+  };
+  const guideDetails = {
+    prepared: {
+      task: "Try the login bypass in Vulnerable mode, then switch to Protected mode.",
+      why: "Prepared statements keep user input as data instead of SQL logic.",
+      success: "The same payload no longer changes the query and the login fails safely.",
+      next: "Run the login check first; the result unlocks the protected comparison."
+    },
+    encoding: {
+      task: "Post a demo comment in Vulnerable mode, then render it in Protected mode.",
+      why: "Safe output APIs keep untrusted markup from becoming active page structure.",
+      success: "The payload appears as visible text instead of a link, download, or HTML node.",
+      next: "Post one payload, then switch to Protected output."
+    },
+    rbac: {
+      task: "Select a role and review which customer fields it can see.",
+      why: "Authorization and masking solve different data exposure problems.",
+      success: "RBAC and masking are enabled, and the selected role only receives appropriate fields.",
+      next: "Review a role, then leave RBAC and masking enabled."
+    },
+    audit: {
+      task: "Trigger a database-relevant event and inspect the evidence trail.",
+      why: "Audit logs turn suspicious activity into investigation evidence.",
+      success: "The event appears with actor, action, object, result, and signal context.",
+      next: "Trigger an event, then continue when evidence is visible."
+    },
+    network: {
+      task: "Send a packet from the internet path, then restrict direct database access.",
+      why: "Network segmentation keeps users on the intended app and API path.",
+      success: "Direct internet traffic is blocked while the expected API path remains available.",
+      next: "Send one exposed packet, then enable the network controls."
+    },
+    config: {
+      task: "Build a database baseline from config blocks and run the review gate.",
+      why: "Secure defaults stop risky database settings from becoming optional cleanup.",
+      success: "The review approves the baseline after critical blockers are removed.",
+      next: "Fill each target slot, run Review configuration, then inspect the runtime reference."
+    }
   };
 
   function readState() {
@@ -388,7 +426,7 @@
   }
 
   function renderGuide(config, state) {
-    const sidekick = document.createElement("div");
+    void state;
     const controls = readControls();
     const evidence = readEvidence();
     const guideConfig = nextOpenConfig(controls, evidence);
@@ -402,63 +440,61 @@
       ? guidedControls.length
       : Math.min(guidedControls.length, guidedControls.filter((control) => controls[control] && evidence[control]).length);
     const progress = Math.round((completedSteps / guidedControls.length) * 100);
-    const navigationStep = guideIsComplete ? 7 : guideConfig.step;
-    const sidekickText = guideIsComplete
+    const statusText = guideIsComplete
       ? "All steps are complete. Review the overview as your closing summary."
       : configPostgresTabActive
         ? "You are viewing the Postgres runtime reference. The step is completed in Baseline review with the drag-and-drop Target config."
         : currentPageIsGuideStep
         ? guideConfig.text.replace(/^Step \d+:\s*/, "")
         : `Next unfinished step: ${guideConfig.title.replace(/^Step \d+:\s*/, "")}.`;
-    const sidekickTip = guideIsComplete
-      ? "Nice work. The posture is now ready for the final walkthrough."
+    const guideTip = guideIsComplete
+      ? "The lab is complete. The overview is now the closing summary."
       : assistantText(guideConfig);
+    const guideTitle = guideIsComplete
+      ? "Guided lab complete"
+      : currentPageIsGuideStep
+      ? guideConfig.title.replace(/^Step \d+:\s*/, "")
+      : `Next: ${guideConfig.title.replace(/^Step \d+:\s*/, "")}`;
+    const details = guideDetails[guideConfig.control] || {
+      task: statusText,
+      why: "This step demonstrates how a concrete control changes the security outcome.",
+      success: "The result is visible and the required control is enabled.",
+      next: guideConfig.evidenceText || "Complete the action in the module."
+    };
 
-    const sidekickStepClass = guideIsComplete ? "step-complete" : `step-${Math.min(guidedControls.length, Math.max(1, guideConfig.step))}`;
-    sidekick.className = [
-      "guide-sidekick",
-      guideIsComplete ? "is-complete" : completedThisModule ? "is-happy" : "",
-      guideDismissed() ? "is-collapsed" : ""
+    const panel = document.createElement("section");
+    panel.className = [
+      "module-section",
+      "guided-step-panel",
+      guideIsComplete ? "is-complete" : completedThisModule ? "is-ready" : ""
     ].filter(Boolean).join(" ");
-    sidekick.setAttribute("role", "region");
-    sidekick.setAttribute("aria-label", guideIsComplete ? "Guided flow complete" : `Guided step ${guideConfig.step}`);
-    sidekick.innerHTML = `
-      <button type="button" class="sidekick-toggle" aria-label="Show guide">
-        <span class="assistant-avatar assistant-avatar-large" aria-hidden="true"><i></i></span>
-      </button>
-      <div class="assistant-speech">
-        <button type="button" class="guide-close" aria-label="Hide guide">&times;</button>
-        <strong>${guideIsComplete ? "Party mode" : `Step ${guideConfig.step}/6`}</strong>
-        <span data-sidekick-text>${sidekickText}</span>
-        <div class="presenter-progress sidekick-progress" aria-hidden="true"><span style="width: ${progress}%"></span></div>
-        <div class="sidekick-actions"></div>
+    panel.setAttribute("aria-label", guideIsComplete ? "Guided lab complete" : `Guided lab step ${guideConfig.step}`);
+    panel.innerHTML = `
+      <div class="guided-step-layout">
+        <div class="guided-step-copy">
+          <div class="module-kicker-row">
+            <p class="module-kicker">Mentor brief</p>
+          </div>
+          <h2>${guideTitle}</h2>
+          <p>${statusText}</p>
+          <dl class="guide-brief-list">
+            <div><dt>Task</dt><dd>${details.task}</dd></div>
+            <div><dt>Why</dt><dd>${details.why}</dd></div>
+            <div><dt>Success</dt><dd>${details.success}</dd></div>
+            <div><dt>Next</dt><dd>${details.next}</dd></div>
+          </dl>
+          <div class="presenter-progress guide-progress" aria-hidden="true"><span style="width: ${progress}%"></span></div>
+          <details class="guide-tip">
+            <summary>Need a hint?</summary>
+            <p>${guideTip}</p>
+          </details>
+        </div>
+        <div class="guided-step-action"></div>
       </div>
     `;
-    const toggleTip = (animate = false) => {
-      if (animate) animateOwl(sidekick);
-      const textNode = sidekick.querySelector("[data-sidekick-text]");
-      const showingTip = sidekick.classList.toggle("is-showing-tip");
-      textNode.textContent = showingTip ? sidekickTip : sidekickText;
-    };
-    sidekick.querySelector(".sidekick-toggle").addEventListener("click", () => {
-      if (sidekick.classList.contains("is-collapsed")) {
-        setGuideDismissed(false);
-        sidekick.classList.remove("is-collapsed");
-        return;
-      }
-      toggleTip(true);
-    });
-    sidekick.querySelector(".assistant-speech").addEventListener("click", (event) => {
-      if (!event.target.closest(".sidekick-actions, .guide-close")) toggleTip(false);
-    });
-    sidekick.querySelector(".guide-close").addEventListener("click", (event) => {
-      event.stopPropagation();
-      setGuideDismissed(true);
-      sidekick.classList.add("is-collapsed");
-    });
 
     const actions = document.createElement("div");
-    actions.className = "sidekick-actions";
+    actions.className = "guided-step-action";
 
     if (!currentPageIsGuideStep && !guideIsComplete) {
       actions.appendChild(createLink(guideConfig.route, stepActionLabel(guideConfig), guideConfig.step));
@@ -478,27 +514,93 @@
     } else if (completedThisModule && guideConfig.href) {
       actions.appendChild(createLink(guideConfig.href, nextActionLabel(guideConfig), guideConfig.nextStep));
     } else {
+      const requiresManualControl = !guideConfig.click && !guideConfig.clickAll && guideConfig.control;
+      if (!evidenceComplete) {
+        actions.innerHTML = `<div class="guide-requirement"><strong>Do this next</strong><span>${guideConfig.evidenceText}</span></div>`;
+      } else if (requiresManualControl && !controlComplete) {
+        actions.innerHTML = '<div class="guide-requirement"><strong>Finish the step</strong><span>Enable the required protection below, then the next step will unlock.</span></div>';
+      } else {
       const primary = document.createElement("button");
       primary.type = "button";
       primary.className = guideConfig.finish ? "btn btn-safe" : "btn btn-primary";
       primary.textContent = guideConfig.primary;
-      const requiresManualControl = !guideConfig.click && !guideConfig.clickAll && guideConfig.control;
-      primary.disabled = !evidenceComplete || (requiresManualControl && !controlComplete);
-      if (!evidenceComplete) primary.title = guideConfig.evidenceText;
-      else if (requiresManualControl && !controlComplete) primary.title = "Enable the required control before continuing.";
       primary.addEventListener("click", () => {
         const completed = runPageAction(guideConfig);
         if (completed && guideConfig.href) location.href = guideConfig.href;
         else renderGuide(config, readState());
       });
       actions.appendChild(primary);
+      }
     }
 
-    sidekick.querySelector(".sidekick-actions").replaceWith(actions);
+    panel.querySelector(".guided-step-action").replaceWith(actions);
+    const main = document.querySelector("main");
+    document.querySelector(".guided-step-panel")?.remove();
     document.querySelector(".presenter-module-guide")?.remove();
     document.querySelector(".guide-sidekick")?.remove();
-    document.body.appendChild(sidekick);
-    positionSidekick(sidekick, sidekickStepClass);
+    if (main) main.prepend(panel);
+    else document.body.prepend(panel);
+
+    const owl = document.createElement("div");
+    const sidekickStepClass = guideIsComplete ? "step-complete" : `step-${Math.min(guidedControls.length, Math.max(1, guideConfig.step))}`;
+    owl.className = [
+      "guide-sidekick",
+      "security-owl",
+      guideIsComplete ? "is-complete" : completedThisModule ? "is-happy" : "",
+      guideDismissed() ? "is-collapsed" : ""
+    ].filter(Boolean).join(" ");
+    owl.setAttribute("role", "region");
+    owl.setAttribute("aria-label", guideIsComplete ? "Security Owl lab complete" : `Security Owl guidance for step ${guideConfig.step}`);
+    const owlText = guideIsComplete
+      ? "You completed the guided lab. Return to the start screen for the closing summary."
+      : currentPageIsGuideStep
+      ? details.next
+      : `Your next exercise is ${guideConfig.title.replace(/^Step \d+:\s*/, "")}.`;
+    owl.innerHTML = `
+      <button type="button" class="sidekick-toggle" aria-label="Show Security Owl guidance">
+        <span class="assistant-avatar assistant-avatar-large" aria-hidden="true"><i></i></span>
+      </button>
+      <div class="assistant-speech">
+        <button type="button" class="guide-close" aria-label="Minimize Security Owl">&times;</button>
+        <strong>Security Owl</strong>
+        <span data-sidekick-text>${owlText}</span>
+        <div class="sidekick-actions"></div>
+      </div>
+    `;
+    const owlActions = document.createElement("div");
+    owlActions.className = "sidekick-actions";
+    if (!currentPageIsGuideStep && !guideIsComplete) {
+      owlActions.appendChild(createLink(guideConfig.route, stepActionLabel(guideConfig), guideConfig.step));
+    } else if (guideIsComplete) {
+      owlActions.appendChild(createLink("/", "Back to overview", 7, "safe"));
+    } else if (completedThisModule && guideConfig.href) {
+      owlActions.appendChild(createLink(guideConfig.href, nextActionLabel(guideConfig), guideConfig.nextStep));
+    }
+    owl.querySelector(".sidekick-actions").replaceWith(owlActions);
+    const toggleTip = (animate = false) => {
+      if (animate) animateOwl(owl);
+      const textNode = owl.querySelector("[data-sidekick-text]");
+      const showingTip = owl.classList.toggle("is-showing-tip");
+      textNode.textContent = showingTip ? guideTip : owlText;
+    };
+    owl.querySelector(".sidekick-toggle").addEventListener("click", () => {
+      if (owl.classList.contains("is-collapsed")) {
+        setGuideDismissed(false);
+        owl.classList.remove("is-collapsed");
+        return;
+      }
+      toggleTip(true);
+    });
+    owl.querySelector(".assistant-speech").addEventListener("click", (event) => {
+      if (!event.target.closest(".sidekick-actions, .guide-close")) toggleTip(false);
+    });
+    owl.querySelector(".guide-close").addEventListener("click", (event) => {
+      event.stopPropagation();
+      setGuideDismissed(true);
+      owl.classList.add("is-collapsed");
+    });
+    document.body.appendChild(owl);
+    positionSidekick(owl, sidekickStepClass);
   }
 
   const config = modules[path];
@@ -508,8 +610,6 @@
   bindManualSync(config);
   renderGuide(config, readState());
   window.addEventListener("dbsec:guide-visibility", (event) => {
-    const sidekick = document.querySelector(".guide-sidekick");
-    if (!sidekick) return;
-    sidekick.classList.toggle("is-collapsed", Boolean(event.detail?.dismissed));
+    void event;
   });
 })();

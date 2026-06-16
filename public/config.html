@@ -513,10 +513,12 @@
     }
 
     function showReviewOutputs() {
+      document.body.classList.add("has-results");
       reviewOutputs.forEach((item) => item.classList.remove("hidden"));
     }
 
     function hideReviewOutputs() {
+      document.body.classList.remove("has-results");
       reviewOutputs.forEach((item) => item.classList.add("hidden"));
     }
 

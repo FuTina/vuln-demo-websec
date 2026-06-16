@@ -291,6 +291,7 @@
       const label = roleLabels[role];
       roleBadge.textContent = `Role: ${label}`;
       roleBadge.className = role === "admin" ? "badge badge-safe" : "badge badge-role";
+      document.body.classList.toggle("has-results", resultsVisible);
       outputPanels.forEach((panel) => panel.classList.toggle("hidden", !resultsVisible));
       warning.classList.toggle("hidden", rbacEnabled || !resultsVisible);
       roleCards.forEach((card) => card.setAttribute("aria-pressed", String(card.dataset.role === role)));

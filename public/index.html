@@ -6,7 +6,7 @@
   <title>Database Security Playground</title>
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
-<body>
+<body class="landing">
   <header class="app-header">
     <div class="header-inner">
       <a href="/" class="brand" aria-label="Database Security Playground home">
@@ -26,139 +26,115 @@
   </header>
   <script src="/security-state.js"></script>
 
-  <main class="page">
-    <section class="hero" aria-labelledby="page-title">
-      <div class="hero-panel">
-        <p class="eyebrow">Interactive database security demo</p>
-        <h1 id="page-title">Database Security Playground</h1>
-        <p class="lead">
-          A guided local lab for showing how database risk changes when defenses are missing or enabled.
-        </p>
-        <div class="hero-start-panel">
-          <div class="hero-start-copy">
-            <span id="baseline-state" class="badge badge-danger">Insecure baseline not set</span>
-            <p>
-              Begin from a deliberately unsafe posture, run one visible attack path, then enable the control that removes
-              that risk. The next required step below changes as the demo progresses.
-            </p>
+  <main class="page landing-page">
+    <section class="dashboard-hero" aria-labelledby="page-title">
+      <div class="hero-panel dashboard-intro">
+        <div class="dashboard-title-row">
+          <div>
+            <p class="eyebrow">Interactive database security demo</p>
+            <h1 id="page-title">Database Security Playground</h1>
+            <p class="lead">A local guided lab for showing how database risk changes as defenses are removed or enabled.</p>
           </div>
+          <span id="baseline-state" class="badge badge-danger">Insecure baseline not set</span>
+        </div>
+        <div class="dashboard-quickstart">
           <div class="hero-next-step">
             <span>Next required step</span>
             <strong id="next-step-title">Step 1: SQL Injection</strong>
             <small id="next-step-detail">Set the insecure baseline if needed, then test the login bypass.</small>
           </div>
-          <div class="hero-path" aria-hidden="true">
-            <span class="hero-path-node is-risk">Baseline</span>
-            <span class="hero-path-connector"></span>
-            <span class="hero-path-node">Hands-on test</span>
-            <span class="hero-path-connector"></span>
-            <span class="hero-path-node is-safe">Mitigation</span>
+          <div class="hero-actions">
+            <button type="button" class="btn btn-danger hero-reset-action" id="hero-insecure">Set insecure baseline</button>
+            <a class="btn btn-primary" id="hero-step-action" href="/sqli.html">Begin Step 1: SQL Injection</a>
           </div>
-        </div>
-        <div class="hero-actions">
-          <button type="button" class="btn btn-danger hero-reset-action" id="hero-insecure">Set insecure baseline</button>
-          <a class="btn btn-primary" id="hero-step-action" href="/sqli.html">Begin Step 1: SQL Injection</a>
         </div>
       </div>
 
-      <aside class="risk-card" aria-labelledby="risk-title">
-        <div>
-          <p class="eyebrow">Live risk overview</p>
-          <h2 id="risk-title">Current risk score</h2>
+      <aside class="risk-card dashboard-risk-card" aria-labelledby="risk-title">
+        <div class="risk-card-head">
+          <div>
+            <p class="eyebrow">Current risk state</p>
+            <h2 id="risk-title">Live score</h2>
+          </div>
           <div class="risk-score" id="risk-score" aria-live="polite">
             <strong id="score-value">8</strong>
             <span class="muted">/ 100</span>
           </div>
-          <div class="meter" aria-hidden="true"><span id="score-meter"></span></div>
-          <p id="score-explanation" class="small muted" style="margin-top:12px"></p>
+        </div>
+        <div class="meter" aria-hidden="true"><span id="score-meter"></span></div>
+        <details class="risk-details">
+          <summary>Risk details</summary>
+          <p id="score-explanation" class="small muted"></p>
           <div id="score-causes" class="impact-list" aria-live="polite"></div>
-        </div>
-        <div class="control-list" aria-label="Control status">
-          <span class="badge badge-safe" data-control-badge="prepared">Prepared Statements</span>
-          <span class="badge badge-safe" data-control-badge="rbac">RBAC</span>
-          <span class="badge badge-safe" data-control-badge="encoding">Output Encoding</span>
-          <span class="badge badge-safe" data-control-badge="audit">Audit Logging</span>
-          <span class="badge badge-safe" data-control-badge="network">Network Segmentation</span>
-          <span class="badge badge-safe" data-control-badge="config">Secure Configuration</span>
-        </div>
+        </details>
       </aside>
     </section>
 
-    <details class="surface info-disclosure" style="margin-bottom:18px">
-      <summary><span><span class="module-kicker">Presentation flow</span><strong id="flow-title">Move from exposure to mitigation</strong></span></summary>
-      <div class="disclosure-body">
-      <div class="flow-grid">
-        <article class="flow-step"><span class="flow-number">1</span><strong>SQL Injection</strong><span>Try bypass, then protect.</span></article>
-        <article class="flow-step"><span class="flow-number">2</span><strong>XSS</strong><span>Post HTML, then encode.</span></article>
-        <article class="flow-step"><span class="flow-number">3</span><strong>Data Access</strong><span>Compare role exposure.</span></article>
-        <article class="flow-step"><span class="flow-number">4</span><strong>Audit</strong><span>Create investigation evidence.</span></article>
-        <article class="flow-step"><span class="flow-number">5</span><strong>Network</strong><span>Send packets and block direct DB access.</span></article>
-        <article class="flow-step"><span class="flow-number">6</span><strong>Config</strong><span>Build and review the secure baseline.</span></article>
-      </div>
-      </div>
-    </details>
-
-    <details class="presenter-dock presenter-overview" id="presenter-dock" open>
-      <summary aria-label="Open Guided Mode">
-        <span class="guided-summary">
-          <span class="assistant-avatar" aria-hidden="true"><i></i></span>
-          <span id="presenter-step-pill">Step 1/6</span>
-        </span>
-        <strong>Guide</strong>
-        <span class="guided-tooltip" role="tooltip">Guided demo flow: start insecure, visit one module per step, and finish with the secure baseline.</span>
-      </summary>
-      <div class="presenter-dock-body" aria-labelledby="presenter-title">
-        <div>
-          <p class="module-kicker">Guided Mode</p>
-          <h2 id="presenter-title">Guided 5-minute demo flow</h2>
-          <p class="muted">Each step opens one module, shows the risk, applies the matching control, and then moves on.</p>
+    <section class="dashboard-grid" aria-label="Demo launcher">
+      <details class="presenter-dock presenter-overview dashboard-guide-card" id="presenter-dock" open>
+        <summary aria-label="Open Guided Mode">
+          <span class="guided-summary">
+            <span class="assistant-avatar" aria-hidden="true"><i></i></span>
+            <span id="presenter-step-pill">Step 1/6</span>
+          </span>
+          <strong>Guide</strong>
+          <span class="guided-tooltip" role="tooltip">Guided demo flow: start insecure, visit one module per step, and finish with the secure baseline.</span>
+        </summary>
+        <div class="presenter-dock-body" aria-labelledby="presenter-title">
+          <div class="guide-card-head">
+            <div>
+              <p class="module-kicker">Guided Mode</p>
+              <h2 id="presenter-title">Guided demo flow</h2>
+              <p class="muted">Start unsafe, visit one working module per step, then finish with the secure baseline.</p>
+            </div>
+            <div class="toolbar-actions">
+              <button type="button" class="btn btn-danger" id="presenter-insecure">Start insecure demo</button>
+              <button type="button" class="btn btn-safe" id="presenter-secure">Apply secure baseline</button>
+            </div>
+          </div>
+          <div class="presenter-progress" aria-hidden="true"><span id="presenter-progress-bar"></span></div>
+          <div id="presenter-current" class="presenter-current" aria-live="polite"></div>
+          <div class="presenter-grid" id="presenter-steps">
+            <article class="presenter-step" data-step="1">
+              <span class="badge badge-soon">Step 1</span>
+              <h3>SQL injection + prepared statements</h3>
+              <p>Run a login bypass, then protect the query with placeholders.</p>
+              <a class="btn btn-primary" href="/sqli.html" data-presenter-link="1">Open SQL Injection</a>
+            </article>
+            <article class="presenter-step" data-step="2">
+              <span class="badge badge-soon">Step 2</span>
+              <h3>XSS + output encoding</h3>
+              <p>Render active markup, then switch to safe text output.</p>
+              <a class="btn btn-primary" href="/xss.html" data-presenter-link="2">Open XSS</a>
+            </article>
+            <article class="presenter-step" data-step="3">
+              <span class="badge badge-soon">Step 3</span>
+              <h3>Review RBAC and masking</h3>
+              <p>Move from raw data exposure to role-scoped results.</p>
+              <a class="btn btn-primary" href="/users.html" data-presenter-link="3">Open Data Masking</a>
+            </article>
+            <article class="presenter-step" data-step="4">
+              <span class="badge badge-soon">Step 4</span>
+              <h3>Run audit events</h3>
+              <p>Trigger failed login, export, and privilege signals.</p>
+              <a class="btn btn-primary" href="/audit.html" data-presenter-link="4">Open Audit</a>
+            </article>
+            <article class="presenter-step" data-step="5">
+              <span class="badge badge-soon">Step 5</span>
+              <h3>Show network segmentation</h3>
+              <p>Block direct database access and keep the API path explicit.</p>
+              <a class="btn btn-primary" href="/network.html" data-presenter-link="5">Open Network</a>
+            </article>
+            <article class="presenter-step" data-step="6">
+              <span class="badge badge-soon">Step 6</span>
+              <h3>Finish with secure configuration</h3>
+              <p>Build the config and inspect the Postgres runtime tab.</p>
+              <a class="btn btn-primary" href="/config.html" data-presenter-link="6">Open Config</a>
+            </article>
+          </div>
         </div>
-        <div class="presenter-progress" aria-hidden="true"><span id="presenter-progress-bar"></span></div>
-        <div class="toolbar-actions">
-          <button type="button" class="btn btn-danger" id="presenter-insecure">Start insecure demo</button>
-          <button type="button" class="btn btn-safe" id="presenter-secure">Apply secure baseline</button>
-        </div>
-        <div id="presenter-current" class="presenter-current" aria-live="polite"></div>
-        <div class="presenter-grid" id="presenter-steps">
-        <article class="presenter-step" data-step="1">
-          <span class="badge badge-danger">Step 1</span>
-          <h3>SQL injection + prepared statements</h3>
-          <p>Run a login bypass, then protect the query with placeholders.</p>
-          <a class="btn btn-primary" href="/sqli.html" data-presenter-link="1">Open SQL Injection</a>
-        </article>
-        <article class="presenter-step" data-step="2">
-          <span class="badge badge-safe">Step 2</span>
-          <h3>XSS + output encoding</h3>
-          <p>Render active markup, then switch to safe text output.</p>
-          <a class="btn btn-primary" href="/xss.html" data-presenter-link="2">Open XSS</a>
-        </article>
-        <article class="presenter-step" data-step="3">
-          <span class="badge badge-safe">Step 3</span>
-          <h3>Review RBAC and masking</h3>
-          <p>Move from raw data exposure to role-scoped results.</p>
-          <a class="btn btn-primary" href="/users.html" data-presenter-link="3">Open Data Masking</a>
-        </article>
-        <article class="presenter-step" data-step="4">
-          <span class="badge badge-warning">Step 4</span>
-          <h3>Run audit events</h3>
-          <p>Trigger failed login, export, and privilege signals.</p>
-          <a class="btn btn-primary" href="/audit.html" data-presenter-link="4">Open Audit</a>
-        </article>
-        <article class="presenter-step" data-step="5">
-          <span class="badge badge-safe">Step 5</span>
-          <h3>Show network segmentation</h3>
-          <p>Block direct database access and keep the API path explicit.</p>
-          <a class="btn btn-primary" href="/network.html" data-presenter-link="5">Open Network</a>
-        </article>
-        <article class="presenter-step" data-step="6">
-          <span class="badge badge-safe">Step 6</span>
-          <h3>Finish with secure configuration</h3>
-          <p>Build the config and inspect the Postgres runtime tab.</p>
-          <a class="btn btn-primary" href="/config.html" data-presenter-link="6">Open Config</a>
-        </article>
-        </div>
-      </div>
-    </details>
+      </details>
+    </section>
     <div class="guide-sidekick overview-sidekick" id="overview-sidekick" role="region" aria-label="Guided overview step">
       <button type="button" class="sidekick-toggle" id="overview-sidekick-toggle" aria-label="Show guide tip">
         <span class="assistant-avatar assistant-avatar-large" aria-hidden="true"><i></i></span>
@@ -172,151 +148,65 @@
       </div>
     </div>
 
-    <section class="surface" aria-labelledby="control-panel-title">
-      <div class="module-header">
-        <div>
-          <p class="module-kicker">Security Control Panel</p>
-          <h2 id="control-panel-title">Toggle controls and watch the risk score move</h2>
-          <p class="muted">This is a practice-inspired demo model: direct exposure and exploitable data-access flaws are weighted higher than detective controls.</p>
-        </div>
-      </div>
-      <div class="control-panel">
-        <div id="risk-panel" class="result-box">
-          <h3 id="risk-label">Low risk</h3>
-          <p id="risk-detail" class="muted"></p>
-          <div id="change-summary" class="change-summary" aria-live="polite">
-            <strong>What changed?</strong>
-            <span>Secure baseline is active: controls are enabled for the demo starting point.</span>
-          </div>
-        </div>
-        <div class="switch-grid" id="control-switches">
-          <label class="switch-card">
-            <span><strong>Prepared Statements</strong><span>Separate SQL code from values.</span></span>
-            <span class="switch"><input type="checkbox" data-control="prepared" checked /><span class="slider"></span></span>
-          </label>
-          <label class="switch-card">
-            <span><strong>RBAC</strong><span>Authorize users before data is returned.</span></span>
-            <span class="switch"><input type="checkbox" data-control="rbac" checked /><span class="slider"></span></span>
-          </label>
-          <label class="switch-card">
-            <span><strong>Output Encoding</strong><span>Render untrusted input as data.</span></span>
-            <span class="switch"><input type="checkbox" data-control="encoding" checked /><span class="slider"></span></span>
-          </label>
-          <label class="switch-card">
-            <span><strong>Audit Logging</strong><span>Preserve investigation evidence.</span></span>
-            <span class="switch"><input type="checkbox" data-control="audit" checked /><span class="slider"></span></span>
-          </label>
-          <label class="switch-card">
-            <span><strong>Network Segmentation</strong><span>Keep the database off the public internet.</span></span>
-            <span class="switch"><input type="checkbox" data-control="network" checked /><span class="slider"></span></span>
-          </label>
-          <label class="switch-card">
-            <span><strong>Secure Configuration</strong><span>Use hardened defaults and secrets handling.</span></span>
-            <span class="switch"><input type="checkbox" data-control="config" checked /><span class="slider"></span></span>
-          </label>
-        </div>
-      </div>
-    </section>
-
-    <section class="surface" aria-labelledby="modules-title" style="margin-top:18px">
-      <div class="module-header">
-        <div>
-          <p class="module-kicker">Working modules</p>
-          <h2 id="modules-title">Choose a security scenario</h2>
-          <p class="muted">Every visible module is clickable and contains a working simulation.</p>
-        </div>
-      </div>
-
-      <div class="module-grid">
-        <a class="module-card" href="/sqli.html">
-          <div>
-            <span class="badge badge-role">Demo module</span>
-            <h3>SQL Injection</h3>
-            <p>Switch vulnerable/protected login behavior and test the same payload.</p>
-          </div>
-          <strong>Open module</strong>
-        </a>
-
-        <a class="module-card" href="/users.html">
-          <div>
-            <span class="badge badge-role">Demo module</span>
-            <h3>Role-Based Access &amp; Data Masking</h3>
-            <p>Select roles and toggle RBAC and masking to see data exposure change.</p>
-          </div>
-          <strong>Open module</strong>
-        </a>
-
-        <a class="module-card" href="/xss.html">
-          <div>
-            <span class="badge badge-role">Demo module</span>
-            <h3>Cross-Site Scripting</h3>
-            <p>Post comments and compare unsafe HTML insertion with safe text output.</p>
-          </div>
-          <strong>Open module</strong>
-        </a>
-
-        <a class="module-card" href="/audit.html">
-          <div>
-            <span class="badge badge-role">Demo module</span>
-            <h3>Audit Logging</h3>
-            <p>Trigger actions, toggle logging, and watch suspicious activity detection.</p>
-          </div>
-          <strong>Open module</strong>
-        </a>
-
-        <a class="module-card" href="/network.html">
-          <div>
-            <span class="badge badge-role">Demo module</span>
-            <h3>Network Exposure</h3>
-            <p>Test access paths with exposed ports, firewall, TLS, and segmentation.</p>
-          </div>
-          <strong>Open module</strong>
-        </a>
-
-        <a class="module-card" href="/config.html">
-          <div>
-            <span class="badge badge-role">Demo module</span>
-            <h3>Secure Configuration</h3>
-            <p>Check hardening controls and inspect the Postgres runtime/configuration view.</p>
-          </div>
-          <strong>Open module</strong>
-        </a>
-      </div>
-    </section>
-
-    <section class="surface" aria-labelledby="executive-summary-title" style="margin-top:18px">
-      <div class="module-header">
-        <div>
-          <p class="module-kicker">Executive summary</p>
-          <h2 id="executive-summary-title">What the presentation proves</h2>
-        </div>
-        <span id="summary-badge" class="badge badge-safe">Protected baseline</span>
-      </div>
-      <div class="summary-grid">
-        <article class="summary-card">
-          <p class="module-kicker">Main risk</p>
-          <h3 id="summary-risk">Residual demo risk only</h3>
-          <p id="summary-risk-text">The primary database attack paths are controlled in the current baseline.</p>
-        </article>
-        <article class="summary-card">
-          <p class="module-kicker">Demonstrated control</p>
-          <h3 id="summary-control">Layered database defenses</h3>
-          <p id="summary-control-text">Prepared statements, RBAC, encoding, audit logs, segmentation, and secure configuration work together.</p>
-        </article>
-        <article class="summary-card">
-          <p class="module-kicker">Operational takeaway</p>
-          <h3 id="summary-takeaway">Make the secure path the default</h3>
-          <p id="summary-takeaway-text">Use the demo to show why prevention, containment, and evidence all matter.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="notice notice-warning" style="margin-top:18px">
-      <h2>Local demo warning</h2>
-      <p>
-        This project contains intentionally vulnerable educational examples and safe simulations. Run it locally or in an
-        isolated lab only, and do not expose it as a public service.
+    <section class="landing-bottom" aria-label="Additional options">
+      <p class="local-lab-note">
+        <strong>Local lab only</strong> — intentionally vulnerable demo. Do not expose publicly.
       </p>
+
+      <details class="surface info-disclosure advanced-access">
+        <summary>
+          <span>
+            <span class="module-kicker">Advanced</span>
+            <strong id="modules-title">Direct module access and controls</strong>
+          </span>
+        </summary>
+        <div class="disclosure-body">
+          <div class="direct-link-row" aria-label="Direct module links">
+            <a href="/sqli.html">SQL Injection</a>
+            <a href="/xss.html">XSS</a>
+            <a href="/users.html">Data Masking</a>
+            <a href="/audit.html">Audit</a>
+            <a href="/network.html">Network</a>
+            <a href="/config.html">Config</a>
+          </div>
+          <div class="control-panel advanced-controls">
+            <div id="risk-panel" class="result-box">
+              <h3 id="risk-label">Low risk</h3>
+              <p id="risk-detail" class="muted"></p>
+              <div id="change-summary" class="change-summary" aria-live="polite">
+                <strong>What changed?</strong>
+                <span>Secure baseline is active: controls are enabled for the demo starting point.</span>
+              </div>
+            </div>
+            <div class="switch-grid" id="control-switches">
+              <label class="switch-card">
+                <span><strong>Prepared Statements</strong><span>Separate SQL code from values.</span></span>
+                <span class="switch"><input type="checkbox" data-control="prepared" checked /><span class="slider"></span></span>
+              </label>
+              <label class="switch-card">
+                <span><strong>RBAC</strong><span>Authorize users before data is returned.</span></span>
+                <span class="switch"><input type="checkbox" data-control="rbac" checked /><span class="slider"></span></span>
+              </label>
+              <label class="switch-card">
+                <span><strong>Output Encoding</strong><span>Render untrusted input as data.</span></span>
+                <span class="switch"><input type="checkbox" data-control="encoding" checked /><span class="slider"></span></span>
+              </label>
+              <label class="switch-card">
+                <span><strong>Audit Logging</strong><span>Preserve investigation evidence.</span></span>
+                <span class="switch"><input type="checkbox" data-control="audit" checked /><span class="slider"></span></span>
+              </label>
+              <label class="switch-card">
+                <span><strong>Network Segmentation</strong><span>Keep the database off the public internet.</span></span>
+                <span class="switch"><input type="checkbox" data-control="network" checked /><span class="slider"></span></span>
+              </label>
+              <label class="switch-card">
+                <span><strong>Secure Configuration</strong><span>Use hardened defaults and secrets handling.</span></span>
+                <span class="switch"><input type="checkbox" data-control="config" checked /><span class="slider"></span></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </details>
     </section>
   </main>
 
@@ -603,6 +493,7 @@
     }
 
     function renderSummary(missing, score) {
+      if (!summaryBadge) return;
       const missingNames = missing.map((control) => riskModel[control].name);
       if (missing.length === 0) {
         summaryBadge.textContent = "Protected baseline";
@@ -742,11 +633,17 @@
         </div>
         ${currentAction}
       `;
-      document.querySelectorAll(".presenter-step").forEach((step) => step.classList.remove("is-active", "is-complete"));
+      document.querySelectorAll(".presenter-step").forEach((step) => {
+        step.classList.remove("is-active", "is-complete", "is-upcoming", "is-warning");
+        step.querySelector(".badge")?.classList.remove("badge-danger", "badge-warning", "badge-safe", "badge-soon");
+      });
       if (isComplete) {
-        document.querySelectorAll(".presenter-step").forEach((step) => step.classList.add("is-complete"));
+        document.querySelectorAll(".presenter-step").forEach((step) => {
+          step.classList.add("is-complete");
+          step.querySelector(".badge")?.classList.add("badge-safe");
+        });
         document.querySelector('[data-step="6"]')?.classList.add("is-active");
-        if (presenterDock.open) {
+        if (presenterDock.open && !presenterDock.classList.contains("dashboard-guide-card")) {
           document.querySelector(".presenter-step.is-active")?.scrollIntoView({ block: "nearest" });
         }
         return;
@@ -755,10 +652,20 @@
         const number = Number(step.dataset.step);
         const stepControl = controlsByStep[number];
         const stepComplete = state.active && stepControl && !missing.includes(stepControl) && evidence[stepControl];
-        if (stepComplete) step.classList.add("is-complete");
-        if (number === activeStep) step.classList.add("is-active");
+        const badge = step.querySelector(".badge");
+        if (stepComplete) {
+          step.classList.add("is-complete");
+          badge?.classList.add("badge-safe");
+        } else if (number === activeStep) {
+          step.classList.add("is-active");
+          if (!baselineStarted) step.classList.add("is-warning");
+          badge?.classList.add(baselineStarted ? "badge-danger" : "badge-warning");
+        } else {
+          step.classList.add("is-upcoming");
+          badge?.classList.add("badge-soon");
+        }
       });
-      if (presenterDock.open) {
+      if (presenterDock.open && !presenterDock.classList.contains("dashboard-guide-card")) {
         document.querySelector(".presenter-step.is-active")?.scrollIntoView({ block: "nearest" });
       }
     }
@@ -882,7 +789,7 @@
       writePresenterState(Number(heroStepAction.dataset.presenterLink) || 1);
     });
     presenterDock.addEventListener("toggle", () => {
-      if (presenterDock.open) {
+      if (presenterDock.open && !presenterDock.classList.contains("dashboard-guide-card")) {
         document.querySelector(".presenter-step.is-active")?.scrollIntoView({ block: "nearest" });
       }
     });

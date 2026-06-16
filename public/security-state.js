@@ -1,6 +1,8 @@
 (function () {
   const controlsKey = "dbsec.presenter.controls";
   const evidenceKey = "dbsec.presenter.evidence";
+  const presenterStateKey = "dbsec.presenter.state";
+  const guideDismissedKey = "dbsec.presenter.guideDismissed";
   const defaultControls = {
     prepared: true,
     rbac: true,
@@ -92,6 +94,7 @@
     "Network Security": ["network", "config"],
     Monitoring: ["audit"]
   };
+  const guidedControls = ["prepared", "encoding", "rbac", "audit", "network", "config"];
 
   function readControls() {
     try {
@@ -137,11 +140,28 @@
     return "safe";
   }
 
+  function nextGuideStep(controls, evidence) {
+    const index = guidedControls.findIndex((control) => !controls[control] || !evidence[control]);
+    return index === -1 ? guidedControls.length + 1 : index + 1;
+  }
+
+  function guideDismissed() {
+    return localStorage.getItem(guideDismissedKey) === "true";
+  }
+
+  function setGuideDismissed(dismissed) {
+    localStorage.setItem(guideDismissedKey, dismissed ? "true" : "false");
+    window.dispatchEvent(new CustomEvent("dbsec:guide-visibility", { detail: { dismissed } }));
+    window.setTimeout(renderPosture, 0);
+  }
+
   function renderPosture() {
     const root = document.getElementById("global-security-posture");
     if (!root) return;
+    const detailsOpen = root.querySelector(".posture-details")?.open || false;
 
     const controls = readControls();
+    const evidence = readEvidence();
     const { score, posture, missing } = scoreControls(controls);
     const enabled = Object.keys(controlModel).filter((control) => controls[control]);
     const topMissing = missing
@@ -150,45 +170,64 @@
       .slice(0, 4);
     const postureClass = stateClass(posture);
 
-    root.className = `global-posture posture-${postureClass}`;
+    const guideStep = nextGuideStep(controls, evidence);
+    const guideLabel = guideStep > guidedControls.length ? "Complete" : `Step ${guideStep}/6`;
+
+    root.className = `global-posture posture-${postureClass} posture-compact`;
     root.innerHTML = `
       <div class="posture-inner">
         <div class="posture-summary">
-          <p class="module-kicker">Current Security Posture</p>
+          <span class="posture-label">Risk score</span>
           <div class="posture-title-row">
             <strong class="posture-title">${posture}</strong>
             <span class="badge badge-${postureClass === "danger" ? "danger" : postureClass === "warning" ? "warning" : "safe"}">${score}/100 risk score</span>
           </div>
         </div>
-        <div class="posture-columns">
-          <div>
-            <strong class="posture-label">Enabled protections</strong>
-            <div class="posture-chip-row">
-              ${enabled.map((control) => `<span class="badge badge-safe">${controlModel[control].protected}: ${controlModel[control].name}</span>`).join("") || '<span class="badge badge-warning">No controls enabled</span>'}
-            </div>
-          </div>
-          <div>
-            <strong class="posture-label">Active risks</strong>
-            <div class="posture-chip-row">
-              ${topMissing.map((control) => `<span class="badge badge-danger">${controlModel[control].risk}: ${controlModel[control].name}</span>`).join("") || '<span class="badge badge-safe">No active demo risks</span>'}
-            </div>
-          </div>
+        <div class="posture-stat">
+          <span class="posture-label">Controls</span>
+          <strong>${enabled.length}/6 enabled</strong>
         </div>
-        <div class="category-bars" aria-label="Security category coverage">
-          ${Object.entries(categories).map(([name, items]) => {
-            const complete = items.filter((control) => controls[control]).length;
-            const percent = Math.round((complete / items.length) * 100);
-            return `
-              <div class="category-bar">
-                <span>${name}</span>
-                <div class="category-track" aria-hidden="true"><i style="width:${percent}%"></i></div>
-                <strong>${percent}%</strong>
+        <div class="posture-stat">
+          <span class="posture-label">Guide</span>
+          <strong>${guideLabel}</strong>
+        </div>
+        <button type="button" class="btn btn-ghost posture-guide-toggle" data-guide-toggle>${guideDismissed() ? "Show guide" : "Hide guide"}</button>
+        <details class="posture-details"${detailsOpen ? " open" : ""}>
+          <summary>Status details</summary>
+          <p class="posture-detail-note">Guide status: ${guideLabel}. Owl guide is ${guideDismissed() ? "hidden" : "visible"}.</p>
+          <div class="posture-columns">
+            <div>
+              <strong class="posture-label">Enabled protections</strong>
+              <div class="posture-chip-row">
+                ${enabled.map((control) => `<span class="badge badge-safe">${controlModel[control].protected}: ${controlModel[control].name}</span>`).join("") || '<span class="badge badge-warning">No controls enabled</span>'}
               </div>
-            `;
-          }).join("")}
-        </div>
+            </div>
+            <div>
+              <strong class="posture-label">Active risks</strong>
+              <div class="posture-chip-row">
+                ${topMissing.map((control) => `<span class="badge badge-danger">${controlModel[control].risk}: ${controlModel[control].name}</span>`).join("") || '<span class="badge badge-safe">No active demo risks</span>'}
+              </div>
+            </div>
+          </div>
+          <div class="category-bars" aria-label="Security category coverage">
+            ${Object.entries(categories).map(([name, items]) => {
+              const complete = items.filter((control) => controls[control]).length;
+              const percent = Math.round((complete / items.length) * 100);
+              return `
+                <div class="category-bar">
+                  <span>${name}</span>
+                  <div class="category-track" aria-hidden="true"><i style="width:${percent}%"></i></div>
+                  <strong>${percent}%</strong>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </details>
       </div>
     `;
+    root.querySelector("[data-guide-toggle]")?.addEventListener("click", () => {
+      setGuideDismissed(!guideDismissed());
+    });
     renderNavigationState(controls);
   }
 
@@ -258,7 +297,9 @@
   window.addEventListener("storage", (event) => {
     if (event.key === controlsKey) renderPosture();
     if (event.key === evidenceKey) renderNavigationState();
+    if (event.key === presenterStateKey || event.key === guideDismissedKey) renderPosture();
   });
+  window.addEventListener("dbsec:guide-visibility", renderPosture);
   window.addEventListener("dbsec:controls-changed", renderPosture);
   document.addEventListener("change", () => window.setTimeout(renderPosture, 0));
   document.addEventListener("click", () => window.setTimeout(renderPosture, 0));

@@ -6,7 +6,7 @@
   <title>Audit Logging - Database Security Playground</title>
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
-<body>
+<body class="module-page">
   <header class="app-header">
     <div class="header-inner">
       <a href="/" class="brand" aria-label="Database Security Playground home">
@@ -57,7 +57,7 @@
           Clear log
         </button>
       </div>
-      <div id="security-impact" data-security-impact class="security-impact impact-safe">
+      <div id="security-impact" data-security-impact data-demo-output class="security-impact impact-safe hidden">
         <strong>Security Impact</strong>
         <span>Audit Logging enabled: security-relevant actions are now traceable.</span>
       </div>
@@ -80,7 +80,7 @@
         <p>Multiple failed or sensitive actions occurred. In a real system this should alert a responder.</p>
       </div>
 
-      <div class="table-wrap" style="margin-top:18px">
+      <div class="table-wrap hidden" id="audit-output" style="margin-top:18px">
         <table>
           <thead>
             <tr>
@@ -156,8 +156,11 @@
     const badge = document.getElementById("audit-badge");
     const warning = document.getElementById("audit-warning");
     const suspicious = document.getElementById("suspicious-banner");
+    const auditOutput = document.getElementById("audit-output");
+    const impact = document.getElementById("security-impact");
     let sensitiveCount = 0;
     let logCount = 0;
+    let auditInteracted = false;
     const savedControls = window.DBSEC?.readControls();
     if (savedControls && Object.prototype.hasOwnProperty.call(savedControls, "audit")) {
       auditToggle.checked = Boolean(savedControls.audit);
@@ -181,6 +184,7 @@
 
     function appendLog(type) {
       const action = events[type];
+      impact.classList.remove("hidden");
 
       if (!auditToggle.checked) {
         warning.classList.remove("hidden");
@@ -192,6 +196,7 @@
       if (["failed", "export", "privilege"].includes(type)) sensitiveCount += 1;
       suspicious.classList.toggle("hidden", sensitiveCount < 3);
       if (logCount === 0) rows.innerHTML = "";
+      auditOutput.classList.remove("hidden");
       const row = document.createElement("tr");
       [now(), ...action].forEach((value) => {
         const cell = document.createElement("td");
@@ -204,15 +209,21 @@
 
     auditToggle.addEventListener("change", () => {
       const enabled = auditToggle.checked;
+      if (auditInteracted) impact.classList.remove("hidden");
       badge.textContent = enabled ? "Logged" : "Unsafe";
       badge.className = enabled ? "badge badge-safe" : "badge badge-danger";
       warning.classList.toggle("hidden", enabled);
       if (!enabled) suspicious.classList.add("hidden");
-      window.DBSEC?.updateControl(
-        "audit",
-        enabled,
-        enabled ? window.DBSEC.controlModel.audit.enabled : window.DBSEC.controlModel.audit.disabled
-      );
+      if (auditInteracted) {
+        window.DBSEC?.updateControl(
+          "audit",
+          enabled,
+          enabled ? window.DBSEC.controlModel.audit.enabled : window.DBSEC.controlModel.audit.disabled
+        );
+      }
+    });
+    auditToggle.addEventListener("click", () => {
+      auditInteracted = true;
     });
     document.querySelectorAll("[data-event]").forEach((button) => {
       button.addEventListener("click", () => appendLog(button.dataset.event));
@@ -224,8 +235,12 @@
       warning.classList.add("hidden");
       suspicious.classList.add("hidden");
       renderEmpty();
+      auditOutput.classList.add("hidden");
+      impact.classList.add("hidden");
     });
-    auditToggle.dispatchEvent(new Event("change"));
+    const initialEnabled = auditToggle.checked;
+    badge.textContent = initialEnabled ? "Logged" : "Unsafe";
+    badge.className = initialEnabled ? "badge badge-safe" : "badge badge-danger";
   </script>
   <script src="/presenter.js"></script>
 </body>

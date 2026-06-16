@@ -2,6 +2,7 @@
   const stateKey = "dbsec.presenter.state";
   const controlsKey = "dbsec.presenter.controls";
   const evidenceKey = "dbsec.presenter.evidence";
+  const guideDismissedKey = "dbsec.presenter.guideDismissed";
   const sidekickPositionKey = "dbsec.presenter.sidekickPosition";
   const path = location.pathname.replace(/\/+$/, "") || "/";
   const guidedControls = ["prepared", "encoding", "rbac", "audit", "network", "config"];
@@ -102,6 +103,15 @@
 
   function writeState(step) {
     localStorage.setItem(stateKey, JSON.stringify({ active: true, step }));
+  }
+
+  function guideDismissed() {
+    return localStorage.getItem(guideDismissedKey) === "true";
+  }
+
+  function setGuideDismissed(dismissed) {
+    localStorage.setItem(guideDismissedKey, dismissed ? "true" : "false");
+    window.dispatchEvent(new CustomEvent("dbsec:guide-visibility", { detail: { dismissed } }));
   }
 
   function updateControl(name, enabled) {
@@ -405,14 +415,19 @@
       : assistantText(guideConfig);
 
     const sidekickStepClass = guideIsComplete ? "step-complete" : `step-${Math.min(guidedControls.length, Math.max(1, guideConfig.step))}`;
-    sidekick.className = `guide-sidekick ${guideIsComplete ? "is-complete" : completedThisModule ? "is-happy" : ""}`;
+    sidekick.className = [
+      "guide-sidekick",
+      guideIsComplete ? "is-complete" : completedThisModule ? "is-happy" : "",
+      guideDismissed() ? "is-collapsed" : ""
+    ].filter(Boolean).join(" ");
     sidekick.setAttribute("role", "region");
     sidekick.setAttribute("aria-label", guideIsComplete ? "Guided flow complete" : `Guided step ${guideConfig.step}`);
     sidekick.innerHTML = `
-      <button type="button" class="sidekick-toggle" aria-label="Show guide tip">
+      <button type="button" class="sidekick-toggle" aria-label="Show guide">
         <span class="assistant-avatar assistant-avatar-large" aria-hidden="true"><i></i></span>
       </button>
       <div class="assistant-speech">
+        <button type="button" class="guide-close" aria-label="Hide guide">&times;</button>
         <strong>${guideIsComplete ? "Party mode" : `Step ${guideConfig.step}/6`}</strong>
         <span data-sidekick-text>${sidekickText}</span>
         <div class="presenter-progress sidekick-progress" aria-hidden="true"><span style="width: ${progress}%"></span></div>
@@ -425,9 +440,21 @@
       const showingTip = sidekick.classList.toggle("is-showing-tip");
       textNode.textContent = showingTip ? sidekickTip : sidekickText;
     };
-    sidekick.querySelector(".sidekick-toggle").addEventListener("click", () => toggleTip(true));
+    sidekick.querySelector(".sidekick-toggle").addEventListener("click", () => {
+      if (sidekick.classList.contains("is-collapsed")) {
+        setGuideDismissed(false);
+        sidekick.classList.remove("is-collapsed");
+        return;
+      }
+      toggleTip(true);
+    });
     sidekick.querySelector(".assistant-speech").addEventListener("click", (event) => {
-      if (!event.target.closest(".sidekick-actions")) toggleTip(false);
+      if (!event.target.closest(".sidekick-actions, .guide-close")) toggleTip(false);
+    });
+    sidekick.querySelector(".guide-close").addEventListener("click", (event) => {
+      event.stopPropagation();
+      setGuideDismissed(true);
+      sidekick.classList.add("is-collapsed");
     });
 
     const actions = document.createElement("div");
@@ -480,4 +507,9 @@
   bindEvidence(config);
   bindManualSync(config);
   renderGuide(config, readState());
+  window.addEventListener("dbsec:guide-visibility", (event) => {
+    const sidekick = document.querySelector(".guide-sidekick");
+    if (!sidekick) return;
+    sidekick.classList.toggle("is-collapsed", Boolean(event.detail?.dismissed));
+  });
 })();

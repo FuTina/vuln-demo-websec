@@ -6,7 +6,7 @@
   <title>Secure Configuration - Database Security Playground</title>
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
-<body>
+<body class="module-page">
   <header class="app-header">
     <div class="header-inner">
       <a href="/" class="brand" aria-label="Database Security Playground home">
@@ -79,7 +79,7 @@
           <button type="button" class="btn btn-danger" id="apply-risky">Start insecure demo</button>
         </div>
       </div>
-      <div id="security-impact" data-security-impact class="security-impact impact-warning config-impact">
+      <div id="security-impact" data-security-impact data-review-output class="security-impact impact-warning config-impact hidden">
         <strong>Security Impact</strong>
         <span>Secure Configuration disabled: risky defaults can undermine otherwise good controls.</span>
       </div>
@@ -135,7 +135,7 @@
               </div>
             </div>
           </div>
-          <div class="builder-review-area" aria-label="Live configuration findings">
+          <div class="builder-review-area hidden" data-review-output aria-label="Live configuration findings">
             <div class="builder-zone-head">
               <div>
                 <h3>Check current config</h3>
@@ -382,6 +382,7 @@
     let builderSelection = {};
     let reviewVisible = false;
     let postgresLoaded = false;
+    const reviewOutputs = Array.from(document.querySelectorAll("[data-review-output]"));
     const controls = {
       user: {
         title: "Default/root user",
@@ -494,8 +495,17 @@
         input.checked = enabled;
       });
       builderSelection = Object.fromEntries(Object.keys(weights).map((key) => [key, enabled ? "safe" : "risk"]));
-      reviewVisible = enabled;
+      reviewVisible = true;
+      showReviewOutputs();
       render();
+    }
+
+    function showReviewOutputs() {
+      reviewOutputs.forEach((item) => item.classList.remove("hidden"));
+    }
+
+    function hideReviewOutputs() {
+      reviewOutputs.forEach((item) => item.classList.add("hidden"));
     }
 
     function setChecklistValue(key, enabled) {
@@ -572,6 +582,7 @@
     function chooseBuilderOption(key, value) {
       builderSelection[key] = value;
       reviewVisible = false;
+      hideReviewOutputs();
       setChecklistValue(key, value === "safe");
     }
 
@@ -932,6 +943,7 @@
     });
     reviewButton.addEventListener("click", () => {
       reviewVisible = true;
+      showReviewOutputs();
       render();
     });
     document.getElementById("apply-risky").addEventListener("click", () => setAllControls(false));

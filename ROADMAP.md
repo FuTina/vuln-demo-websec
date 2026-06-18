@@ -23,8 +23,8 @@
 - Implemented: Add optional PostgreSQL runtime adapter beside SQLite demo mode.
 - Implemented: Add TLS-enabled PostgreSQL demo container with internal-only network exposure.
 - Implemented: Add container hardening for app and PostgreSQL services.
-- Implemented: Add Guided Mode for the 5-minute presentation path.
-- Implemented: Add Start insecure demo and Apply secure baseline controls.
+- Implemented: Add Guided Mode for the presentation path.
+- Implemented: Add Start insecure demo, lab reset, and overview return controls.
 - Implemented: Persist Guided Mode state across module pages.
 - Implemented: Sync Guided Mode completion with direct module controls.
 - Implemented: Improve Guided Mode panel layout, progress, and step visibility.

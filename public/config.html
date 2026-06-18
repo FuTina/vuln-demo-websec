@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Secure Configuration - Database Security Playground</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
 <body class="module-page">
@@ -15,12 +16,6 @@
       </a>
       <nav class="app-nav" aria-label="Main navigation">
         <a href="/" data-path="/"><span>Overview</span></a>
-        <a href="/sqli.html" data-path="/sqli.html" data-nav-control="prepared"><span>SQL Injection</span></a>
-        <a href="/xss.html" data-path="/xss.html" data-nav-control="encoding"><span>XSS</span></a>
-        <a href="/users.html" data-path="/users.html" data-nav-control="rbac"><span>Data Masking</span></a>
-        <a href="/audit.html" data-path="/audit.html" data-nav-control="audit"><span>Audit</span></a>
-        <a href="/network.html" data-path="/network.html" data-nav-control="network"><span>Network</span></a>
-        <a href="/config.html" data-path="/config.html" data-nav-control="config"><span>Config</span></a>
       </nav>
     </div>
   </header>
@@ -76,6 +71,8 @@
           <p class="muted">Drag one block per area into the empty target config, then run the review gate.</p>
         </div>
         <div class="toolbar-actions">
+          <button type="button" class="btn btn-safe" id="apply-hardened">Apply config</button>
+          <button type="button" class="btn btn-ghost" id="reset-builder">Reset builder</button>
           <button type="button" class="btn btn-primary" id="review-config">Review configuration</button>
           <button type="button" class="btn btn-ghost" id="apply-risky">Load risky blocks</button>
         </div>
@@ -246,7 +243,10 @@
             This read-only view shows the Postgres database running for the demo in Docker, together with the relevant connection and hardening configuration.
           </p>
         </div>
-        <span id="db-status-badge" class="badge badge-warning">Checking database</span>
+        <div class="module-actions">
+          <span id="db-status-badge" class="badge badge-warning">Checking database</span>
+          <button type="button" class="btn btn-ghost" data-open-config-tab="baseline" data-config-scroll-target="config-builder">Back to builder</button>
+        </div>
       </div>
       <div class="grid grid-2">
         <div id="db-runtime" class="result-box result-warning">
@@ -520,6 +520,17 @@
     function hideReviewOutputs() {
       document.body.classList.remove("has-results");
       reviewOutputs.forEach((item) => item.classList.add("hidden"));
+    }
+
+    function resetBuilder() {
+      checklist.querySelectorAll("input").forEach((input) => {
+        input.checked = false;
+      });
+      builderSelection = {};
+      reviewVisible = false;
+      hideReviewOutputs();
+      render();
+      document.getElementById("config-builder")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function setChecklistValue(key, enabled) {
@@ -960,12 +971,18 @@
       showReviewOutputs();
       render();
     });
+    document.getElementById("apply-hardened").addEventListener("click", () => setAllControls(true));
+    document.getElementById("reset-builder").addEventListener("click", resetBuilder);
     document.getElementById("apply-risky").addEventListener("click", () => setAllControls(false));
     tabButtons.forEach((button) => {
       button.addEventListener("click", () => setConfigTab(button.dataset.configTab));
     });
     document.querySelectorAll("[data-open-config-tab]").forEach((button) => {
-      button.addEventListener("click", () => openConfigTab(button.dataset.openConfigTab, "postgres-runtime"));
+      button.addEventListener("click", () => {
+        const target = button.dataset.configScrollTarget
+          || (button.dataset.openConfigTab === "postgres" ? "postgres-runtime" : "config-builder");
+        openConfigTab(button.dataset.openConfigTab, target);
+      });
     });
     if (location.hash === "#postgres" || location.hash === "#postgres-runtime") {
       openConfigTab("postgres", "postgres-runtime");

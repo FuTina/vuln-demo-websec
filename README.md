@@ -130,7 +130,7 @@ Never put actual Render passwords in the repository.
 - `/network.html` - database network exposure module.
 - `/config.html` - secure database configuration module, including the Postgres runtime and hardening tab.
 
-## 5-Minute Guided Demo Script
+## Guided Demo Script
 
 Use Guided Mode on `/` as the click path.
 It updates the same six controls used by the live risk score, saves the guided-demo state in the browser, and shows a compact Guided Mode panel inside the relevant modules.
@@ -140,7 +140,7 @@ It updates the same six controls used by the live risk score, saves the guided-d
 3. **1:25 - XSS + output encoding.** Open `/xss.html`, render a harmless demo payload in `Vulnerable`, then use the Guided Mode panel to switch to protected text output.
 4. **2:05 - RBAC + data masking.** Open `/users.html`. Switch roles, briefly disable RBAC if needed, then continue with RBAC and masking enabled.
 5. **2:45 - Audit logging.** Open `/audit.html`, trigger failed login, export, and privilege events, then continue with audit logging enabled.
-6. **3:30 - Network segmentation.** Open `/network.html`, run the risky connection test, then use the Guided Mode panel to apply the secure network baseline.
+6. **3:30 - Network segmentation.** Open `/network.html`, run the risky connection test, then use the Guided Mode panel to enable segmented network controls.
 7. **4:20 - Secure configuration + executive close.** Open `/config.html`, apply the secure checklist, inspect the Postgres runtime tab, finish on `/`, and read the Executive summary panel.
 
 For a presentation-ready checklist with exact pages, payloads, fallback path, and key messages, see [PRESENTATION.md](PRESENTATION.md).

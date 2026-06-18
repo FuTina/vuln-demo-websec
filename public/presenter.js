@@ -86,7 +86,7 @@
   const completeConfig = {
     step: 7,
     title: "Guided demo complete",
-    text: "The secure baseline is applied. Use the overview as the closing summary.",
+    text: "All guided controls are complete. Use the overview as the closing summary.",
     primary: "Return to Overview",
     route: "/",
     href: "/",
@@ -332,7 +332,7 @@
         if (document.getElementById("vulnerable-render")?.getAttribute("aria-pressed") === "true") mark();
       });
     } else if (path === "/users.html") {
-      document.querySelectorAll("[data-role], #rbac-toggle, #mask-toggle").forEach((item) => {
+      document.querySelectorAll("[data-role], #rbac-toggle, #mask-toggle, #raw-access-mode, #protected-access-mode, #review-access").forEach((item) => {
         item.addEventListener("click", mark);
         item.addEventListener("change", mark);
       });
@@ -342,6 +342,7 @@
       document.getElementById("send-packet")?.addEventListener("click", () => {
         if (document.getElementById("exposed-toggle")?.checked) mark();
       });
+      document.getElementById("secure-network")?.addEventListener("click", mark);
     } else if (path === "/config.html") {
       document.querySelector("[data-config-tab='postgres']")?.addEventListener("click", mark);
       document.querySelector("[data-open-config-tab='postgres']")?.addEventListener("click", mark);
@@ -363,12 +364,17 @@
     } else if (path === "/users.html") {
       document.getElementById("rbac-toggle")?.addEventListener("change", () => syncUsers(config));
       document.getElementById("mask-toggle")?.addEventListener("change", () => syncUsers(config));
+      document.getElementById("raw-access-mode")?.addEventListener("click", () => syncControl(config, false));
+      document.getElementById("protected-access-mode")?.addEventListener("click", () => syncControl(config, true));
     } else if (path === "/audit.html") {
       document.getElementById("audit-toggle")?.addEventListener("change", (event) => syncControl(config, event.currentTarget.checked));
+      document.getElementById("audit-off-mode")?.addEventListener("click", () => syncControl(config, false));
+      document.getElementById("audit-on-mode")?.addEventListener("click", () => syncControl(config, true));
     } else if (path === "/network.html") {
       ["#exposed-toggle", "#internal-toggle", "#firewall-toggle", "#tls-toggle"].forEach((selector) => {
         document.querySelector(selector)?.addEventListener("change", () => syncNetwork(config));
       });
+      document.getElementById("secure-network")?.addEventListener("click", () => window.setTimeout(() => syncNetwork(config), 0));
     } else if (path === "/config.html") {
       document.getElementById("checklist")?.addEventListener("change", () => syncConfig(config));
       document.getElementById("apply-risky")?.addEventListener("click", () => syncConfig(config));
@@ -484,6 +490,12 @@
       success: "The result is visible and the required control is enabled.",
       next: guideConfig.evidenceText || "Complete the action in the module."
     };
+    const visibleGuideText = guideIsComplete
+      ? "Return to the overview for the closing summary."
+      : currentPageIsGuideStep
+      ? details.next
+      : statusText;
+    const mentorSummary = guideIsComplete ? "Review lab summary" : "Task, why, and success";
 
     const panel = document.createElement("section");
     panel.className = [
@@ -499,13 +511,16 @@
             <p class="module-kicker">Mentor brief</p>
           </div>
           <h2>${guideTitle}</h2>
-          <p>${statusText}</p>
-          <dl class="guide-brief-list">
-            <div><dt>Task</dt><dd>${details.task}</dd></div>
-            <div><dt>Why</dt><dd>${details.why}</dd></div>
-            <div><dt>Success</dt><dd>${details.success}</dd></div>
-            <div><dt>Next</dt><dd>${details.next}</dd></div>
-          </dl>
+          <p class="guide-next-line">${visibleGuideText}</p>
+          <details class="guide-brief-disclosure">
+            <summary>${mentorSummary}</summary>
+            <dl class="guide-brief-list">
+              <div><dt>Task</dt><dd>${details.task}</dd></div>
+              <div><dt>Why</dt><dd>${details.why}</dd></div>
+              <div><dt>Success</dt><dd>${details.success}</dd></div>
+              <div><dt>Next</dt><dd>${details.next}</dd></div>
+            </dl>
+          </details>
           <button type="button" class="guide-hint-button" data-guide-hint aria-controls="security-owl-speech" aria-expanded="${guideDismissed() ? "false" : "true"}" aria-label="Need a hint from Security Owl">Need a hint?</button>
         </div>
         <div class="guided-step-action"></div>

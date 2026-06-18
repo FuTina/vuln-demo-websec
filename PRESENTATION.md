@@ -17,7 +17,7 @@ Expected Docker response:
 {"ok":true,"client":"postgres","db":true}
 ```
 
-## 5-Minute Demo Script
+## Demo Script
 
 1. **Overview: insecure baseline**
    - Page: `/`
@@ -54,12 +54,12 @@ Expected Docker response:
 
 6. **Network Segmentation**
    - Page: `/network.html`
-   - Action: click `Run connection tests`, send an Internet packet, then click `Apply secure baseline`
+   - Action: click `Run connection tests`, send an Internet packet, then continue after segmentation is enabled
    - Message: users should reach the application, not a public database listener.
 
 7. **Secure Configuration and Postgres Runtime**
    - Page: `/config.html`
-   - Action: click `Apply secure baseline`
+   - Action: complete the configuration checklist
    - Postgres view: click `Open Postgres runtime`
    - Direct link: `/config.html#postgres-runtime`
    - Message: secure defaults make least privilege, TLS, private networking, secrets handling, and container hardening normal.

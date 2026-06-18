@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Network Exposure - Database Security Playground</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
 <body class="module-page">
@@ -15,12 +16,6 @@
       </a>
       <nav class="app-nav" aria-label="Main navigation">
         <a href="/" data-path="/"><span>Overview</span></a>
-        <a href="/sqli.html" data-path="/sqli.html" data-nav-control="prepared"><span>SQL Injection</span></a>
-        <a href="/xss.html" data-path="/xss.html" data-nav-control="encoding"><span>XSS</span></a>
-        <a href="/users.html" data-path="/users.html" data-nav-control="rbac"><span>Data Masking</span></a>
-        <a href="/audit.html" data-path="/audit.html" data-nav-control="audit"><span>Audit</span></a>
-        <a href="/network.html" data-path="/network.html" data-nav-control="network"><span>Network</span></a>
-        <a href="/config.html" data-path="/config.html" data-nav-control="config"><span>Config</span></a>
       </nav>
     </div>
   </header>
@@ -44,6 +39,11 @@
     <section class="module-section lab-action-card">
       <p class="module-kicker">Action</p>
       <h2>Change network controls</h2>
+      <div class="module-action-strip">
+        <button type="button" class="btn btn-primary" id="send-packet">Send packet</button>
+        <button type="button" class="btn btn-safe" id="secure-network" aria-label="Make database private and block direct internet access">Make DB private</button>
+        <a class="btn btn-ghost hidden" id="network-next-step" href="/config.html" data-presenter-link="6">Step 6</a>
+      </div>
       <div class="switch-grid">
         <label class="switch-card">
           <span><strong>Database port exposed</strong><span>Direct internet path exists.</span></span>
@@ -68,9 +68,8 @@
           <div>
             <p class="module-kicker">Packet lab</p>
             <h2>Send a database packet</h2>
-            <p class="muted">Watch whether the selected route reaches the database. Payloads are visual only.</p>
+            <p class="muted">Validate whether the database is reachable directly.</p>
           </div>
-          <button type="button" class="btn btn-primary" id="send-packet">Send packet</button>
         </div>
         <div class="packet-controls">
           <div class="packet-choice-panel">
@@ -78,16 +77,16 @@
             <div class="packet-option-grid" role="group" aria-label="Packet source">
               <button type="button" data-packet-source="internet" aria-pressed="true"><strong>Internet client</strong><span>Untrusted origin</span></button>
               <button type="button" data-packet-source="api" aria-pressed="false"><strong>API service</strong><span>Expected app path</span></button>
-              <button type="button" data-packet-source="admin" aria-pressed="false"><strong>Admin Network</strong><span>Break-glass path</span></button>
+              <button type="button" data-packet-source="admin" aria-pressed="false"><strong>Admin net</strong><span>Break-glass path</span></button>
             </div>
           </div>
           <div class="packet-choice-panel">
             <h3>Payload</h3>
             <div class="packet-option-grid" role="group" aria-label="Packet payload">
-              <button type="button" data-packet-payload="normal" aria-pressed="true"><strong>Normal read query</strong><span>Expected traffic</span></button>
-              <button type="button" data-packet-payload="sqli" aria-pressed="false"><strong>Login bypass attempt</strong><span>Manipulated input</span></button>
-              <button type="button" data-packet-payload="dump" aria-pressed="false"><strong>Bulk data read attempt</strong><span>Large extraction</span></button>
-              <button type="button" data-packet-payload="admin" aria-pressed="false"><strong>Privilege change attempt</strong><span>Administrative SQL</span></button>
+              <button type="button" data-packet-payload="normal" aria-pressed="true"><strong>Normal query</strong><span>Expected traffic</span></button>
+              <button type="button" data-packet-payload="sqli" aria-pressed="false"><strong>Login bypass</strong><span>Manipulated input</span></button>
+              <button type="button" data-packet-payload="dump" aria-pressed="false"><strong>Bulk read</strong><span>Large extraction</span></button>
+              <button type="button" data-packet-payload="admin" aria-pressed="false"><strong>Privilege change</strong><span>Administrative SQL</span></button>
             </div>
           </div>
         </div>
@@ -217,6 +216,7 @@
     const packetStatus = document.getElementById("packet-status");
     const laneTrack = document.getElementById("lane-track");
     const packet = document.getElementById("packet");
+    const nextStepButton = document.getElementById("network-next-step");
     const packetPayloads = {
       normal: "SELECT id, name FROM customers WHERE id = 42;",
       sqli: "username = \"alice' --\"\npassword = \"anything\"",
@@ -224,10 +224,10 @@
       admin: "ALTER ROLE app_user WITH SUPERUSER;"
     };
     const packetPayloadLabels = {
-      normal: "Normal read query",
-      sqli: "Login bypass attempt",
-      dump: "Bulk data read attempt",
-      admin: "Privilege change attempt"
+      normal: "Normal query",
+      sqli: "Login bypass",
+      dump: "Bulk read",
+      admin: "Privilege change"
     };
     let selectedPacketSource = "internet";
     let selectedPacketPayload = "normal";
@@ -298,7 +298,20 @@
     function sourceLabel(source) {
       if (source === "internet") return "Internet client";
       if (source === "api") return "API service";
-      return "Admin Network";
+      return "Admin net";
+    }
+
+    function markNetworkEvidence() {
+      let evidence = {};
+      try {
+        evidence = JSON.parse(localStorage.getItem("dbsec.presenter.evidence")) || {};
+      } catch {
+        evidence = {};
+      }
+      evidence.network = true;
+      localStorage.setItem("dbsec.presenter.evidence", JSON.stringify(evidence));
+      localStorage.setItem("dbsec.presenter.state", JSON.stringify({ active: true, step: 6 }));
+      window.DBSEC?.renderPosture();
     }
 
     function renderPayloadPreview() {
@@ -370,6 +383,7 @@
       badge.className = protectedState ? "badge badge-safe" : highRisk ? "badge badge-danger" : "badge badge-warning";
       dbState.textContent = highRisk ? "Public port exposed" : "Internal network only";
       edgeDb.className = current.tls ? "network-edge allowed" : "network-edge warning";
+      nextStepButton.classList.toggle("hidden", !protectedState);
       document.getElementById("database-node").classList.remove("is-impacted");
       resetPacket("Settings changed. Send a packet to validate the current path.");
 
@@ -387,6 +401,15 @@
       });
     });
     document.getElementById("send-packet").addEventListener("click", sendPacket);
+    document.getElementById("secure-network").addEventListener("click", () => {
+      controls.exposed.checked = false;
+      controls.internal.checked = true;
+      controls.firewall.checked = true;
+      controls.tls.checked = true;
+      render();
+      markNetworkEvidence();
+      sendPacket();
+    });
     packetSourceButtons.forEach((button) => {
       button.addEventListener("click", () => {
         selectedPacketSource = button.dataset.packetSource;

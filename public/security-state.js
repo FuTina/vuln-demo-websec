@@ -178,11 +178,11 @@
 
   function navigateOverview() {
     if (location.pathname === "/" || location.pathname === "/index.html") {
-      history.replaceState(null, "", "/#guided-path");
+      history.replaceState(null, "", "/#demo-flow");
       location.reload();
       return;
     }
-    location.assign("/#guided-path");
+    location.assign("/#demo-flow");
   }
 
   function resetInsecureBaseline() {
@@ -190,16 +190,6 @@
     localStorage.setItem(baselineStartedKey, "true");
     localStorage.setItem(presenterStateKey, JSON.stringify({ active: true, step: 1 }));
     writeControls(Object.fromEntries(guidedControls.map((control) => [control, false])));
-    renderPosture();
-    window.dispatchEvent(new CustomEvent("dbsec:controls-changed", { detail: readControls() }));
-    navigateOverview();
-  }
-
-  function applySecureBaseline() {
-    writeControls(Object.fromEntries(guidedControls.map((control) => [control, true])));
-    writeEvidence(Object.fromEntries(guidedControls.map((control) => [control, true])));
-    localStorage.setItem(baselineStartedKey, "true");
-    localStorage.setItem(presenterStateKey, JSON.stringify({ active: true, step: guidedControls.length + 1 }));
     renderPosture();
     window.dispatchEvent(new CustomEvent("dbsec:controls-changed", { detail: readControls() }));
     navigateOverview();
@@ -237,6 +227,10 @@
       const current = !complete && stepNumber === currentStep && guideStep <= guidedControls.length;
       const className = complete ? "is-complete" : current ? "is-current" : "is-upcoming";
       const label = complete ? `Step ${stepNumber} complete` : current ? `Step ${stepNumber} current` : `Step ${stepNumber} upcoming`;
+      const moduleLink = moduleLinks[index];
+      if (complete && moduleLink) {
+        return `<a class="${className}" href="${moduleLink.href}" data-progress-step="${stepNumber}" aria-label="Open completed step ${stepNumber}: ${moduleLink.label}" title="Open ${moduleLink.label}">${stepNumber}</a>`;
+      }
       return `<span class="${className}" role="listitem" aria-label="${label}"${current ? ' aria-current="step"' : ""}>${stepNumber}</span>`;
     }).join("");
 
@@ -261,9 +255,8 @@
           <summary>Lab options</summary>
           <div class="posture-tools-panel">
             <div class="posture-actions" aria-label="Baseline actions">
-              <a class="btn btn-primary" href="/#guided-path" data-overview-action>Back to overview</a>
+              <a class="btn btn-primary" href="/#demo-flow" data-overview-action>Back to overview</a>
               <button type="button" class="btn btn-ghost" data-reset-baseline>Reset lab</button>
-              <button type="button" class="btn btn-safe" data-secure-baseline>Secure baseline</button>
             </div>
             <details class="posture-module-picker">
               <summary>Open a specific exercise</summary>
@@ -311,7 +304,11 @@
       navigateOverview();
     });
     root.querySelector("[data-reset-baseline]")?.addEventListener("click", resetInsecureBaseline);
-    root.querySelector("[data-secure-baseline]")?.addEventListener("click", applySecureBaseline);
+    root.querySelectorAll("[data-progress-step]").forEach((link) => {
+      link.addEventListener("click", () => {
+        localStorage.setItem(presenterStateKey, JSON.stringify({ active: true, step: Number(link.dataset.progressStep) || 1 }));
+      });
+    });
     renderNavigationState(controls);
   }
 

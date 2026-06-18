@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Database Security Playground</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
 <body class="landing">
@@ -15,112 +16,105 @@
       </a>
       <nav class="app-nav" aria-label="Main navigation">
         <a href="/" data-path="/"><span>Overview</span></a>
-        <a href="/sqli.html" data-path="/sqli.html" data-nav-control="prepared"><span>SQL Injection</span></a>
-        <a href="/xss.html" data-path="/xss.html" data-nav-control="encoding"><span>XSS</span></a>
-        <a href="/users.html" data-path="/users.html" data-nav-control="rbac"><span>Data Masking</span></a>
-        <a href="/audit.html" data-path="/audit.html" data-nav-control="audit"><span>Audit</span></a>
-        <a href="/network.html" data-path="/network.html" data-nav-control="network"><span>Network</span></a>
-        <a href="/config.html" data-path="/config.html" data-nav-control="config"><span>Config</span></a>
       </nav>
     </div>
   </header>
   <script src="/security-state.js"></script>
 
-  <main class="page landing-page">
-    <section class="lab-start" aria-labelledby="page-title">
-      <div class="hero-panel lab-start-card">
-        <div class="lab-start-heading">
-          <div>
-            <p class="eyebrow">Guided security lab</p>
-            <h1 id="page-title">Database Security Playground</h1>
-            <p class="lead">Complete six hands-on security exercises one step at a time. Each step asks you to act first, then reveals the evidence.</p>
-          </div>
-          <span id="baseline-state" class="badge badge-danger">Insecure baseline not set</span>
+  <main class="page landing-page executive-demo-page">
+    <section class="exec-hero" aria-labelledby="page-title">
+      <div class="hero-panel exec-hero-card">
+        <div class="exec-hero-copy">
+          <p class="eyebrow">Guided Demo</p>
+          <h1 id="page-title">Database Security Playground</h1>
+          <p class="lead">Show how six database controls turn an insecure baseline into a safer architecture.</p>
         </div>
 
-        <div class="lab-current-step">
-          <div class="hero-next-step">
-            <span>Where you are</span>
+        <div class="exec-hero-grid">
+          <aside class="exec-score-card result-box" id="risk-panel" data-base-class="exec-score-card result-box" aria-labelledby="risk-title">
+            <span class="module-kicker">Current risk</span>
+            <div class="exec-score-row" id="risk-score" aria-live="polite">
+              <strong id="score-value">8</strong>
+              <span>/100</span>
+            </div>
+            <div class="meter" aria-hidden="true"><span id="score-meter"></span></div>
+            <h2 id="risk-title" class="sr-only">Current demo risk score</h2>
+            <p id="risk-label">Low risk</p>
+            <p id="risk-detail" class="sr-only"></p>
+          </aside>
+
+          <div class="exec-next-card">
+            <span class="module-kicker">Next required step</span>
             <strong id="next-step-title">Step 1: SQL Injection</strong>
-            <small id="next-step-detail">Set the insecure baseline if needed, then test the login bypass.</small>
+            <small id="next-step-detail">Start from the insecure baseline, then test the login bypass.</small>
+            <span id="baseline-state" class="badge badge-warning">Ready for demo</span>
           </div>
-          <div class="presenter-progress" aria-hidden="true"><span id="presenter-progress-bar"></span></div>
-        </div>
 
-        <div class="hero-actions">
-          <a class="btn btn-primary" id="hero-step-action" href="/sqli.html">Begin Step 1: SQL Injection</a>
-          <button type="button" class="btn btn-ghost hero-reset-action" id="hero-insecure">Set insecure baseline</button>
+          <div class="exec-hero-actions">
+            <button type="button" class="btn btn-danger" id="hero-insecure">Start demo</button>
+          </div>
         </div>
-
-        <p class="local-lab-note compact-warning">
-          <strong>Local lab only</strong> - intentionally vulnerable demo. Do not expose publicly.
-        </p>
       </div>
     </section>
 
-    <section class="landing-bottom" aria-label="Secondary lab options">
-      <details class="surface info-disclosure presenter-dock presenter-overview lab-path-disclosure" id="presenter-dock">
-        <summary aria-label="Open guided path">
+    <section id="demo-flow" class="exec-flow-section" aria-labelledby="presenter-title">
+      <details class="surface presenter-dock presenter-overview exec-flow-card" id="presenter-dock" open>
+        <summary aria-label="Demo Flow">
           <span>
-            <span class="module-kicker">Guided path</span>
-            <strong>View all six steps</strong>
+            <span class="module-kicker">Demo Flow</span>
+            <strong id="presenter-title">Security Demo Walkthrough</strong>
           </span>
           <span id="presenter-step-pill" class="badge badge-role">Step 1 of 6</span>
         </summary>
-        <div class="presenter-dock-body" aria-labelledby="presenter-title">
-          <div class="guide-card-head">
-            <div>
-              <p class="module-kicker">How it works</p>
-              <h2 id="presenter-title">Follow the guided flow</h2>
-              <p class="muted">The path opens one unfinished exercise at a time. Direct access is available below for review only.</p>
-            </div>
-            <div class="toolbar-actions secondary-actions">
-              <button type="button" class="btn btn-ghost" id="presenter-insecure">Reset insecure baseline</button>
-              <button type="button" class="btn btn-safe" id="presenter-secure">Apply secure baseline</button>
-            </div>
+        <div class="presenter-dock-body">
+          <div class="exec-progress-row">
+            <div class="presenter-progress" aria-hidden="true"><span id="presenter-progress-bar"></span></div>
+            <div id="presenter-current" class="presenter-current" aria-live="polite"></div>
           </div>
-          <div id="presenter-current" class="presenter-current" aria-live="polite"></div>
-          <div class="presenter-grid" id="presenter-steps">
-            <article class="presenter-step" data-step="1">
-              <span class="badge badge-soon">Step 1</span>
-              <h3>SQL injection + prepared statements</h3>
-              <p>Run a login bypass, then protect the query with placeholders.</p>
-              <a class="btn btn-primary" href="/sqli.html" data-presenter-link="1">Open SQL Injection</a>
-            </article>
-            <article class="presenter-step" data-step="2">
-              <span class="badge badge-soon">Step 2</span>
-              <h3>XSS + output encoding</h3>
-              <p>Render active markup, then switch to safe text output.</p>
-              <a class="btn btn-primary" href="/xss.html" data-presenter-link="2">Open XSS</a>
-            </article>
-            <article class="presenter-step" data-step="3">
-              <span class="badge badge-soon">Step 3</span>
-              <h3>Review RBAC and masking</h3>
-              <p>Move from raw data exposure to role-scoped results.</p>
-              <a class="btn btn-primary" href="/users.html" data-presenter-link="3">Open Data Masking</a>
-            </article>
-            <article class="presenter-step" data-step="4">
-              <span class="badge badge-soon">Step 4</span>
-              <h3>Run audit events</h3>
-              <p>Trigger failed login, export, and privilege signals.</p>
-              <a class="btn btn-primary" href="/audit.html" data-presenter-link="4">Open Audit</a>
-            </article>
-            <article class="presenter-step" data-step="5">
-              <span class="badge badge-soon">Step 5</span>
-              <h3>Show network segmentation</h3>
-              <p>Block direct database access and keep the API path explicit.</p>
-              <a class="btn btn-primary" href="/network.html" data-presenter-link="5">Open Network</a>
-            </article>
-            <article class="presenter-step" data-step="6">
-              <span class="badge badge-soon">Step 6</span>
-              <h3>Finish with secure configuration</h3>
-              <p>Build the config and inspect the Postgres runtime tab.</p>
-              <a class="btn btn-primary" href="/config.html" data-presenter-link="6">Open Config</a>
-            </article>
+          <div id="modules">
+            <div class="presenter-grid exec-step-grid" id="presenter-steps">
+              <article class="presenter-step exec-step-card" data-step="1">
+                <span class="badge badge-soon">Step 1</span>
+                <h3>SQL Injection</h3>
+                <p>Bypass login, then fix with prepared statements.</p>
+                <a class="btn btn-ghost" href="/sqli.html" data-presenter-link="1">Open</a>
+              </article>
+              <article class="presenter-step exec-step-card" data-step="2">
+                <span class="badge badge-soon">Step 2</span>
+                <h3>XSS</h3>
+                <p>Inject HTML, then fix with output encoding.</p>
+                <a class="btn btn-ghost" href="/xss.html" data-presenter-link="2">Open</a>
+              </article>
+              <article class="presenter-step exec-step-card" data-step="3">
+                <span class="badge badge-soon">Step 3</span>
+                <h3>Data Masking</h3>
+                <p>Compare raw vs role-scoped data.</p>
+                <a class="btn btn-ghost" href="/users.html" data-presenter-link="3">Open</a>
+              </article>
+              <article class="presenter-step exec-step-card" data-step="4">
+                <span class="badge badge-soon">Step 4</span>
+                <h3>Audit</h3>
+                <p>Trigger events and inspect evidence.</p>
+                <a class="btn btn-ghost" href="/audit.html" data-presenter-link="4">Open</a>
+              </article>
+              <article class="presenter-step exec-step-card" data-step="5">
+                <span class="badge badge-soon">Step 5</span>
+                <h3>Network</h3>
+                <p>Make DB private.</p>
+                <a class="btn btn-ghost" href="/network.html" data-presenter-link="5">Open</a>
+              </article>
+              <article class="presenter-step exec-step-card" data-step="6">
+                <span class="badge badge-soon">Step 6</span>
+                <h3>Config</h3>
+                <p>Review hardened config.</p>
+                <a class="btn btn-ghost" href="/config.html" data-presenter-link="6">Open</a>
+              </article>
+            </div>
           </div>
         </div>
       </details>
     </section>
+
     <div class="guide-sidekick overview-sidekick" id="overview-sidekick" role="region" aria-label="Guided overview step">
       <button type="button" class="sidekick-toggle" id="overview-sidekick-toggle" aria-label="Show guide tip">
         <span class="assistant-avatar assistant-avatar-large" aria-hidden="true"><i></i></span>
@@ -130,80 +124,33 @@
         <strong id="overview-sidekick-step">Step 1 of 6</strong>
         <span id="overview-sidekick-text">Start from an insecure baseline, then open SQL Injection.</span>
         <div class="sidekick-actions">
-          <button type="button" class="btn btn-danger" id="overview-sidekick-action">Start insecure demo</button>
+          <button type="button" class="btn btn-danger" id="overview-sidekick-action">Start demo</button>
         </div>
       </div>
     </div>
 
-    <section class="landing-bottom" aria-label="Advanced options">
-      <details class="surface info-disclosure advanced-access">
-        <summary>
-          <span>
-            <span class="module-kicker">Advanced</span>
-            <strong id="modules-title">Direct module access, risk score, and controls</strong>
-          </span>
-        </summary>
+    <section class="exec-bottom-disclosures" aria-label="Supporting information">
+      <details class="surface info-disclosure exec-summary-disclosure">
+        <summary>Executive summary</summary>
         <div class="disclosure-body">
-          <div class="direct-link-row" aria-label="Direct module links">
-            <a href="/sqli.html">SQL Injection</a>
-            <a href="/xss.html">XSS</a>
-            <a href="/users.html">Data Masking</a>
-            <a href="/audit.html">Audit</a>
-            <a href="/network.html">Network</a>
-            <a href="/config.html">Config</a>
-          </div>
-          <aside class="risk-card lab-risk-card" aria-labelledby="risk-title">
-            <div class="risk-card-head">
-              <div>
-                <p class="eyebrow">Optional risk summary</p>
-                <h2 id="risk-title">Demo score</h2>
-              </div>
-              <div class="risk-score" id="risk-score" aria-live="polite">
-                <strong id="score-value">8</strong>
-                <span class="muted">/ 100</span>
-              </div>
+          <div class="exec-summary-grid">
+            <p>Use the insecure baseline to show the impact first, then apply each control and let the result change after the action.</p>
+            <div id="change-summary" class="change-summary" aria-live="polite">
+              <strong>What changed?</strong>
+              <span>Controls are enabled for the current demo state.</span>
             </div>
-            <div class="meter" aria-hidden="true"><span id="score-meter"></span></div>
             <details class="risk-details">
               <summary>Risk details</summary>
               <p id="score-explanation" class="small muted"></p>
               <div id="score-causes" class="impact-list" aria-live="polite"></div>
             </details>
-          </aside>
-          <div class="control-panel advanced-controls">
-            <div id="risk-panel" class="result-box">
-              <h3 id="risk-label">Low risk</h3>
-              <p id="risk-detail" class="muted"></p>
-              <div id="change-summary" class="change-summary" aria-live="polite">
-                <strong>What changed?</strong>
-                <span>Secure baseline is active: controls are enabled for the demo starting point.</span>
-              </div>
-            </div>
-            <div class="switch-grid" id="control-switches">
-              <label class="switch-card">
-                <span><strong>Prepared Statements</strong><span>Separate SQL code from values.</span></span>
-                <span class="switch"><input type="checkbox" data-control="prepared" checked /><span class="slider"></span></span>
-              </label>
-              <label class="switch-card">
-                <span><strong>RBAC</strong><span>Authorize users before data is returned.</span></span>
-                <span class="switch"><input type="checkbox" data-control="rbac" checked /><span class="slider"></span></span>
-              </label>
-              <label class="switch-card">
-                <span><strong>Output Encoding</strong><span>Render untrusted input as data.</span></span>
-                <span class="switch"><input type="checkbox" data-control="encoding" checked /><span class="slider"></span></span>
-              </label>
-              <label class="switch-card">
-                <span><strong>Audit Logging</strong><span>Preserve investigation evidence.</span></span>
-                <span class="switch"><input type="checkbox" data-control="audit" checked /><span class="slider"></span></span>
-              </label>
-              <label class="switch-card">
-                <span><strong>Network Segmentation</strong><span>Keep the database off the public internet.</span></span>
-                <span class="switch"><input type="checkbox" data-control="network" checked /><span class="slider"></span></span>
-              </label>
-              <label class="switch-card">
-                <span><strong>Secure Configuration</strong><span>Use hardened defaults and secrets handling.</span></span>
-                <span class="switch"><input type="checkbox" data-control="config" checked /><span class="slider"></span></span>
-              </label>
+            <div class="switch-grid compact-control-switches" id="control-switches" aria-label="Baseline controls">
+              <label class="switch-card"><span><strong>Prepared Statements</strong><span>SQL values stay data.</span></span><span class="switch"><input type="checkbox" data-control="prepared" checked /><span class="slider"></span></span></label>
+              <label class="switch-card"><span><strong>RBAC</strong><span>Restrict records by role.</span></span><span class="switch"><input type="checkbox" data-control="rbac" checked /><span class="slider"></span></span></label>
+              <label class="switch-card"><span><strong>Output Encoding</strong><span>Render markup as text.</span></span><span class="switch"><input type="checkbox" data-control="encoding" checked /><span class="slider"></span></span></label>
+              <label class="switch-card"><span><strong>Audit Logging</strong><span>Keep evidence visible.</span></span><span class="switch"><input type="checkbox" data-control="audit" checked /><span class="slider"></span></span></label>
+              <label class="switch-card"><span><strong>Network Segmentation</strong><span>Remove direct DB path.</span></span><span class="switch"><input type="checkbox" data-control="network" checked /><span class="slider"></span></span></label>
+              <label class="switch-card"><span><strong>Secure Configuration</strong><span>Use hardened defaults.</span></span><span class="switch"><input type="checkbox" data-control="config" checked /><span class="slider"></span></span></label>
             </div>
           </div>
         </div>
@@ -212,7 +159,7 @@
   </main>
 
   <footer class="footer">
-    Database Security Playground - intentionally vulnerable local demo.
+    Database Security Playground
   </footer>
 
   <script>
@@ -301,6 +248,15 @@
         label: "Review Start Screen"
       }
     };
+    const heroStepCopy = {
+      1: { title: "Step 1: SQL Injection", text: "Try the bypass, then protect it." },
+      2: { title: "Step 2: XSS", text: "Inject markup, then encode output." },
+      3: { title: "Step 3: Data Masking", text: "Compare roles and exposed fields." },
+      4: { title: "Step 4: Audit", text: "Trigger one event and inspect evidence." },
+      5: { title: "Step 5: Network", text: "Send a packet, then block direct DB access." },
+      6: { title: "Step 6: Config", text: "Build the hardened config." },
+      7: { title: "Flow complete", text: "Use the overview as the closing summary." }
+    };
     const overviewOwlHints = {
       1: {
         prompt: "Start insecure, then test the first bypass.",
@@ -328,7 +284,7 @@
       },
       7: {
         prompt: "Lab complete. Use the start screen as the summary.",
-        tip: "The secure baseline is ready to present."
+        tip: "The completed lab is ready to present."
       }
     };
     const riskModel = {
@@ -573,31 +529,36 @@
       const isComplete = state.active && (activeStep >= 7 || incompleteControls.length === 0);
       const baselineStarted = localStorage.getItem(baselineStorageKey) === "true" || missing.length > 0;
       const hasCompletedModule = completedControls > 0;
-      baselineState.hidden = hasCompletedModule;
-      baselineState.textContent = baselineStarted ? "Insecure demo already set" : "Insecure baseline not set";
+      baselineState.hidden = false;
+      baselineState.textContent = baselineStarted ? "Insecure active" : "Ready";
       baselineState.className = baselineStarted ? "badge badge-danger" : "badge badge-warning";
-      heroInsecure.textContent = baselineStarted ? "Reset insecure baseline" : "Set insecure baseline";
-      heroInsecure.hidden = !baselineStarted;
+      heroInsecure.textContent = "Start demo";
+      heroInsecure.hidden = false;
       if (isComplete) {
-        nextStepTitle.textContent = "Flow complete";
-        nextStepDetail.textContent = "All six steps are complete. Use this start screen as the closing summary.";
-        heroStepAction.hidden = true;
+        nextStepTitle.textContent = heroStepCopy[7].title;
+        nextStepDetail.textContent = heroStepCopy[7].text;
+        if (heroStepAction) heroStepAction.hidden = true;
       } else if (activeStep === 1 && !baselineStarted) {
-        heroStepAction.hidden = false;
-        nextStepTitle.textContent = "Set insecure baseline";
-        nextStepDetail.textContent = "Then begin Step 1: SQL Injection.";
-        heroStepAction.textContent = "Start guided lab";
-        heroStepAction.href = presenterSteps[1].href;
-        heroStepAction.dataset.presenterLink = "1";
-        heroStepAction.dataset.needsBaseline = "true";
+        nextStepTitle.textContent = "Start demo";
+        nextStepDetail.textContent = "Then open Step 1.";
+        if (heroStepAction) {
+          heroStepAction.hidden = false;
+          heroStepAction.textContent = "Start guided lab";
+          heroStepAction.href = presenterSteps[1].href;
+          heroStepAction.dataset.presenterLink = "1";
+          heroStepAction.dataset.needsBaseline = "true";
+        }
       } else {
-        heroStepAction.hidden = false;
-        nextStepTitle.textContent = current.title;
-        nextStepDetail.textContent = current.text;
-        heroStepAction.textContent = activeStep === 1 ? "Begin Step 1: SQL Injection" : `Go to Step ${activeStep}`;
-        heroStepAction.href = current.href || "/";
-        heroStepAction.dataset.presenterLink = String(activeStep);
-        delete heroStepAction.dataset.needsBaseline;
+        const heroCopy = heroStepCopy[activeStep] || heroStepCopy[1];
+        nextStepTitle.textContent = heroCopy.title;
+        nextStepDetail.textContent = heroCopy.text;
+        if (heroStepAction) {
+          heroStepAction.hidden = false;
+          heroStepAction.textContent = activeStep === 1 ? "Begin Step 1: SQL Injection" : `Go to Step ${activeStep}`;
+          heroStepAction.href = current.href || "/";
+          heroStepAction.dataset.presenterLink = String(activeStep);
+          delete heroStepAction.dataset.needsBaseline;
+        }
       }
       const completedSteps = isComplete ? 6 : state.active ? Math.min(6, completedControls) : 0;
       presenterStepPill.textContent = isComplete ? "Complete" : `Step ${activeStep} of 6`;
@@ -614,7 +575,7 @@
       } else {
         overviewSidekickAction.hidden = false;
         overviewSidekickAction.textContent = activeStep === 1 && !baselineStarted
-          ? "Start insecure demo"
+          ? "Start demo"
           : `Go to Step ${Math.min(6, Math.max(1, activeStep))}`;
         overviewSidekickAction.className = activeStep === 1 && !baselineStarted ? "btn btn-danger" : "btn btn-primary";
         overviewSidekickAction.onclick = () => {
@@ -724,7 +685,7 @@
 
       meter.style.background = color;
       explanation.textContent = detail;
-      riskPanel.className = className;
+      riskPanel.className = [riskPanel.dataset.baseClass, className].filter(Boolean).join(" ");
       riskLabel.textContent = label;
       riskDetail.textContent = detail;
 
@@ -747,21 +708,14 @@
         renderRisk();
       });
     });
-    function startInsecureDemo() {
+    function startInsecureDemo(openFirstStep = false) {
       saveEvidence({});
       localStorage.setItem(baselineStorageKey, "true");
       setAllControls(false, "Insecure baseline is active. Step 1 starts in SQL Injection.", 1);
+      if (openFirstStep) location.href = presenterSteps[1].href;
     }
-    document.getElementById("presenter-insecure").addEventListener("click", startInsecureDemo);
-    heroInsecure.addEventListener("click", startInsecureDemo);
-    document.getElementById("presenter-secure").addEventListener("click", () => {
-      saveEvidence(Object.keys(riskModel).reduce((state, control) => {
-        state[control] = true;
-        return state;
-      }, {}));
-      localStorage.setItem(baselineStorageKey, "true");
-      setAllControls(true, "Secure baseline is active. All guided exercises are marked complete for review.", 7);
-    });
+    document.getElementById("presenter-insecure")?.addEventListener("click", () => startInsecureDemo(false));
+    heroInsecure.addEventListener("click", () => startInsecureDemo(true));
     function toggleOverviewTip(animate = false) {
       if (animate) animateOverviewOwl();
       const showingTip = overviewSidekick.classList.toggle("is-showing-tip");
@@ -800,6 +754,24 @@
       overviewSidekickToggle.classList.add(`owl-tap-${next}`);
       window.setTimeout(() => overviewSidekickToggle.classList.remove(`owl-tap-${next}`), 520);
     }
+    function revealLandingSection(hash) {
+      if (hash !== "#demo-flow" && hash !== "#modules") return;
+      presenterDock.open = true;
+      const target = document.querySelector(hash);
+      if (!target) return;
+      window.setTimeout(() => {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", hash);
+      }, 0);
+    }
+    document.querySelectorAll(".app-nav a").forEach((link) => {
+      const target = new URL(link.href, location.href);
+      if (target.pathname !== "/" || (target.hash !== "#demo-flow" && target.hash !== "#modules")) return;
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        revealLandingSection(target.hash);
+      });
+    });
     overviewSidekickToggle.addEventListener("click", () => {
       if (overviewSidekick.classList.contains("is-collapsed")) {
         setOverviewGuideDismissed(false);
@@ -822,8 +794,8 @@
         writePresenterState(Number(link.dataset.presenterLink));
       });
     });
-    heroStepAction.addEventListener("click", () => {
-      if (heroStepAction.dataset.needsBaseline === "true") startInsecureDemo();
+    heroStepAction?.addEventListener("click", () => {
+      if (heroStepAction.dataset.needsBaseline === "true") startInsecureDemo(false);
       writePresenterState(Number(heroStepAction.dataset.presenterLink) || 1);
     });
     presenterDock.addEventListener("toggle", () => {
@@ -833,7 +805,7 @@
     });
     loadSavedControls();
     renderRisk();
-    if (location.hash === "#guided-path") presenterDock.open = true;
+    revealLandingSection(location.hash);
   </script>
 </body>
 </html>

@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Audit Logging - Database Security Playground</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
 <body class="module-page">
@@ -15,12 +16,6 @@
       </a>
       <nav class="app-nav" aria-label="Main navigation">
         <a href="/" data-path="/"><span>Overview</span></a>
-        <a href="/sqli.html" data-path="/sqli.html" data-nav-control="prepared"><span>SQL Injection</span></a>
-        <a href="/xss.html" data-path="/xss.html" data-nav-control="encoding"><span>XSS</span></a>
-        <a href="/users.html" data-path="/users.html" data-nav-control="rbac"><span>Data Masking</span></a>
-        <a href="/audit.html" data-path="/audit.html" data-nav-control="audit"><span>Audit</span></a>
-        <a href="/network.html" data-path="/network.html" data-nav-control="network"><span>Network</span></a>
-        <a href="/config.html" data-path="/config.html" data-nav-control="config"><span>Config</span></a>
       </nav>
     </div>
   </header>
@@ -44,11 +39,12 @@
     <section class="module-section lab-action-card">
       <p class="module-kicker">Action</p>
       <h2>Trigger database-relevant actions</h2>
-      <div class="controls">
-        <label class="switch-card">
-          <span><strong>Audit logging enabled</strong><span>Write security events to the log.</span></span>
-          <span class="switch"><input id="audit-toggle" type="checkbox" checked /><span class="slider"></span></span>
-        </label>
+      <div class="controls demo-mode-controls">
+        <div class="segmented demo-mode-toggle" role="group" aria-label="Audit logging mode">
+          <button type="button" class="danger-option" id="audit-off-mode" aria-pressed="false">Logging off</button>
+          <button type="button" class="safe-option" id="audit-on-mode" aria-pressed="true">Logging on</button>
+        </div>
+        <input id="audit-toggle" type="checkbox" checked hidden />
         <button type="button" class="btn btn-ghost" id="clear-log">
           <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></span>
           Clear log
@@ -64,7 +60,7 @@
       </div>
     </section>
 
-    <section class="module-section result-card hidden" id="audit-result-card" aria-live="polite">
+    <section class="module-section result-card" id="audit-result-card" aria-live="polite">
       <div class="result-card-head">
         <div>
           <p class="module-kicker">Result</p>
@@ -86,7 +82,7 @@
         <p>Multiple failed or sensitive actions occurred. In a real system this should alert a responder.</p>
       </div>
 
-      <div class="table-wrap hidden" id="audit-output" style="margin-top:14px">
+      <div class="table-wrap" id="audit-output" style="margin-top:14px">
         <table>
           <thead>
             <tr>
@@ -169,11 +165,14 @@
 
     const rows = document.getElementById("audit-rows");
     const auditToggle = document.getElementById("audit-toggle");
+    const auditOffButton = document.getElementById("audit-off-mode");
+    const auditOnButton = document.getElementById("audit-on-mode");
     const badge = document.getElementById("audit-badge");
     const warning = document.getElementById("audit-warning");
     const suspicious = document.getElementById("suspicious-banner");
     const auditOutput = document.getElementById("audit-output");
     const auditResultCard = document.getElementById("audit-result-card");
+    const securityImpact = document.getElementById("security-impact");
     let sensitiveCount = 0;
     let logCount = 0;
     let auditInteracted = false;
@@ -196,6 +195,23 @@
 
     function renderEmpty() {
       if (logCount === 0) rows.innerHTML = '<tr><td colspan="6" class="muted">No audit events yet.</td></tr>';
+    }
+
+    function renderAuditMode(enabled) {
+      auditOffButton.setAttribute("aria-pressed", String(!enabled));
+      auditOnButton.setAttribute("aria-pressed", String(enabled));
+      badge.textContent = enabled ? "Logged" : "Unsafe";
+      badge.className = enabled ? "badge badge-safe" : "badge badge-danger";
+      securityImpact.className = `security-impact ${enabled ? "impact-safe" : "impact-danger"}`;
+      securityImpact.querySelector("span").textContent = enabled
+        ? "Audit logging on: security-relevant actions produce evidence."
+        : "Audit logging off: actions happen without an investigation trail.";
+    }
+
+    function setAuditMode(enabled) {
+      auditInteracted = true;
+      auditToggle.checked = enabled;
+      auditToggle.dispatchEvent(new Event("change", { bubbles: true }));
     }
 
     function appendLog(type) {
@@ -227,8 +243,7 @@
     auditToggle.addEventListener("change", () => {
       const enabled = auditToggle.checked;
       if (auditInteracted) auditResultCard.classList.remove("hidden");
-      badge.textContent = enabled ? "Logged" : "Unsafe";
-      badge.className = enabled ? "badge badge-safe" : "badge badge-danger";
+      renderAuditMode(enabled);
       warning.classList.toggle("hidden", enabled);
       if (!enabled) suspicious.classList.add("hidden");
       if (auditInteracted) document.body.classList.add("has-results");
@@ -243,6 +258,8 @@
     auditToggle.addEventListener("click", () => {
       auditInteracted = true;
     });
+    auditOffButton.addEventListener("click", () => setAuditMode(false));
+    auditOnButton.addEventListener("click", () => setAuditMode(true));
     document.querySelectorAll("[data-event]").forEach((button) => {
       button.addEventListener("click", () => appendLog(button.dataset.event));
     });
@@ -253,13 +270,10 @@
       warning.classList.add("hidden");
       suspicious.classList.add("hidden");
       renderEmpty();
-      auditOutput.classList.add("hidden");
-      auditResultCard.classList.add("hidden");
-      document.body.classList.remove("has-results");
     });
     const initialEnabled = auditToggle.checked;
-    badge.textContent = initialEnabled ? "Logged" : "Unsafe";
-    badge.className = initialEnabled ? "badge badge-safe" : "badge badge-danger";
+    renderAuditMode(initialEnabled);
+    document.body.classList.add("has-results");
   </script>
   <script src="/presenter.js"></script>
 </body>

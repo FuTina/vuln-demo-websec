@@ -9220,3 +9220,228 @@ body.network-page .packet-preview-toggle {
     gap: 2px;
   }
 }
+
+/* Stable Security Owl widget. */
+body.module-page {
+  padding-bottom: max(132px, env(safe-area-inset-bottom));
+}
+
+body.landing {
+  padding-bottom: max(112px, env(safe-area-inset-bottom));
+}
+
+@media (min-width: 1180px) {
+  body.module-page .page {
+    width: min(1120px, calc(100% - 392px));
+    margin-right: auto;
+    margin-left: 16px;
+  }
+}
+
+body.module-page .security-owl,
+body.module-page .security-owl.step-1,
+body.module-page .security-owl.step-2,
+body.module-page .security-owl.step-3,
+body.module-page .security-owl.step-4,
+body.module-page .security-owl.step-5,
+body.module-page .security-owl.step-6,
+body.module-page .security-owl.step-complete,
+body.landing .overview-sidekick,
+body.landing .overview-sidekick.step-1,
+body.landing .overview-sidekick.step-2,
+body.landing .overview-sidekick.step-3,
+body.landing .overview-sidekick.step-4,
+body.landing .overview-sidekick.step-5,
+body.landing .overview-sidekick.step-6,
+body.landing .overview-sidekick.step-complete {
+  position: fixed !important;
+  top: auto !important;
+  right: 24px !important;
+  bottom: 24px !important;
+  left: auto !important;
+  z-index: 1000;
+  display: grid !important;
+  grid-template-columns: 56px minmax(0, 236px) !important;
+  gap: 8px;
+  align-items: end;
+  width: auto !important;
+  max-width: min(300px, calc(100vw - 48px));
+  margin: 0 !important;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transform: none !important;
+  transition: none;
+}
+
+body.module-page .security-owl.is-collapsed,
+body.landing .overview-sidekick.is-collapsed {
+  grid-template-columns: 56px !important;
+  max-width: 56px;
+}
+
+body.module-page .security-owl .sidekick-toggle,
+body.landing .overview-sidekick .sidekick-toggle {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  width: 56px;
+  height: 56px;
+  z-index: 2;
+}
+
+body.module-page .security-owl .assistant-speech,
+body.landing .overview-sidekick .assistant-speech {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  max-width: 236px;
+  padding: 10px 34px 10px 12px;
+  border-color: #5eead4 !important;
+  background: #f0fdfa !important;
+  box-shadow: 0 18px 44px rgba(2, 8, 23, .18);
+  cursor: pointer;
+  overflow: visible;
+}
+
+body.module-page .security-owl.is-showing-tip .assistant-speech,
+body.landing .overview-sidekick.is-showing-tip .assistant-speech {
+  border-color: #bfdbfe !important;
+  background: #eff6ff !important;
+}
+
+body.module-page .security-owl.is-collapsed .assistant-speech,
+body.landing .overview-sidekick.is-collapsed .assistant-speech {
+  display: none !important;
+}
+
+.security-owl .assistant-speech::before,
+.security-owl .assistant-speech::after,
+body.landing .overview-sidekick .assistant-speech::before,
+body.landing .overview-sidekick .assistant-speech::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.module-page .security-owl .owl-window-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+}
+
+.security-owl .guide-minimize,
+.security-owl .guide-close,
+body.landing .overview-sidekick .guide-close {
+  position: static;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  place-items: center;
+  border: 1px solid rgba(15, 118, 110, .22);
+  border-radius: 999px;
+  color: #0f766e;
+  background: rgba(255, 255, 255, .9);
+  cursor: pointer;
+  font-size: 0;
+  line-height: 1;
+}
+
+body.landing .overview-sidekick .guide-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+.security-owl .guide-minimize:hover,
+.security-owl .guide-close:hover,
+body.landing .overview-sidekick .guide-close:hover {
+  border-color: rgba(15, 118, 110, .42);
+  background: #ffffff;
+}
+
+.security-owl .guide-minimize::before,
+.security-owl .guide-minimize::after,
+.security-owl .guide-close::before,
+.security-owl .guide-close::after,
+body.landing .overview-sidekick .guide-close::before,
+body.landing .overview-sidekick .guide-close::after {
+  content: none !important;
+  display: none !important;
+}
+
+.security-owl .guide-minimize svg,
+.security-owl .guide-close svg,
+body.landing .overview-sidekick .guide-close svg {
+  display: block;
+  width: 12px;
+  height: 12px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+@media (max-width: 560px) {
+  body.module-page,
+  body.landing {
+    padding-bottom: max(104px, env(safe-area-inset-bottom));
+  }
+
+  body.module-page .security-owl,
+  body.module-page .security-owl.step-1,
+  body.module-page .security-owl.step-2,
+  body.module-page .security-owl.step-3,
+  body.module-page .security-owl.step-4,
+  body.module-page .security-owl.step-5,
+  body.module-page .security-owl.step-6,
+  body.module-page .security-owl.step-complete,
+  body.landing .overview-sidekick,
+  body.landing .overview-sidekick.step-1,
+  body.landing .overview-sidekick.step-2,
+  body.landing .overview-sidekick.step-3,
+  body.landing .overview-sidekick.step-4,
+  body.landing .overview-sidekick.step-5,
+  body.landing .overview-sidekick.step-6,
+  body.landing .overview-sidekick.step-complete {
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    grid-template-columns: 52px minmax(0, 1fr) !important;
+    width: 100% !important;
+    max-width: none;
+    gap: 8px;
+    padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(148, 163, 184, .34);
+    background: rgba(255, 255, 255, .96);
+  }
+
+  body.module-page .security-owl.is-collapsed,
+  body.landing .overview-sidekick.is-collapsed {
+    right: 12px !important;
+    bottom: 12px !important;
+    left: auto !important;
+    grid-template-columns: 52px !important;
+    width: 52px !important;
+    max-width: 52px;
+    padding: 0;
+    border-top: 0;
+    background: transparent;
+  }
+
+  body.module-page .security-owl .sidekick-toggle,
+  body.landing .overview-sidekick .sidekick-toggle {
+    width: 52px;
+    height: 52px;
+  }
+
+  body.module-page .security-owl .assistant-speech,
+  body.landing .overview-sidekick .assistant-speech {
+    max-width: none;
+  }
+}

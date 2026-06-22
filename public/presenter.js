@@ -222,6 +222,11 @@
     return openControl ? modulesByControl[openControl] : completeConfig;
   }
 
+  function moduleConfigForStep(step) {
+    const entry = Object.entries(modules).find(([, moduleConfig]) => moduleConfig.step === Number(step));
+    return entry ? { ...entry[1], route: entry[0] } : null;
+  }
+
   function markEvidence(config) {
     if (!config?.control) return;
     const evidence = readEvidence();
@@ -464,7 +469,8 @@
     void state;
     const controls = readControls();
     const evidence = readEvidence();
-    const guideConfig = nextOpenConfig(controls, evidence);
+    const selectedConfig = state?.active ? moduleConfigForStep(state.step) : null;
+    const guideConfig = selectedConfig?.route === path ? selectedConfig : nextOpenConfig(controls, evidence);
     const guideIsComplete = guideConfig.step > guidedControls.length;
     const currentPageIsGuideStep = guideConfig.route === path;
     const currentModuleTitle = config?.title?.replace(/^Step \d+:\s*/, "") || "this exercise";
@@ -603,8 +609,9 @@
       </button>
       <div class="assistant-speech" id="security-owl-speech">
         <div class="owl-window-actions" aria-label="Security Owl controls">
-          <button type="button" class="guide-minimize" aria-label="Minimize Security Owl">_</button>
-          <button type="button" class="guide-close" aria-label="Dismiss Security Owl">&times;</button>
+          <button type="button" class="guide-close" aria-label="Dismiss Security Owl">
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" /></svg>
+          </button>
         </div>
         <strong>Security Owl</strong>
         <span data-sidekick-text>${owlText}</span>
@@ -641,14 +648,7 @@
       toggleTip(true);
     });
     owl.querySelector(".assistant-speech").addEventListener("click", (event) => {
-      if (!event.target.closest(".sidekick-actions, .guide-close, .guide-minimize, .owl-window-actions")) toggleTip(false);
-    });
-    owl.querySelector(".guide-minimize").addEventListener("click", (event) => {
-      event.stopPropagation();
-      owl.classList.remove("is-showing-tip");
-      setGuideDismissed(true);
-      owl.classList.add("is-collapsed");
-      panel.querySelector("[data-guide-hint]")?.setAttribute("aria-expanded", "false");
+      if (!event.target.closest(".sidekick-actions, .guide-close, .owl-window-actions")) toggleTip(false);
     });
     owl.querySelector(".guide-close").addEventListener("click", (event) => {
       event.stopPropagation();

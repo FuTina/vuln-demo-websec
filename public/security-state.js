@@ -138,6 +138,14 @@
     }
   }
 
+  function readPresenterState() {
+    try {
+      return JSON.parse(localStorage.getItem(presenterStateKey)) || { active: true, step: 1 };
+    } catch {
+      return { active: true, step: 1 };
+    }
+  }
+
   function writeEvidence(evidence) {
     localStorage.setItem(evidenceKey, JSON.stringify(evidence));
   }
@@ -207,7 +215,8 @@
     const root = document.getElementById("global-security-posture");
     if (!root) return;
     const riskDetailsOpen = root.querySelector(".posture-details")?.open || false;
-    const toolsOpen = root.querySelector(".posture-tools")?.open || riskDetailsOpen || false;
+    const modulePickerOpen = root.querySelector(".posture-module-picker")?.open || false;
+    const toolsOpen = root.querySelector(".posture-tools")?.open || riskDetailsOpen || modulePickerOpen || false;
 
     const controls = readControls();
     const evidence = readEvidence();
@@ -219,7 +228,17 @@
       .slice(0, 4);
     const postureClass = stateClass(posture);
 
-    const guideStep = nextGuideStep(controls, evidence);
+    const nextIncompleteStep = nextGuideStep(controls, evidence);
+    const presenterState = readPresenterState();
+    const currentPath = location.pathname.replace(/\/+$/, "") || "/";
+    const currentModuleIndex = moduleLinks.findIndex((item) => item.href === currentPath);
+    const selectedStep = Number(presenterState.step) || 0;
+    const selectedModuleIsOpen = presenterState.active && currentModuleIndex >= 0 && selectedStep === currentModuleIndex + 1;
+    const guideStep = nextIncompleteStep > guidedControls.length
+      ? nextIncompleteStep
+      : selectedModuleIsOpen
+        ? selectedStep
+        : nextIncompleteStep;
     const guideLabel = guideStep > guidedControls.length ? "Complete" : `Step ${guideStep} of 6`;
 	    const nextControl = guidedControls[guideStep - 1];
 	    const nextLabel = nextControl ? exerciseLabels[nextControl] : "Closing summary";
@@ -270,10 +289,10 @@
               <a class="btn btn-primary" href="/#demo-flow" data-overview-action>Back to overview</a>
               <button type="button" class="btn btn-ghost" data-reset-baseline>Reset lab</button>
             </div>
-            <details class="posture-module-picker">
+            <details class="posture-module-picker"${modulePickerOpen ? " open" : ""}>
               <summary>Open a specific exercise</summary>
               <div class="posture-module-links" aria-label="Direct exercise access">
-                ${moduleLinks.map((item) => `<a href="${item.href}">${item.label}</a>`).join("")}
+                ${moduleLinks.map((item, index) => `<a href="${item.href}" data-module-step="${index + 1}">${item.label}</a>`).join("")}
               </div>
             </details>
             <details class="posture-details"${riskDetailsOpen ? " open" : ""}>
@@ -319,6 +338,12 @@
     root.querySelectorAll("[data-progress-step]").forEach((link) => {
       link.addEventListener("click", () => {
         localStorage.setItem(presenterStateKey, JSON.stringify({ active: true, step: Number(link.dataset.progressStep) || 1 }));
+      });
+    });
+    root.querySelectorAll("[data-module-step]").forEach((link) => {
+      link.addEventListener("click", () => {
+        localStorage.setItem(presenterStateKey, JSON.stringify({ active: true, step: Number(link.dataset.moduleStep) || 1 }));
+        setGuideDismissed(false);
       });
     });
     renderNavigationState(controls);

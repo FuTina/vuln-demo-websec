@@ -206,38 +206,38 @@
     const sidekickStepClasses = ["step-1", "step-2", "step-3", "step-4", "step-5", "step-6", "step-complete"];
     const presenterSteps = {
       1: {
-        title: "Step 1: SQL injection + prepared statements",
-        text: "Open SQL Injection, run a bypass example in Vulnerable mode, then switch to Protected mode.",
+        title: "Step 1: SQL Injection",
+        text: "Try bypass, then protect.",
         href: "/sqli.html",
         label: "Open SQL Injection"
       },
       2: {
-        title: "Step 2: XSS + output encoding",
-        text: "Open XSS, post a safe demo payload in Vulnerable mode, then switch to Protected output.",
+        title: "Step 2: XSS",
+        text: "Post payload, then protect.",
         href: "/xss.html",
         label: "Open XSS"
       },
       3: {
-        title: "Step 3: Review RBAC/data masking",
-        text: "Open Data Masking, compare roles, then continue with RBAC and masking enabled.",
+        title: "Step 3: Data Masking",
+        text: "Compare raw and protected data.",
         href: "/users.html",
         label: "Open Data Masking"
       },
       4: {
-        title: "Step 4: Run audit events",
-        text: "Open Audit, trigger suspicious events, then continue to the Network module.",
+        title: "Step 4: Audit",
+        text: "Trigger event, inspect evidence.",
         href: "/audit.html",
         label: "Open Audit"
       },
       5: {
-        title: "Step 5: Show network segmentation",
-        text: "Open Network, send a packet, then change the controls until direct database access is blocked.",
+        title: "Step 5: Network",
+        text: "Send traffic, then make DB private.",
         href: "/network.html",
         label: "Open Network"
       },
       6: {
-        title: "Step 6: Finish with secure configuration",
-        text: "Open Config, drag blocks into the target config, review the result, then inspect the Postgres tab.",
+        title: "Step 6: Config",
+        text: "Apply secure baseline.",
         href: "/config.html",
         label: "Open Config"
       },
@@ -253,8 +253,8 @@
       2: { title: "Step 2: XSS", text: "Inject markup, then encode output." },
       3: { title: "Step 3: Data Masking", text: "Compare roles and exposed fields." },
       4: { title: "Step 4: Audit", text: "Trigger one event and inspect evidence." },
-      5: { title: "Step 5: Network", text: "Send a packet, then block direct DB access." },
-      6: { title: "Step 6: Config", text: "Build the hardened config." },
+      5: { title: "Step 5: Network", text: "Make DB private." },
+      6: { title: "Step 6: Config", text: "Apply secure baseline." },
       7: { title: "Flow complete", text: "Use the overview as the closing summary." }
     };
     const overviewOwlHints = {
@@ -279,8 +279,8 @@
         tip: "Success means direct database access is blocked while the intended path stays available."
       },
       6: {
-        prompt: "Build the target config, then review it.",
-        tip: "Fix blockers first: public port, root user, broad grants, and secrets."
+        prompt: "Review the insecure settings, then apply the secure baseline.",
+        tip: "The score improves when blockers are removed."
       },
       7: {
         prompt: "Lab complete. Use the start screen as the summary.",

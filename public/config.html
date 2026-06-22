@@ -64,23 +64,55 @@
 
     <div id="config-tab-baseline" class="config-tab-panel">
     <section class="module-section lab-action-card">
-      <div class="workbench-header config-workbench-header">
-        <div>
-          <p class="module-kicker">Action</p>
-          <h2>Build a safer database baseline</h2>
-          <p class="muted">Drag one block per area into the empty target config, then run the review gate.</p>
-        </div>
-        <div class="toolbar-actions">
-          <button type="button" class="btn btn-safe" id="apply-hardened">Apply config</button>
-          <button type="button" class="btn btn-ghost" id="reset-builder">Reset builder</button>
-          <button type="button" class="btn btn-primary" id="review-config">Review configuration</button>
-          <button type="button" class="btn btn-ghost" id="apply-risky">Load risky blocks</button>
-        </div>
-      </div>
-      <div id="security-impact" data-security-impact data-review-output class="security-impact impact-warning config-impact hidden">
-        <strong>Security Impact</strong>
-        <span>Secure Configuration disabled: risky defaults can undermine otherwise good controls.</span>
-      </div>
+	      <div class="workbench-header config-workbench-header">
+	        <div>
+	          <p class="module-kicker">Action</p>
+	          <h2>Apply a safer database baseline</h2>
+	          <p class="muted">Use Beginner mode for the demo path, or switch to Advanced for raw configuration blocks.</p>
+	        </div>
+	        <div class="toolbar-actions" data-config-advanced>
+	          <button type="button" class="btn btn-ghost" id="reset-builder">Reset builder</button>
+	          <button type="button" class="btn btn-primary" id="review-config">Review configuration</button>
+	          <button type="button" class="btn btn-ghost" id="apply-risky">Load risky blocks</button>
+	        </div>
+	      </div>
+	      <div class="config-mode-toggle segmented" role="group" aria-label="Configuration mode">
+	        <button type="button" data-config-mode="beginner" aria-pressed="true"><strong>Beginner</strong><span>Secure baseline</span></button>
+	        <button type="button" data-config-mode="advanced" aria-pressed="false"><strong>Advanced</strong><span>Raw config blocks</span></button>
+	      </div>
+	      <div class="config-demo-panel" aria-live="polite">
+	        <article class="config-score-tile">
+	          <span>Current risk</span>
+          <strong><span id="config-current-risk">100</span> / 100</strong>
+        </article>
+        <article class="config-issues-tile">
+          <span>Issues</span>
+          <ul id="config-issue-list">
+            <li>Public network access</li>
+            <li>Root/default database user</li>
+            <li>Hardcoded credentials</li>
+          </ul>
+        </article>
+        <button type="button" class="btn btn-safe" id="apply-hardened">Apply secure baseline</button>
+	        <article class="config-score-tile is-target">
+	          <span>Improved risk</span>
+	          <strong><span id="config-improved-risk">8</span> / 100</strong>
+	        </article>
+	      </div>
+	      <div class="config-beginner-panel" data-config-beginner>
+	        <article class="baseline-control" data-config-key="user"><strong>Strong Authentication</strong><span>Needs baseline</span></article>
+	        <article class="baseline-control" data-config-key="audit"><strong>Audit Logging</strong><span>Needs baseline</span></article>
+	        <article class="baseline-control" data-config-key="tls"><strong>Encrypted Connections</strong><span>Needs baseline</span></article>
+	        <article class="baseline-control" data-config-key="network"><strong>Private Network</strong><span>Needs baseline</span></article>
+	        <article class="baseline-control" data-config-key="backups"><strong>Backups Enabled</strong><span>Needs baseline</span></article>
+	        <article class="baseline-control" data-config-key="privilege"><strong>Least Privilege Access</strong><span>Needs baseline</span></article>
+	      </div>
+	      <div id="security-impact" data-security-impact data-review-output class="security-impact impact-warning config-impact hidden">
+	        <strong>Security Impact</strong>
+	        <span>Secure Configuration disabled: risky defaults can undermine otherwise good controls.</span>
+	      </div>
+	      <details class="config-builder-disclosure optional-details" data-config-advanced open>
+	        <summary><span><span class="module-kicker">Details</span><strong>Advanced config builder</strong></span></summary>
       <div class="config-builder" id="config-builder">
         <div class="builder-head">
           <div>
@@ -173,10 +205,11 @@
           <label class="check-item"><input type="checkbox" data-key="secrets" /><span><strong>Secrets not hardcoded</strong><span>Move credentials to environment or a secret manager.</span></span></label>
         </div>
       </div>
+      </details>
     </section>
 
     <details class="module-section info-disclosure explanation-card">
-      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
+      <summary><span><span class="module-kicker">Why</span><strong>Why does this matter?</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -386,7 +419,13 @@
     const builderTargetFrame = document.getElementById("builder-target-frame");
     const builderCode = document.getElementById("builder-code");
     const builderBadge = document.getElementById("builder-badge");
-    const policyTestButtons = Array.from(document.querySelectorAll("[data-policy-test]"));
+	    const builderDisclosure = document.querySelector(".config-builder-disclosure");
+	    const configCurrentRisk = document.getElementById("config-current-risk");
+	    const configImprovedRisk = document.getElementById("config-improved-risk");
+	    const configIssueList = document.getElementById("config-issue-list");
+	    const configModeButtons = Array.from(document.querySelectorAll("[data-config-mode]"));
+	    const beginnerControls = Array.from(document.querySelectorAll("[data-config-beginner] [data-config-key]"));
+	    const policyTestButtons = Array.from(document.querySelectorAll("[data-policy-test]"));
     const riskyPolicyResult = document.getElementById("risky-policy-result");
     const hardenedPolicyResult = document.getElementById("hardened-policy-result");
     const weights = { user: 14, privilege: 16, network: 16, tls: 10, audit: 10, backups: 12, secrets: 18 };
@@ -502,15 +541,25 @@
       return keys.includes(key);
     }
 
-    function setAllControls(enabled) {
-      checklist.querySelectorAll("input").forEach((input) => {
-        input.checked = enabled;
+	    function setAllControls(enabled) {
+	      checklist.querySelectorAll("input").forEach((input) => {
+	        input.checked = enabled;
       });
       builderSelection = Object.fromEntries(Object.keys(weights).map((key) => [key, enabled ? "safe" : "risk"]));
       reviewVisible = true;
       showReviewOutputs();
-      render();
-    }
+	      render();
+	    }
+
+	    function setConfigMode(mode) {
+	      const advanced = mode === "advanced";
+	      document.body.classList.toggle("config-mode-advanced", advanced);
+	      document.body.classList.toggle("config-mode-beginner", !advanced);
+	      configModeButtons.forEach((button) => {
+	        button.setAttribute("aria-pressed", String(button.dataset.configMode === mode));
+	      });
+	      if (advanced && builderDisclosure) builderDisclosure.open = true;
+	    }
 
     function showReviewOutputs() {
       document.body.classList.add("has-results");
@@ -523,6 +572,7 @@
     }
 
     function resetBuilder() {
+      if (builderDisclosure) builderDisclosure.open = true;
       checklist.querySelectorAll("input").forEach((input) => {
         input.checked = false;
       });
@@ -736,7 +786,24 @@
         meter.style.width = "0%";
         badge.textContent = "Build";
       }
-      window.DBSEC?.updateControl(
+      configCurrentRisk.textContent = filledCount === 0 && !reviewVisible ? "100" : String(risk);
+      configImprovedRisk.textContent = reviewVisible && keys.length === Object.keys(weights).length ? String(risk) : "8";
+      const issueLabels = blockers.length
+        ? blockers
+        : Object.entries(controls)
+          .filter(([key]) => !has(key, keys))
+          .slice(0, 3)
+          .map(([, control]) => control.title.toLowerCase());
+	      configIssueList.innerHTML = issueLabels.length
+	        ? issueLabels.map((item) => `<li>${item}</li>`).join("")
+	        : "<li>No critical blockers</li>";
+	      beginnerControls.forEach((item) => {
+	        const enabled = has(item.dataset.configKey, keys);
+	        item.classList.toggle("is-enabled", enabled);
+	        item.classList.toggle("is-missing", !enabled);
+	        item.querySelector("span").textContent = enabled ? "Enabled" : "Needs baseline";
+	      });
+	      window.DBSEC?.updateControl(
         "config",
         reviewVisible && keys.length === Object.keys(weights).length,
         keys.length === Object.keys(weights).length ? window.DBSEC.controlModel.config.enabled : window.DBSEC.controlModel.config.disabled
@@ -848,11 +915,11 @@
             <tbody>
               ${rows.map((row) => `
                 <tr class="${row.method === "reject" ? "policy-reject" : row.type === "hostnossl" || row.method === "md5" ? "policy-risk" : "policy-allow"}">
-                  <td><code>${escapeHtml(row.type)}</code></td>
-                  <td>${escapeHtml(row.database)}</td>
-                  <td>${escapeHtml(row.user)}</td>
-                  <td>${escapeHtml(row.address)}</td>
-                  <td><span class="policy-method">${escapeHtml(row.method)}</span></td>
+	                  <td data-label="Connection"><code>${escapeHtml(row.type)}</code></td>
+	                  <td data-label="Database">${escapeHtml(row.database)}</td>
+	                  <td data-label="User">${escapeHtml(row.user)}</td>
+	                  <td data-label="Source">${escapeHtml(row.address)}</td>
+	                  <td data-label="Decision / Auth"><span class="policy-method">${escapeHtml(row.method)}</span></td>
                 </tr>
               `).join("")}
             </tbody>
@@ -973,10 +1040,13 @@
     });
     document.getElementById("apply-hardened").addEventListener("click", () => setAllControls(true));
     document.getElementById("reset-builder").addEventListener("click", resetBuilder);
-    document.getElementById("apply-risky").addEventListener("click", () => setAllControls(false));
-    tabButtons.forEach((button) => {
-      button.addEventListener("click", () => setConfigTab(button.dataset.configTab));
-    });
+	    document.getElementById("apply-risky").addEventListener("click", () => setAllControls(false));
+	    configModeButtons.forEach((button) => {
+	      button.addEventListener("click", () => setConfigMode(button.dataset.configMode));
+	    });
+	    tabButtons.forEach((button) => {
+	      button.addEventListener("click", () => setConfigTab(button.dataset.configTab));
+	    });
     document.querySelectorAll("[data-open-config-tab]").forEach((button) => {
       button.addEventListener("click", () => {
         const target = button.dataset.configScrollTarget
@@ -987,8 +1057,9 @@
     if (location.hash === "#postgres" || location.hash === "#postgres-runtime") {
       openConfigTab("postgres", "postgres-runtime");
     }
-    renderPolicyTest("local");
-    render();
+	    setConfigMode("beginner");
+	    renderPolicyTest("local");
+	    render();
   </script>
   <script src="/presenter.js"></script>
 </body>

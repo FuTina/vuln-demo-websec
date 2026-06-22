@@ -38,12 +38,15 @@
 
     <section class="module-section lab-action-card">
       <p class="module-kicker">Action</p>
-      <h2>Change role and controls</h2>
-      <div class="role-grid" role="group" aria-label="Select role">
-        <button type="button" class="role-card" data-role="guest" aria-pressed="false"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>Guest</strong><span>No sensitive fields.</span></button>
-        <button type="button" class="role-card" data-role="app_user" aria-pressed="true"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg></span>App User</strong><span>Masked contact data.</span></button>
-        <button type="button" class="role-card" data-role="analyst" aria-pressed="false"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>Analyst</strong><span>Business fields only.</span></button>
-        <button type="button" class="role-card" data-role="admin" aria-pressed="false"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg></span>Admin</strong><span>Full record access.</span></button>
+      <h2>Select a role</h2>
+      <div class="demo-choice-panel role-choice-panel">
+        <span class="field-label">Role</span>
+        <div class="demo-chip-group role-choice-grid" role="group" aria-label="Select role">
+          <button type="button" data-role-choice="guest" aria-pressed="false"><strong>Guest</strong><span>Limited access</span></button>
+          <button type="button" data-role-choice="app_user" aria-pressed="true"><strong>App User</strong><span>Operational data</span></button>
+          <button type="button" data-role-choice="analyst" aria-pressed="false"><strong>Analyst</strong><span>Business data</span></button>
+          <button type="button" data-role-choice="admin" aria-pressed="false"><strong>Administrator</strong><span>Full access</span></button>
+        </div>
       </div>
 
       <div class="controls demo-mode-controls" style="margin-top:14px">
@@ -53,7 +56,6 @@
         </div>
         <input id="rbac-toggle" type="checkbox" checked hidden />
         <input id="mask-toggle" type="checkbox" checked hidden />
-        <button type="button" class="btn btn-primary" id="review-access">Review selected role</button>
       </div>
     </section>
 
@@ -73,6 +75,17 @@
         <div><span>Records</span><strong id="lens-records">Role scoped</strong></div>
         <div><span>Fields</span><strong id="lens-fields">Masked</strong></div>
         <div><span>Boundary</span><strong id="lens-boundary">Enforced</strong></div>
+      </div>
+
+      <div class="masking-compare" aria-live="polite">
+        <article>
+          <span>Raw data</span>
+          <strong id="raw-sample">alice@example.com · +49 151 000000</strong>
+        </article>
+        <article>
+          <span>Protected data</span>
+          <strong id="protected-sample">al***@example.com · +49 *** **0000</strong>
+        </article>
       </div>
 
       <div id="rbac-warning" class="notice notice-warning hidden" style="margin-top:14px">
@@ -101,7 +114,7 @@
     </section>
 
     <details class="module-section info-disclosure explanation-card">
-      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
+      <summary><span><span class="module-kicker">Why</span><strong>Why does this matter?</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -185,6 +198,7 @@
     ];
 
     const roleCards = Array.from(document.querySelectorAll("[data-role]"));
+    const roleChoiceButtons = Array.from(document.querySelectorAll("[data-role-choice]"));
     const rbacToggle = document.getElementById("rbac-toggle");
     const maskToggle = document.getElementById("mask-toggle");
     const rawAccessButton = document.getElementById("raw-access-mode");
@@ -196,6 +210,8 @@
     const lensRecords = document.getElementById("lens-records");
     const lensFields = document.getElementById("lens-fields");
     const lensBoundary = document.getElementById("lens-boundary");
+    const rawSample = document.getElementById("raw-sample");
+    const protectedSample = document.getElementById("protected-sample");
     const policyRole = document.getElementById("policy-role");
     const policySummary = document.getElementById("policy-summary");
     const policyFields = document.getElementById("policy-fields");
@@ -203,13 +219,13 @@
     const policyMasking = document.getElementById("policy-masking");
     const outputPanels = Array.from(document.querySelectorAll("[data-demo-output]"));
     let currentRole = "app_user";
-    let resultsVisible = false;
+    let resultsVisible = true;
     const savedControls = window.DBSEC?.readControls();
     if (savedControls && Object.prototype.hasOwnProperty.call(savedControls, "rbac")) {
       rbacToggle.checked = Boolean(savedControls.rbac);
       maskToggle.checked = Boolean(savedControls.rbac);
     }
-    const roleLabels = { guest: "Guest", app_user: "App User", analyst: "Analyst", admin: "Admin" };
+    const roleLabels = { guest: "Guest", app_user: "App User", analyst: "Analyst", admin: "Administrator" };
     const roleSummaries = {
       guest: "Public overview fields only",
       app_user: "Operational view with reduced contact data",
@@ -219,11 +235,18 @@
 
     function renderAccessMode(rbacEnabled, maskingEnabled) {
       const protectedState = rbacEnabled && maskingEnabled;
+      const sample = customers[0];
       rawAccessButton.setAttribute("aria-pressed", String(!protectedState));
       protectedAccessButton.setAttribute("aria-pressed", String(protectedState));
       lensRecords.textContent = rbacEnabled ? "Role scoped" : "All records";
       lensFields.textContent = maskingEnabled ? "Masked" : "Raw values";
       lensBoundary.textContent = rbacEnabled ? "Enforced" : "Open";
+      rawSample.textContent = `${sample.revenue} · ${sample.email} · ${sample.phone}`;
+      protectedSample.textContent = [
+        valueFor(sample, "revenue", currentRole, true, true),
+        valueFor(sample, "email", currentRole, true, true),
+        valueFor(sample, "phone", currentRole, true, true)
+      ].join(" · ");
       lensRecords.parentElement.className = rbacEnabled ? "is-safe" : "is-danger";
       lensFields.parentElement.className = maskingEnabled ? "is-safe" : "is-danger";
       lensBoundary.parentElement.className = rbacEnabled ? "is-safe" : "is-danger";
@@ -324,6 +347,9 @@
       const label = roleLabels[role];
       roleBadge.textContent = `Role: ${label}`;
       roleBadge.className = role === "admin" ? "badge badge-safe" : "badge badge-role";
+      roleChoiceButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.roleChoice === role));
+      });
       document.body.classList.toggle("has-results", resultsVisible);
       outputPanels.forEach((panel) => panel.classList.toggle("hidden", !resultsVisible));
       warning.classList.toggle("hidden", rbacEnabled || !resultsVisible);
@@ -332,12 +358,21 @@
       renderPolicyVisual(role, rbacEnabled, maskingEnabled);
 
       rows.innerHTML = "";
+      const fieldLabels = {
+        name: "Customer",
+        segment: "Segment",
+        revenue: "Revenue",
+        email: "Email",
+        phone: "Phone",
+        notes: "Notes"
+      };
       customers.forEach((record) => {
         const row = document.createElement("tr");
         ["name", "segment", "revenue", "email", "phone", "notes"].forEach((field) => {
           const cell = document.createElement("td");
           const value = valueFor(record, field, role, rbacEnabled, maskingEnabled);
           cell.textContent = value;
+          cell.dataset.label = fieldLabels[field];
           if (value === "Hidden by RBAC" || value === "Restricted") {
             cell.className = "cell-restricted";
           } else if (String(value).includes("*")) {
@@ -356,10 +391,17 @@
         render();
       });
     });
-    [rbacToggle, maskToggle].forEach((control) => control.addEventListener("change", () => {
-      const protectedState = rbacToggle.checked && maskToggle.checked;
-      resultsVisible = false;
-      window.DBSEC?.updateControl(
+    roleChoiceButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        currentRole = button.dataset.roleChoice;
+        resultsVisible = true;
+        render();
+      });
+    });
+	    [rbacToggle, maskToggle].forEach((control) => control.addEventListener("change", () => {
+	      const protectedState = rbacToggle.checked && maskToggle.checked;
+	      resultsVisible = true;
+	      window.DBSEC?.updateControl(
         "rbac",
         protectedState,
         protectedState ? window.DBSEC.controlModel.rbac.enabled : window.DBSEC.controlModel.rbac.disabled
@@ -368,10 +410,6 @@
     }));
     rawAccessButton.addEventListener("click", () => setAccessMode(false));
     protectedAccessButton.addEventListener("click", () => setAccessMode(true));
-    document.getElementById("review-access").addEventListener("click", () => {
-      resultsVisible = true;
-      render();
-    });
     render();
   </script>
   <script src="/presenter.js"></script>

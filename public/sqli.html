@@ -68,13 +68,13 @@
                 <input id="password" class="input" value="wrong-password" autocomplete="off" />
               </label>
             </div>
-            <div>
-              <p class="small muted choice-label">Optional examples</p>
-              <div class="choice-grid" aria-label="Example payloads">
-                <button type="button" class="choice-card choice-safe" data-user="alice" data-pass="DB-Schutz!27-Fokus#91"><strong>Valid BSI-style login</strong><span>alice / DB-Schutz!27-Fokus#91</span></button>
-                <button type="button" class="choice-card choice-neutral" data-user="alice" data-pass="wrong-password"><strong>Wrong password</strong><span>Normal failed login.</span></button>
-                <button type="button" class="choice-card choice-danger" data-user="alice' --" data-pass="anything"><strong>Comment-out bypass</strong><span>Works when login SQL is concatenated.</span></button>
-                <button type="button" class="choice-card choice-danger" data-user="' OR '1'='1'--" data-pass="anything"><strong>Always-true condition</strong><span>Changes vulnerable WHERE logic.</span></button>
+            <div class="demo-choice-panel">
+              <span class="field-label">Demo input</span>
+              <div class="demo-chip-group" role="group" aria-label="Demo input">
+                <button type="button" data-sqli-example="wrong" aria-pressed="true">Wrong password</button>
+                <button type="button" data-sqli-example="comment" aria-pressed="false">alice' --</button>
+                <button type="button" data-sqli-example="always" aria-pressed="false">OR 1=1</button>
+                <button type="button" data-sqli-example="valid" aria-pressed="false">Valid login</button>
               </div>
             </div>
             <button type="submit" class="btn btn-primary action-submit">
@@ -122,7 +122,7 @@
     </section>
 
     <details class="module-section info-disclosure explanation-card">
-      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
+      <summary><span><span class="module-kicker">Why</span><strong>Why does this matter?</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -255,19 +255,21 @@
       }
     }
 
-    function renderRows(rows) {
-      leakedRows.innerHTML = "";
-      if (!rows.length) {
-        leakedRows.innerHTML = '<tr><td colspan="4" class="muted">No rows returned.</td></tr>';
-        return;
-      }
-      rows.forEach((record) => {
-        const row = document.createElement("tr");
-        [record.id, record.username, record.role, record.email].forEach((value) => {
-          const cell = document.createElement("td");
-          cell.textContent = value;
-          row.appendChild(cell);
-        });
+	    function renderRows(rows) {
+	      leakedRows.innerHTML = "";
+	      if (!rows.length) {
+	        leakedRows.innerHTML = '<tr><td colspan="4" class="muted">No rows returned.</td></tr>';
+	        return;
+	      }
+	      const labels = ["ID", "Username", "Role", "Email"];
+	      rows.forEach((record) => {
+	        const row = document.createElement("tr");
+	        [record.id, record.username, record.role, record.email].forEach((value, index) => {
+	          const cell = document.createElement("td");
+	          cell.textContent = value;
+	          cell.dataset.label = labels[index];
+	          row.appendChild(cell);
+	        });
         leakedRows.appendChild(row);
       });
     }
@@ -331,16 +333,29 @@
     document.getElementById("reset").addEventListener("click", () => {
       username.value = "alice";
       password.value = "wrong-password";
+      applySqlExample("wrong");
       renderQuery();
       renderResult("Ready", "Choose a mode and run the login check.", "warning", []);
       hideOutputs();
     });
-    document.querySelectorAll("[data-user]").forEach((button) => {
-      button.addEventListener("click", () => {
-        username.value = button.dataset.user;
-        password.value = button.dataset.pass;
-        renderQuery();
+    const sqlExampleButtons = Array.from(document.querySelectorAll("[data-sqli-example]"));
+    function applySqlExample(key) {
+      const examples = {
+        wrong: ["alice", "wrong-password"],
+        comment: ["alice' --", "anything"],
+        always: ["' OR '1'='1'--", "anything"],
+        valid: ["alice", "DB-Schutz!27-Fokus#91"]
+      };
+      const [nextUser, nextPass] = examples[key] || examples.wrong;
+      username.value = nextUser;
+      password.value = nextPass;
+      sqlExampleButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.sqliExample === key));
       });
+      renderQuery();
+    }
+    sqlExampleButtons.forEach((button) => {
+      button.addEventListener("click", () => applySqlExample(button.dataset.sqliExample));
     });
 
     setMode(window.DBSEC?.readControls().prepared ? "protected" : "vulnerable");

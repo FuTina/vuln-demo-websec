@@ -104,14 +104,22 @@
     { label: "Network", href: "/network.html" },
     { label: "Config", href: "/config.html" }
   ];
-  const exerciseLabels = {
-    prepared: "SQL Injection",
-    encoding: "XSS Rendering",
-    rbac: "Data Masking",
-    audit: "Audit Logging",
-    network: "Network Exposure",
-    config: "Secure Configuration"
-  };
+	  const exerciseLabels = {
+	    prepared: "SQL Injection",
+	    encoding: "XSS Rendering",
+	    rbac: "Data Masking",
+	    audit: "Audit Logging",
+	    network: "Network Exposure",
+	    config: "Secure Configuration"
+	  };
+	  const nextActionLabels = {
+	    prepared: "Run the login check, then enable Protected mode.",
+	    encoding: "Post the payload, then compare Protected output.",
+	    rbac: "Select a role and compare protected data.",
+	    audit: "Trigger an event and inspect the evidence.",
+	    network: "Choose Internet, then test access.",
+	    config: "Apply the secure baseline."
+	  };
 
   function readControls() {
     try {
@@ -213,10 +221,12 @@
 
     const guideStep = nextGuideStep(controls, evidence);
     const guideLabel = guideStep > guidedControls.length ? "Complete" : `Step ${guideStep} of 6`;
-    const nextControl = guidedControls[guideStep - 1];
-    const nextLabel = nextControl ? exerciseLabels[nextControl] : "Closing summary";
-    const completedSteps = guidedControls.filter((control) => controls[control] && evidence[control]).length;
-    const remainingSteps = Math.max(0, guidedControls.length - completedSteps);
+	    const nextControl = guidedControls[guideStep - 1];
+	    const nextLabel = nextControl ? exerciseLabels[nextControl] : "Closing summary";
+	    const nextAction = nextControl ? nextActionLabels[nextControl] : "Review the final overview.";
+	    const completedSteps = guidedControls.filter((control) => controls[control] && evidence[control]).length;
+	    const progressPercent = Math.round((completedSteps / guidedControls.length) * 100);
+	    const remainingSteps = Math.max(0, guidedControls.length - completedSteps);
     const remainingLabel = remainingSteps === 0
       ? "All exercises complete"
       : `${remainingSteps} ${remainingSteps === 1 ? "exercise" : "exercises"} remaining`;
@@ -237,18 +247,20 @@
     root.className = `global-posture lab-progress-bar posture-${postureClass}`;
     root.innerHTML = `
       <div class="posture-inner">
-        <div class="posture-focus" aria-label="Current guided exercise">
-          <span class="posture-label">Current exercise</span>
-          <strong class="posture-title">${nextLabel}</strong>
-          <span class="posture-context">${guideLabel} · ${remainingLabel}</span>
-        </div>
-        <div class="posture-progress-panel" aria-label="Guided lab progress">
-          <div class="posture-progress-head">
-            <span>Learning progress</span>
-            <strong>${completedSteps}/6 complete</strong>
-          </div>
-          <div class="posture-step-track" role="list" aria-label="${completedSteps} of 6 guided exercises complete">
-            ${stepMarkers}
+	        <div class="posture-focus" aria-label="Current guided exercise">
+	          <span class="posture-label">Guided lab</span>
+	          <strong class="posture-title">${nextLabel}</strong>
+	          <span class="posture-context">${guideLabel} · ${remainingLabel}</span>
+	          <span class="posture-next"><b>Next:</b> ${nextAction}</span>
+	        </div>
+	        <div class="posture-progress-panel" aria-label="Guided lab progress">
+	          <div class="posture-progress-head">
+	            <span>Learning progress</span>
+	            <strong>${completedSteps}/6 complete</strong>
+	          </div>
+	          <div class="posture-linear-progress" aria-hidden="true"><span style="width:${progressPercent}%"></span></div>
+	          <div class="posture-step-track" role="list" aria-label="${completedSteps} of 6 guided exercises complete">
+	            ${stepMarkers}
           </div>
         </div>
         <details class="posture-tools"${toolsOpen ? " open" : ""}>

@@ -30,7 +30,7 @@
             <p class="module-kicker">Scenario</p>
           </div>
           <h1>Database Network Exposure</h1>
-          <p>Packet routing should prove that the database is reachable only through intended service paths.</p>
+          <p>Test who can reach the database before and after network protection is enabled.</p>
         </div>
         <span id="network-badge" class="badge badge-warning">Review required</span>
       </div>
@@ -38,27 +38,28 @@
 
     <section class="module-section lab-action-card">
       <p class="module-kicker">Action</p>
-      <h2>Change network controls</h2>
+      <h2>Security decision simulator</h2>
       <div class="module-action-strip">
-        <button type="button" class="btn btn-primary" id="send-packet">Send packet</button>
+        <button type="button" class="btn btn-primary" id="send-packet">Test Access</button>
         <button type="button" class="btn btn-safe" id="secure-network" aria-label="Make database private and block direct internet access">Make DB private</button>
+        <button type="button" class="btn btn-ghost" id="expose-network">Expose DB</button>
         <a class="btn btn-ghost hidden" id="network-next-step" href="/config.html" data-presenter-link="6">Step 6</a>
       </div>
-      <div class="switch-grid">
-        <label class="switch-card">
-          <span><strong>Database port exposed</strong><span>Direct internet path exists.</span></span>
+      <div class="switch-grid security-status-grid" aria-label="Current security status">
+        <label class="switch-card security-status-chip is-risk-control">
+          <span><strong>Public Database Port</strong><span>Direct access path</span></span>
           <span class="switch"><input id="exposed-toggle" type="checkbox" checked /><span class="slider"></span></span>
         </label>
-        <label class="switch-card">
-          <span><strong>Internal network only</strong><span>Database is private.</span></span>
+        <label class="switch-card security-status-chip is-safe-control">
+          <span><strong>Internal Network Only</strong><span>Private database path</span></span>
           <span class="switch"><input id="internal-toggle" type="checkbox" /><span class="slider"></span></span>
         </label>
-        <label class="switch-card">
-          <span><strong>Firewall enabled</strong><span>Only approved sources can reach DB.</span></span>
+        <label class="switch-card security-status-chip is-safe-control">
+          <span><strong>Firewall Enabled</strong><span>Approved sources only</span></span>
           <span class="switch"><input id="firewall-toggle" type="checkbox" /><span class="slider"></span></span>
         </label>
-        <label class="switch-card">
-          <span><strong>TLS enabled</strong><span>Database traffic is encrypted.</span></span>
+        <label class="switch-card security-status-chip is-safe-control">
+          <span><strong>TLS Enabled</strong><span>Encrypted traffic</span></span>
           <span class="switch"><input id="tls-toggle" type="checkbox" checked /><span class="slider"></span></span>
         </label>
       </div>
@@ -66,28 +67,35 @@
       <div class="packet-simulator">
         <div class="packet-lab-head">
           <div>
-            <p class="module-kicker">Packet lab</p>
-            <h2>Send a database packet</h2>
-            <p class="muted">Validate whether the database is reachable directly.</p>
+            <p class="module-kicker">Access test</p>
+            <h2>Choose source and action</h2>
+            <p class="muted">Validate whether this request can reach the database.</p>
           </div>
         </div>
         <div class="packet-controls">
           <div class="packet-choice-panel">
-            <h3>Source</h3>
+            <h3>Step 1: Choose Source</h3>
             <div class="packet-option-grid" role="group" aria-label="Packet source">
-              <button type="button" data-packet-source="internet" aria-pressed="true"><strong>Internet client</strong><span>Untrusted origin</span></button>
-              <button type="button" data-packet-source="api" aria-pressed="false"><strong>API service</strong><span>Expected app path</span></button>
-              <button type="button" data-packet-source="admin" aria-pressed="false"><strong>Admin net</strong><span>Break-glass path</span></button>
+              <button type="button" data-packet-source="internet" aria-pressed="true"><strong>Internet</strong><span>Untrusted origin</span></button>
+              <button type="button" data-packet-source="api" aria-pressed="false"><strong>Application</strong><span>Expected app path</span></button>
+              <button type="button" data-packet-source="admin" aria-pressed="false"><strong>Administrator</strong><span>Break-glass path</span></button>
             </div>
           </div>
           <div class="packet-choice-panel">
-            <h3>Payload</h3>
+            <h3>Step 2: Choose Action</h3>
             <div class="packet-option-grid" role="group" aria-label="Packet payload">
-              <button type="button" data-packet-payload="normal" aria-pressed="true"><strong>Normal query</strong><span>Expected traffic</span></button>
-              <button type="button" data-packet-payload="sqli" aria-pressed="false"><strong>Login bypass</strong><span>Manipulated input</span></button>
-              <button type="button" data-packet-payload="dump" aria-pressed="false"><strong>Bulk read</strong><span>Large extraction</span></button>
-              <button type="button" data-packet-payload="admin" aria-pressed="false"><strong>Privilege change</strong><span>Administrative SQL</span></button>
+              <button type="button" data-packet-payload="normal" aria-pressed="true"><strong>Read data</strong><span>Expected traffic</span></button>
+              <button type="button" data-packet-payload="dump" aria-pressed="false"><strong>Export data</strong><span>Large extraction</span></button>
+              <button type="button" data-packet-payload="sqli" aria-pressed="false"><strong>Login attempt</strong><span>Manipulated input</span></button>
             </div>
+          </div>
+          <div class="packet-choice-panel packet-step-summary">
+            <h3>Step 3: Test Access</h3>
+            <p>Use the primary button to send the selected request through the security path.</p>
+          </div>
+          <div class="packet-choice-panel packet-step-summary">
+            <h3>Step 4: Review Result</h3>
+            <p>The evidence panel shows what happened, why it happened, and which control caused it.</p>
           </div>
         </div>
       </div>
@@ -97,8 +105,23 @@
       <div class="result-card-head">
         <div>
           <p class="module-kicker">Result</p>
-          <h2>Evidence from packet routing</h2>
+          <h2>Can this source reach the database?</h2>
         </div>
+      </div>
+      <div class="network-outcome" aria-live="polite">
+        <div><span>Source</span><strong id="outcome-source">Internet</strong></div>
+        <div><span>Action</span><strong id="outcome-action">Read data</strong></div>
+        <div><span>Result</span><strong id="outcome-result">Not tested</strong></div>
+        <div><span>Why</span><strong id="outcome-reason">Test access to see the decision.</strong></div>
+        <div><span>Control</span><strong id="outcome-control">Waiting for test</strong></div>
+      </div>
+      <div class="network-path-visual" id="network-path-visual" aria-label="Network security path">
+        <div class="path-node path-source"><strong id="path-source-label">Internet</strong><span>Selected source</span></div>
+        <div class="path-arrow" aria-hidden="true"></div>
+        <div class="path-node path-firewall"><strong>Firewall</strong><span id="path-firewall-label">Decision point</span></div>
+        <div class="path-arrow path-arrow-db" aria-hidden="true"></div>
+        <div class="path-node path-database" id="path-database-node"><strong>Database</strong><span id="path-database-label">Waiting for test</span></div>
+        <div class="path-blocked" id="path-blocked-label" aria-live="polite">Blocked</div>
       </div>
       <div class="network-board" aria-label="Network architecture simulation">
         <div class="network-row">
@@ -119,7 +142,7 @@
         </div>
         <div class="lane-label">Database</div>
       </div>
-      <p id="packet-status" class="packet-status">Send a packet to see where the selected payload stops.</p>
+      <p id="packet-status" class="packet-status">Test access to see whether the selected request reaches the database.</p>
       <details class="packet-preview-toggle">
         <summary>Payload preview</summary>
         <pre id="packet-payload-preview" class="query-box packet-payload-preview"></pre>
@@ -127,7 +150,7 @@
     </section>
 
     <details class="module-section info-disclosure explanation-card">
-      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
+      <summary><span><span class="module-kicker">Why</span><strong>Why does this matter?</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -217,18 +240,29 @@
     const laneTrack = document.getElementById("lane-track");
     const packet = document.getElementById("packet");
     const nextStepButton = document.getElementById("network-next-step");
+	    const outcomeSource = document.getElementById("outcome-source");
+	    const outcomeAction = document.getElementById("outcome-action");
+	    const outcomeResult = document.getElementById("outcome-result");
+	    const outcomeReason = document.getElementById("outcome-reason");
+	    const outcomeControl = document.getElementById("outcome-control");
+	    const pathVisual = document.getElementById("network-path-visual");
+	    const pathSourceLabel = document.getElementById("path-source-label");
+	    const pathFirewallLabel = document.getElementById("path-firewall-label");
+	    const pathDatabaseNode = document.getElementById("path-database-node");
+	    const pathDatabaseLabel = document.getElementById("path-database-label");
+	    const pathBlockedLabel = document.getElementById("path-blocked-label");
     const packetPayloads = {
       normal: "SELECT id, name FROM customers WHERE id = 42;",
       sqli: "username = \"alice' --\"\npassword = \"anything\"",
       dump: "SELECT * FROM customers;",
       admin: "ALTER ROLE app_user WITH SUPERUSER;"
     };
-    const packetPayloadLabels = {
-      normal: "Normal query",
-      sqli: "Login bypass",
-      dump: "Bulk read",
-      admin: "Privilege change"
-    };
+	    const packetPayloadLabels = {
+	      normal: "Read data",
+	      sqli: "Login attempt",
+	      dump: "Export data",
+	      admin: "Privilege change"
+	    };
     let selectedPacketSource = "internet";
     let selectedPacketPayload = "normal";
     let packetRunId = 0;
@@ -262,44 +296,68 @@
       };
     }
 
-    function evaluate(source, current) {
-      if (source === "internet") {
-        const allowed = current.exposed && !current.internal && !current.firewall;
-        return {
-          allowed,
-          level: allowed ? "blocked" : "allowed",
-          title: allowed ? "Allowed - risky" : "Blocked",
-          text: allowed
-            ? "The database accepts direct internet traffic. This is the exposure you usually want to remove."
-            : "Direct internet access is blocked by internal networking or firewall policy."
-        };
-      }
-      if (source === "api") {
-        return {
-          allowed: true,
-          level: current.tls ? "allowed" : "warning",
-          title: current.tls ? "Allowed" : "Allowed with warning",
-          text: current.tls
-            ? "The API can reach the database over the intended encrypted service path."
-            : "The API can reach the database, but TLS is disabled, so traffic is plaintext."
-        };
-      }
-      const allowed = !current.internal && !current.firewall;
-      return {
-        allowed,
-        level: allowed ? "warning" : "blocked",
-        title: allowed ? "Allowed with warning" : "Blocked",
-        text: allowed
-          ? "Admin network access is open. This should normally be a controlled break-glass path."
-          : "Admin network access is blocked by segmentation or firewall policy."
-      };
-    }
+	    function evaluate(source, current) {
+	      if (source === "internet") {
+	        const allowed = current.exposed && !current.internal && !current.firewall;
+		        return {
+		          allowed,
+		          level: allowed ? "danger" : "safe",
+		          title: allowed ? "Allowed" : "Blocked",
+		          control: allowed ? "Public Database Port" : current.internal ? "Internal Network Only" : "Firewall Enabled",
+		          text: allowed
+		            ? "Public database port is enabled."
+		            : current.internal ? "Database is private." : "Firewall blocked access."
+		        };
+	      }
+	      if (source === "api") {
+	        const allowed = current.tls;
+		        return {
+		          allowed,
+		          level: allowed ? "safe" : "blocked",
+		          title: allowed ? "Allowed" : "Blocked",
+		          control: allowed ? "TLS Enabled" : "TLS Required",
+		          text: allowed
+		            ? "Application path is allowed."
+		            : "TLS required."
+		        };
+	      }
+	      const allowed = !current.internal && !current.firewall;
+		      return {
+		        allowed,
+		        level: allowed ? "warning" : "blocked",
+		        title: allowed ? "Allowed" : "Blocked",
+		        control: allowed ? "Administrator path open" : current.internal ? "Internal Network Only" : "Firewall Enabled",
+		        text: allowed
+		          ? "Administrator path is open."
+		          : current.internal ? "Database is private." : "Firewall blocked access."
+		      };
+		    }
 
-    function sourceLabel(source) {
-      if (source === "internet") return "Internet client";
-      if (source === "api") return "API service";
-      return "Admin net";
-    }
+	    function sourceLabel(source) {
+	      if (source === "internet") return "Internet";
+	      if (source === "api") return "Application";
+	      return "Administrator";
+	    }
+
+	    function renderOutcome(evaluation, payloadName) {
+	      outcomeSource.textContent = sourceLabel(selectedPacketSource);
+	      outcomeAction.textContent = payloadName;
+	      outcomeResult.textContent = evaluation.allowed ? "Allowed" : "Blocked";
+	      outcomeResult.className = evaluation.allowed ? "is-allowed" : "is-blocked";
+	      outcomeReason.textContent = evaluation.allowed
+	        ? evaluation.text
+	        : selectedPacketSource === "internet"
+		        ? evaluation.text
+		        : evaluation.text;
+	      outcomeControl.textContent = evaluation.control;
+	      pathVisual.classList.toggle("is-allowed", evaluation.allowed);
+	      pathVisual.classList.toggle("is-blocked", !evaluation.allowed);
+	      pathSourceLabel.textContent = sourceLabel(selectedPacketSource);
+	      pathFirewallLabel.textContent = evaluation.allowed ? "Permitted" : "Stopped here";
+	      pathDatabaseNode.classList.toggle("is-muted", !evaluation.allowed);
+	      pathDatabaseLabel.textContent = evaluation.allowed ? "Reached" : "Not reached";
+	      pathBlockedLabel.textContent = evaluation.allowed ? "Allowed" : `Blocked: ${evaluation.control}`;
+	    }
 
     function markNetworkEvidence() {
       let evidence = {};
@@ -327,7 +385,7 @@
       packet.className = `packet ${selectedPacketPayload !== "normal" ? "is-risk-payload" : ""}`;
       packet.style.left = "18px";
       packet.querySelector(".packet-icon").textContent = selectedPacketPayload === "normal" ? "SQL" : "";
-      if (messageText) packetStatus.textContent = messageText;
+	      if (messageText) packetStatus.textContent = messageText;
     }
 
     function showOutputs() {
@@ -343,6 +401,7 @@
       const payloadName = packetPayloadLabels[selectedPacketPayload];
       const runId = ++packetRunId;
       const evaluation = evaluate(source, current);
+      renderOutcome(evaluation, payloadName);
       const databaseNode = document.getElementById("database-node");
       databaseNode.classList.remove("is-impacted");
       if (evaluation.allowed && malicious) {
@@ -363,14 +422,14 @@
           databaseNode.classList.add("is-impacted");
         }
         if (evaluation.allowed && malicious && source === "api") {
-          packetStatus.textContent = `${payloadName} reached via API. Network path is expected; SQL defenses and authorization must contain it.`;
-        } else if (evaluation.allowed && malicious) {
-          packetStatus.textContent = `${payloadName} reached the database. Direct exposure is still open.`;
-        } else if (evaluation.allowed) {
-          packetStatus.textContent = `${payloadName} reached the database through an allowed path.`;
-        } else {
-          packetStatus.textContent = `${payloadName} was blocked before the database.`;
-        }
+	          packetStatus.textContent = `${payloadName} reached the database through the application path.`;
+	        } else if (evaluation.allowed && malicious) {
+	          packetStatus.textContent = `${payloadName} reached the database. Direct exposure is still open.`;
+	        } else if (evaluation.allowed) {
+	          packetStatus.textContent = `${payloadName} reached the database through an allowed path.`;
+	        } else {
+	          packetStatus.textContent = `${payloadName} was blocked before the database: ${evaluation.text}`;
+	        }
       }, 1050);
     }
 
@@ -385,7 +444,7 @@
       edgeDb.className = current.tls ? "network-edge allowed" : "network-edge warning";
       nextStepButton.classList.toggle("hidden", !protectedState);
       document.getElementById("database-node").classList.remove("is-impacted");
-      resetPacket("Settings changed. Send a packet to validate the current path.");
+	      resetPacket("Settings changed. Test access again to validate the path.");
 
       window.DBSEC?.updateControl(
         "network",
@@ -410,12 +469,20 @@
       markNetworkEvidence();
       sendPacket();
     });
+    document.getElementById("expose-network").addEventListener("click", () => {
+      controls.exposed.checked = true;
+      controls.internal.checked = false;
+      controls.firewall.checked = false;
+      controls.tls.checked = true;
+      render();
+      sendPacket();
+    });
     packetSourceButtons.forEach((button) => {
       button.addEventListener("click", () => {
         selectedPacketSource = button.dataset.packetSource;
         packetSourceButtons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
         packetSourceLabel.textContent = sourceLabel(selectedPacketSource);
-        resetPacket("Source changed. Send the packet again from the start.");
+	        resetPacket("Source changed. Test access again from the start.");
       });
     });
     packetPayloadButtons.forEach((button) => {
@@ -423,12 +490,12 @@
         selectedPacketPayload = button.dataset.packetPayload;
         packetPayloadButtons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
         renderPayloadPreview();
-        resetPacket("Payload changed. Send the packet again from the start.");
+	        resetPacket("Action changed. Test access again from the start.");
       });
     });
     renderPayloadPreview();
     render();
-    resetPacket("Send a packet to see where the selected payload stops.");
+	    resetPacket("Test access to see whether the selected request reaches the database.");
   </script>
   <script src="/presenter.js"></script>
 </body>

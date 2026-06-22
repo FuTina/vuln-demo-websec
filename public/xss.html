@@ -60,19 +60,20 @@
           <form id="comment-form" class="stack">
             <label>
               Comment
-              <textarea id="comment-input" class="input" autocomplete="off">Hello database team</textarea>
+              <textarea id="comment-input" class="input" autocomplete="off">&lt;strong&gt;Injected HTML&lt;/strong&gt;</textarea>
             </label>
-            <div>
-              <p class="small muted choice-label">Optional demo payloads</p>
-              <div class="choice-grid choice-grid-3">
-                <button type="button" class="choice-card choice-danger" data-payload="&lt;strong&gt;Injected HTML&lt;/strong&gt;"><strong>Injected HTML</strong><span>Turns markup into page structure.</span></button>
-                <button type="button" class="choice-card choice-danger" data-payload="&lt;a href='https://www.bsi.bund.de' target='_blank' rel='noopener'&gt;Open BSI website&lt;/a&gt;"><strong>Clickable link</strong><span>Creates an active link in the output.</span></button>
-                <button type="button" class="choice-card choice-danger" data-payload="&lt;a download='security-demo.txt' href='data:text/plain,This%20is%20a%20harmless%20fake%20download%20from%20the%20Database%20Security%20Playground.'&gt;Download fake report&lt;/a&gt;"><strong>Fake file download</strong><span>Creates a download action.</span></button>
+            <div class="demo-choice-panel">
+              <span class="field-label">Demo payload</span>
+              <div class="demo-chip-group" role="group" aria-label="Demo payload">
+                <button type="button" data-xss-payload="html" aria-pressed="true">HTML</button>
+                <button type="button" data-xss-payload="link" aria-pressed="false">Link</button>
+                <button type="button" data-xss-payload="download" aria-pressed="false">Download</button>
+                <button type="button" data-xss-payload="plain" aria-pressed="false">Plain text</button>
               </div>
             </div>
             <button id="render-button" type="submit" class="btn btn-danger action-submit">
               <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
-              <span id="render-button-text">Post comment in vulnerable mode</span>
+              <span id="render-button-text">Post comment</span>
             </button>
           </form>
         </div>
@@ -124,7 +125,7 @@
     </section>
 
     <details class="module-section info-disclosure explanation-card">
-      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
+      <summary><span><span class="module-kicker">Why</span><strong>Why does this matter?</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -252,7 +253,7 @@
       badge.className = vulnerable ? "badge badge-danger" : "badge badge-safe";
       outputMode.textContent = vulnerable ? "innerHTML" : "textContent";
       outputMode.className = vulnerable ? "badge badge-danger" : "badge badge-safe";
-      renderButtonText.textContent = vulnerable ? "Post comment in vulnerable mode" : "Post comment in protected mode";
+      renderButtonText.textContent = "Post comment";
       renderButton.className = vulnerable ? "btn btn-danger" : "btn btn-safe";
       renderButton.classList.add("action-submit");
       updateInspector();
@@ -284,12 +285,23 @@
       event.preventDefault();
       if (input.value.trim()) renderComment(input.value.trim());
     });
-    document.querySelectorAll("[data-payload]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        input.value = event.currentTarget.dataset.payload;
-        updateInspector();
-        input.focus();
+    const xssPayloadButtons = Array.from(document.querySelectorAll("[data-xss-payload]"));
+    function applyXssPayload(key) {
+      const payloads = {
+        html: "<strong>Injected HTML</strong>",
+        link: "<a href='https://www.bsi.bund.de' target='_blank' rel='noopener'>Open BSI website</a>",
+        download: "<a download='security-demo.txt' href='data:text/plain,This%20is%20a%20harmless%20fake%20download%20from%20the%20Database%20Security%20Playground.'>Download fake report</a>",
+        plain: "Hello database team"
+      };
+      input.value = payloads[key] || payloads.html;
+      xssPayloadButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.xssPayload === key));
       });
+      updateInspector();
+      input.focus();
+    }
+    xssPayloadButtons.forEach((button) => {
+      button.addEventListener("click", () => applyXssPayload(button.dataset.xssPayload));
     });
     input.addEventListener("input", updateInspector);
     document.getElementById("clear-comments").addEventListener("click", () => {

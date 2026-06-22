@@ -52,11 +52,11 @@
       </div>
 
       <div class="action-grid" style="margin-top:14px">
-        <button type="button" class="action-card" data-event="success"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span>Successful login</strong><span>Normal authenticated session.</span></button>
+        <button type="button" class="action-card" data-event="success"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span>Login</strong><span>Normal authenticated session.</span></button>
         <button type="button" class="action-card risk-action" data-event="failed"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span>Failed login</strong><span>Failed authentication attempt.</span></button>
-        <button type="button" class="action-card" data-event="read"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></svg></span>Read customer data</strong><span>Sensitive table read.</span></button>
-        <button type="button" class="action-card risk-action" data-event="export"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>Export customer data</strong><span>Large data movement.</span></button>
-        <button type="button" class="action-card risk-action" data-event="privilege"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></span>Privilege escalation attempt</strong><span>Denied admin-level action.</span></button>
+        <button type="button" class="action-card" data-event="read"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></svg></span>Read data</strong><span>Sensitive table read.</span></button>
+        <button type="button" class="action-card risk-action" data-event="export"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>Export</strong><span>Large data movement.</span></button>
+        <button type="button" class="action-card risk-action" data-event="privilege"><strong><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></span>Escalation</strong><span>Denied admin-level action.</span></button>
       </div>
     </section>
 
@@ -102,7 +102,7 @@
     </section>
 
     <details class="module-section info-disclosure explanation-card">
-      <summary><span><span class="module-kicker">Explanation</span><strong>What this proves</strong></span></summary>
+      <summary><span><span class="module-kicker">Why</span><strong>Why does this matter?</strong></span></summary>
       <div class="disclosure-body">
       <div class="explain-layout">
         <div class="explainer-visual" aria-hidden="true">
@@ -231,9 +231,11 @@
       if (logCount === 0) rows.innerHTML = "";
       auditOutput.classList.remove("hidden");
       const row = document.createElement("tr");
-      [now(), ...action].forEach((value) => {
+      ["Time", "Actor", "Event", "Object", "Result", "Signal"].forEach((label, index) => {
+        const value = [now(), ...action][index];
         const cell = document.createElement("td");
         cell.textContent = value;
+        cell.dataset.label = label;
         row.appendChild(cell);
       });
       rows.prepend(row);

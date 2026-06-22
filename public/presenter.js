@@ -10,8 +10,8 @@
   const modules = {
     "/sqli.html": {
       step: 1,
-      title: "Step 1: SQL injection + prepared statements",
-      text: "Run a bypass example in Vulnerable mode. Then enable Protected mode to show that input can no longer change query logic.",
+      title: "Step 1: SQL Injection",
+      text: "Try the bypass payload, then switch to Protected.",
       primary: "Enable protected mode and continue",
       nextStep: 2,
       control: "prepared",
@@ -22,8 +22,8 @@
     },
     "/xss.html": {
       step: 2,
-      title: "Step 2: XSS + output encoding",
-      text: "Post one harmless demo payload in Vulnerable mode. Then enable Protected output to keep the same input as text.",
+      title: "Step 2: XSS",
+      text: "Post a payload, then switch to Protected.",
       primary: "Enable protected output and continue",
       nextStep: 3,
       control: "encoding",
@@ -34,47 +34,47 @@
     },
     "/users.html": {
       step: 3,
-      title: "Step 3: Review RBAC/data masking",
-      text: "Compare roles, briefly disable RBAC if you want to show the risk, then continue with RBAC and masking enabled.",
+      title: "Step 3: Data Masking",
+      text: "Compare a role in Raw data and Protected mode.",
       primary: "Continue with RBAC + masking enabled",
       nextStep: 4,
       control: "rbac",
       evidenceText: "Change a role or toggle RBAC/masking to observe the data exposure before continuing.",
-      clickAll: ["#rbac-toggle", "#mask-toggle"],
+      clickAll: ["#protected-access-mode"],
       href: "/audit.html",
       completeLabel: "Continue to Audit"
     },
     "/audit.html": {
       step: 4,
-      title: "Step 4: Run audit events",
-      text: "Trigger failed login, export, and privilege events. Continue when the evidence trail is visible.",
+      title: "Step 4: Audit Logging",
+      text: "Trigger an event and inspect the evidence trail.",
       primary: "Continue to Network",
       nextStep: 5,
       control: "audit",
       evidenceText: "Trigger at least one audit-relevant event before continuing.",
-      clickAll: ["#audit-toggle"],
+      clickAll: ["#audit-on-mode"],
       href: "/network.html",
       completeLabel: "Continue to Network"
     },
     "/network.html": {
       step: 5,
-      title: "Step 5: Show network segmentation",
-      text: "Send a packet from the exposed baseline, then change the controls until direct database access is blocked.",
+      title: "Step 5: Network Exposure",
+      text: "Test access while exposed, then make the DB private.",
       primary: "Continue to Config",
       nextStep: 6,
       control: "network",
-      evidenceText: "Send a packet while the database is exposed, then make the network segmented before continuing.",
+      evidenceText: "Test internet access while the database is exposed, then make the network segmented before continuing.",
       href: "/config.html",
       completeLabel: "Continue to Config"
     },
     "/config.html": {
       step: 6,
-      title: "Step 6: Finish with secure configuration",
-      text: "Build the config from blocks, review the findings, inspect the Postgres runtime tab, then finish on the start screen.",
+      title: "Step 6: Secure Configuration",
+      text: "Review the issues, then apply the secure baseline.",
       primary: "Finish flow",
       nextStep: 7,
       control: "config",
-      evidenceText: "Build or change at least one config block, then review the result before finishing.",
+      evidenceText: "Apply the secure baseline or review the config before finishing.",
       finish: true,
       href: "/",
       completeLabel: "Finish on Overview"
@@ -118,43 +118,43 @@
       next: "Trigger an event, then continue when evidence is visible."
     },
     network: {
-      task: "Send a packet from the internet path, then restrict direct database access.",
+      task: "Choose a source and action, test access, then restrict direct database access.",
       why: "Network segmentation keeps users on the intended app and API path.",
       success: "Direct internet traffic is blocked while the expected API path remains available.",
-      next: "Send one exposed packet, then enable the network controls."
+      next: "Run one exposed access test, then make the database private."
     },
-    config: {
-      task: "Build a database baseline from config blocks and run the review gate.",
-      why: "Secure defaults stop risky database settings from becoming optional cleanup.",
-      success: "The review approves the baseline after critical blockers are removed.",
-      next: "Fill each target slot, run Review configuration, then inspect the runtime reference."
-    }
+	    config: {
+	      task: "Review the beginner baseline, then apply the secure configuration.",
+	      why: "Secure defaults stop risky database settings from becoming optional cleanup.",
+	      success: "The review approves the baseline after critical blockers are removed.",
+	      next: "Apply the secure baseline. Use Advanced only if you want to inspect raw config blocks."
+	    }
   };
   const owlHints = {
     prepared: {
-      prompt: "Use the bypass payload while Vulnerable is selected.",
-      hint: "Watch the generated SQL. The payload changes the WHERE clause before protection is enabled."
+      prompt: "Try the bypass payload first. Then enable protection and compare the result.",
+      hint: "In Protected mode the payload stays data, not SQL logic."
     },
     encoding: {
-      prompt: "Post one red payload before switching modes.",
-      hint: "Look for active UI in the comment output. Protected mode should show the same text without turning it into HTML."
+      prompt: "Post a payload and see how the browser renders it. Then switch to Protected.",
+      hint: "Protected mode shows the same input as text instead of active HTML."
     },
     rbac: {
-      prompt: "Review one role before changing controls.",
-      hint: "Compare what disappears when RBAC and masking are enabled. Masking is not a substitute for authorization."
+      prompt: "Compare what the selected role sees in Raw data and Protected mode.",
+      hint: "RBAC decides access. Masking reduces what is displayed."
     },
     audit: {
-      prompt: "Trigger an event and inspect the trail.",
-      hint: "A useful log answers who acted, what changed, what object was touched, and whether it succeeded."
+      prompt: "Trigger an event and check whether evidence is generated.",
+      hint: "The trail should show actor, action, object, result, and signal."
     },
     network: {
-      prompt: "Send the internet packet before tightening controls.",
-      hint: "The lesson is the route, not the payload. Direct database access should stop while the API path remains intentional."
+      prompt: "Choose Internet, then test access. Make the database private and compare the result.",
+      hint: "The result should change from Allowed to Blocked for direct internet access."
     },
-    config: {
-      prompt: "Fill the target config, then run the review.",
-      hint: "Focus first on blockers: public port, root user, broad grants, and hardcoded secrets."
-    }
+	    config: {
+	      prompt: "Use Beginner mode first. Apply the secure baseline and watch the risk change.",
+	      hint: "Advanced mode keeps the raw config builder for deeper demos."
+	    }
   };
 
   function readState() {
@@ -332,7 +332,7 @@
         if (document.getElementById("vulnerable-render")?.getAttribute("aria-pressed") === "true") mark();
       });
     } else if (path === "/users.html") {
-      document.querySelectorAll("[data-role], #rbac-toggle, #mask-toggle, #raw-access-mode, #protected-access-mode, #review-access").forEach((item) => {
+      document.querySelectorAll("[data-role], [data-role-choice], #rbac-toggle, #mask-toggle, #raw-access-mode, #protected-access-mode").forEach((item) => {
         item.addEventListener("click", mark);
         item.addEventListener("change", mark);
       });
@@ -348,6 +348,7 @@
       document.querySelector("[data-open-config-tab='postgres']")?.addEventListener("click", mark);
       document.getElementById("checklist")?.addEventListener("change", mark);
       document.getElementById("review-config")?.addEventListener("click", mark);
+      document.getElementById("apply-hardened")?.addEventListener("click", mark);
       document.querySelectorAll("[data-builder-slot], #builder-target-frame").forEach((item) => {
         item.addEventListener("drop", mark);
       });
@@ -375,9 +376,11 @@
         document.querySelector(selector)?.addEventListener("change", () => syncNetwork(config));
       });
       document.getElementById("secure-network")?.addEventListener("click", () => window.setTimeout(() => syncNetwork(config), 0));
+      document.getElementById("expose-network")?.addEventListener("click", () => window.setTimeout(() => syncNetwork(config), 0));
     } else if (path === "/config.html") {
       document.getElementById("checklist")?.addEventListener("change", () => syncConfig(config));
       document.getElementById("apply-risky")?.addEventListener("click", () => syncConfig(config));
+      document.getElementById("apply-hardened")?.addEventListener("click", () => window.setTimeout(() => syncConfig(config), 0));
       document.getElementById("review-config")?.addEventListener("click", () => window.setTimeout(() => syncConfig(config), 0));
       document.querySelectorAll("[data-config-tab], [data-open-config-tab]").forEach((button) => {
         button.addEventListener("click", () => window.setTimeout(() => renderGuide(config, readState()), 0));
@@ -444,15 +447,15 @@
 
   function assistantText(config) {
     if (path === "/config.html" && document.body.dataset.configTab === "postgres") {
-      return "Postgres runtime is only the reference view. Go back to Baseline review, build the Target config with drag and drop, then run Review configuration.";
+      return "This is the runtime reference. Go back to the baseline when you want to finish the demo.";
     }
     const tips = {
-      prepared: "Run the vulnerable login once first. Then switch to Protected and compare the query boundary.",
-      encoding: "Post the demo comment in Vulnerable mode, then switch to Protected to see the same text contained.",
-      rbac: "Switch roles and look at which fields disappear. Then leave RBAC and masking enabled.",
-      audit: "Trigger one event and inspect whether there is enough evidence to investigate it.",
-      network: "Send an Internet packet first. Then change Internal network, Firewall, and TLS until direct database access is blocked.",
-      config: "Drag blocks into Target config. Watch Live findings turn red or green, then run Review configuration."
+      prepared: "Try the bypass payload first. Then enable protection and compare the result.",
+      encoding: "Post a payload and see how the browser renders it. Then switch to Protected.",
+      rbac: "Compare what the selected role sees before and after protection.",
+      audit: "Trigger an event and check whether evidence is generated.",
+      network: "Test access while exposed, then make the database private.",
+	      config: "Apply the secure baseline and watch the risk change."
     };
     return tips[config.control] || config.evidenceText;
   }
@@ -595,11 +598,14 @@
       ? owlHint.prompt
       : `You are reviewing ${currentModuleTitle}. The guided path is at ${guideConfig.title.replace(/^Step \d+:\s*/, "")}.`;
     owl.innerHTML = `
-      <button type="button" class="sidekick-toggle" aria-label="Show Security Owl guidance">
+      <button type="button" class="sidekick-toggle" aria-label="Reopen Security Owl guidance">
         <span class="assistant-avatar assistant-avatar-large" aria-hidden="true"><i></i></span>
       </button>
       <div class="assistant-speech" id="security-owl-speech">
-        <button type="button" class="guide-close" aria-label="Minimize Security Owl">&times;</button>
+        <div class="owl-window-actions" aria-label="Security Owl controls">
+          <button type="button" class="guide-minimize" aria-label="Minimize Security Owl">_</button>
+          <button type="button" class="guide-close" aria-label="Dismiss Security Owl">&times;</button>
+        </div>
         <strong>Security Owl</strong>
         <span data-sidekick-text>${owlText}</span>
         <div class="sidekick-actions"></div>
@@ -635,19 +641,24 @@
       toggleTip(true);
     });
     owl.querySelector(".assistant-speech").addEventListener("click", (event) => {
-      if (!event.target.closest(".sidekick-actions, .guide-close")) toggleTip(false);
+      if (!event.target.closest(".sidekick-actions, .guide-close, .guide-minimize, .owl-window-actions")) toggleTip(false);
     });
-    owl.querySelector(".guide-close").addEventListener("click", (event) => {
+    owl.querySelector(".guide-minimize").addEventListener("click", (event) => {
       event.stopPropagation();
+      owl.classList.remove("is-showing-tip");
       setGuideDismissed(true);
       owl.classList.add("is-collapsed");
       panel.querySelector("[data-guide-hint]")?.setAttribute("aria-expanded", "false");
     });
-    const mobileOwlQuery = window.matchMedia("(max-width: 560px)");
+    owl.querySelector(".guide-close").addEventListener("click", (event) => {
+      event.stopPropagation();
+      setGuideDismissed(true);
+      owl.classList.remove("is-showing-tip");
+      owl.classList.add("is-collapsed");
+      panel.querySelector("[data-guide-hint]")?.setAttribute("aria-expanded", "false");
+    });
     const mountOwl = () => {
-      const inlineTarget = panel.querySelector(".guided-step-copy");
-      const target = mobileOwlQuery.matches && inlineTarget ? inlineTarget : document.body;
-      if (owl.parentElement !== target) target.appendChild(owl);
+      if (owl.parentElement !== document.body) document.body.appendChild(owl);
     };
     mountOwl();
     positionSidekick(owl, sidekickStepClass);

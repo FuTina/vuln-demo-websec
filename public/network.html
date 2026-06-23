@@ -91,9 +91,9 @@
 	            <button type="button" class="btn btn-primary" id="send-packet">Test Access</button>
 	          </div>
 	        </div>
-	        <article class="packet-preview-card" aria-label="Payload preview">
+	        <article class="packet-preview-card" aria-label="Packet preview">
 	          <div class="packet-preview-head">
-	            <span>Payload Preview</span>
+	            <span>Packet Preview</span>
 	            <strong>Request package</strong>
 	          </div>
 	          <pre id="packet-payload-preview" class="query-box packet-payload-preview"></pre>
@@ -144,20 +144,6 @@
       </div>
     </details>
 
-    <section class="module-section security-takeaway">
-      <div class="takeaway-grid">
-        <div>
-          <p class="module-kicker">Security takeaway</p>
-          <h2>Network segmentation removes direct database exposure.</h2>
-          <p>Expose the application, not the database.</p>
-        </div>
-        <div>
-          <p class="module-kicker">Operational takeaway</p>
-          <h2>Keep allowed paths explicit and testable.</h2>
-          <p>Connection tests should show which routes are protected, blocked, or exposed.</p>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer class="footer">Database Security Playground - network exposure module.</footer>
@@ -311,6 +297,9 @@
 	    }
 
 	    function resetOutcome(messageText = "Choose a source and action, then test access.") {
+        const waitingExplanation = messageText.includes("changed")
+          ? "Run Test Access to evaluate the updated path."
+          : "The packet path will explain the control after you test access.";
 	      outcomeResult.textContent = "Not tested";
 	      outcomeResult.className = "";
 	      outcomeReason.textContent = messageText;
@@ -321,7 +310,7 @@
 	      pathDatabaseNode.classList.remove("is-muted");
 	      pathDatabaseLabel.textContent = "Waiting";
 	      pathBlockedLabel.textContent = "Blocked";
-	      whatHappenedText.textContent = "Choose a source and action, then test access.";
+	      whatHappenedText.textContent = waitingExplanation;
 	    }
 
     function markNetworkEvidence() {

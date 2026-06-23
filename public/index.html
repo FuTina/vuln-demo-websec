@@ -777,6 +777,11 @@
     overviewSidekickToggle.addEventListener("click", () => {
       if (overviewSidekick.classList.contains("is-collapsed")) {
         setOverviewGuideDismissed(false);
+        if (window.matchMedia("(max-width: 767px)").matches) {
+          overviewSidekick.classList.add("is-showing-tip");
+          overviewSidekickText.textContent = overviewSidekick.dataset.tip;
+          animateOverviewOwl();
+        }
         return;
       }
       toggleOverviewTip(true);

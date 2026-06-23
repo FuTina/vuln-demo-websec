@@ -980,6 +980,16 @@
     checklist.addEventListener("change", render);
     builderOptions.forEach((option) => {
       option.addEventListener("click", () => {
+        const tapToAdd = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
+        if (tapToAdd) {
+          placeDroppedBlock({
+            key: option.dataset.builderKey,
+            value: option.dataset.builderValue
+          });
+          const slot = builderSlots.find((item) => item.dataset.builderSlot === option.dataset.builderKey);
+          slot?.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
         option.classList.add("is-drag-hint");
         window.setTimeout(() => option.classList.remove("is-drag-hint"), 900);
       });

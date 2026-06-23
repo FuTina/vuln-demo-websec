@@ -70,11 +70,11 @@
     "/config.html": {
       step: 6,
       title: "Step 6: Secure Configuration",
-      text: "Review the issues, then apply the secure baseline.",
+      text: "Assemble the PostgreSQL baseline, then review the result.",
       primary: "Finish flow",
       nextStep: 7,
       control: "config",
-      evidenceText: "Apply the secure baseline or review the config before finishing.",
+      evidenceText: "Place configuration blocks and review the generated PostgreSQL baseline before finishing.",
       finish: true,
       href: "/",
       completeLabel: "Finish on Overview"
@@ -124,10 +124,10 @@
       next: "Run one exposed access test, then make the database private."
     },
 	    config: {
-	      task: "Review the beginner baseline, then apply the secure configuration.",
+	      task: "Assemble PostgreSQL controls into the target configuration, then review the generated baseline.",
 	      why: "Secure defaults stop risky database settings from becoming optional cleanup.",
 	      success: "The review approves the baseline after critical blockers are removed.",
-	      next: "Apply the secure baseline. Use Advanced only if you want to inspect raw config blocks."
+	      next: "Use the builder or the secure preset, then review the configuration."
 	    }
   };
   const owlHints = {
@@ -152,8 +152,8 @@
       hint: "The result should change from Allowed to Blocked for direct internet access."
     },
 	    config: {
-	      prompt: "Use Beginner mode first. Apply the secure baseline and watch the risk change.",
-	      hint: "Advanced mode keeps the raw config builder for deeper demos."
+	      prompt: "Place blocks into the builder and watch the generated PostgreSQL config change.",
+	      hint: "On touch screens you can tap a block to add it to the matching control."
 	    }
   };
 
@@ -460,7 +460,7 @@
       rbac: "Compare what the selected role sees before and after protection.",
       audit: "Trigger an event and check whether evidence is generated.",
       network: "Test access while exposed, then make the database private.",
-	      config: "Apply the secure baseline and watch the risk change."
+	      config: "Build the PostgreSQL baseline and watch the risk change."
     };
     return tips[config.control] || config.evidenceText;
   }
@@ -643,6 +643,7 @@
         setGuideDismissed(false);
         owl.classList.remove("is-collapsed");
         panel.querySelector("[data-guide-hint]")?.setAttribute("aria-expanded", "true");
+        if (window.matchMedia("(max-width: 767px)").matches) showOwlMessage(owlHint.hint, true, true);
         return;
       }
       toggleTip(true);

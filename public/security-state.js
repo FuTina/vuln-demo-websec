@@ -100,9 +100,9 @@
     { label: "SQL Injection", href: "/sqli.html" },
     { label: "XSS", href: "/xss.html" },
     { label: "Data Masking", href: "/users.html" },
-    { label: "Audit", href: "/audit.html" },
-    { label: "Network", href: "/network.html" },
-    { label: "Config", href: "/config.html" }
+    { label: "Audit Logging", href: "/audit.html" },
+    { label: "Network Exposure", href: "/network.html" },
+    { label: "Secure Configuration", href: "/config.html" }
   ];
 	  const exerciseLabels = {
 	    prepared: "SQL Injection",
@@ -118,7 +118,7 @@
 	    rbac: "Select a role and compare protected data.",
 	    audit: "Trigger an event and inspect the evidence.",
 	    network: "Choose Internet, then test access.",
-	    config: "Apply the secure baseline."
+	    config: "Assemble and review the secure baseline."
 	  };
 
   function readControls() {
@@ -262,10 +262,24 @@
       }
       return `<span class="${className}" role="listitem" aria-label="${label}"${current ? ' aria-current="step"' : ""}>${stepNumber}</span>`;
     }).join("");
+    const mobileGuideLabel = guideStep > guidedControls.length ? "Complete" : `Step ${guideStep} / 6`;
 
     root.className = `global-posture lab-progress-bar posture-${postureClass}`;
     root.innerHTML = `
       <div class="posture-inner">
+        <div class="posture-mobile-summary" aria-label="Compact lab status">
+          <div>
+            <span>Progress</span>
+            <strong>${mobileGuideLabel}</strong>
+          </div>
+          <div>
+            <span>Risk</span>
+            <strong>${score} / 100</strong>
+          </div>
+        </div>
+        <div class="posture-mobile-step-track posture-step-track" role="list" aria-label="${completedSteps} of 6 guided exercises complete">
+          ${stepMarkers}
+        </div>
 	        <div class="posture-focus" aria-label="Current guided exercise">
 	          <span class="posture-label">Guided lab</span>
 	          <strong class="posture-title">${nextLabel}</strong>
@@ -349,6 +363,75 @@
     renderNavigationState(controls);
   }
 
+  function installMobileNavigation() {
+    const header = document.querySelector(".app-header");
+    const headerInner = header?.querySelector(".header-inner");
+    if (!header || !headerInner || header.querySelector("#mobile-nav-panel")) return;
+
+    const currentPath = location.pathname.replace(/\/+$/, "") || "/";
+    const current = currentPath === "/index.html" ? "/" : currentPath;
+    const links = [
+      { label: "Overview", href: "/" },
+      ...moduleLinks
+    ];
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "mobile-menu-toggle";
+    toggle.setAttribute("aria-label", "Open navigation menu");
+    toggle.setAttribute("aria-controls", "mobile-nav-panel");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.innerHTML = '<span aria-hidden="true">&#9776;</span>';
+
+    const panel = document.createElement("nav");
+    panel.id = "mobile-nav-panel";
+    panel.className = "mobile-nav-panel";
+    panel.setAttribute("aria-label", "Mobile exercise navigation");
+    panel.hidden = true;
+    panel.innerHTML = `
+      <div class="mobile-nav-links">
+        ${links.map((item, index) => {
+          const step = index === 0 ? "" : ` data-module-step="${index}"`;
+          const currentAttr = item.href === current ? ' aria-current="page"' : "";
+          return `<a href="${item.href}"${step}${currentAttr}>${item.label}</a>`;
+        }).join("")}
+      </div>
+      <div class="mobile-nav-actions">
+        <a class="btn btn-primary" href="/#demo-flow" data-mobile-overview>Back to overview</a>
+        <button type="button" class="btn btn-ghost" data-mobile-reset>Reset lab</button>
+      </div>
+    `;
+
+    const setOpen = (open) => {
+      panel.hidden = !open;
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
+      document.body.classList.toggle("mobile-nav-open", open);
+    };
+
+    headerInner.insertBefore(toggle, headerInner.firstChild);
+    headerInner.insertAdjacentElement("afterend", panel);
+    toggle.addEventListener("click", () => setOpen(panel.hidden));
+    panel.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        const step = Number(link.dataset.moduleStep);
+        if (step) localStorage.setItem(presenterStateKey, JSON.stringify({ active: true, step }));
+        setOpen(false);
+      });
+    });
+    panel.querySelector("[data-mobile-overview]")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      setOpen(false);
+      navigateOverview();
+    });
+    panel.querySelector("[data-mobile-reset]")?.addEventListener("click", () => {
+      setOpen(false);
+      resetInsecureBaseline();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setOpen(false);
+    });
+  }
+
   function renderNavigationState(controls = readControls()) {
     const evidence = readEvidence();
     document.querySelectorAll(".app-nav [data-nav-control]").forEach((link) => {
@@ -410,6 +493,7 @@
   };
 
   ensureStoredControls();
+  installMobileNavigation();
   installPosture();
   renderNavigationState();
   window.addEventListener("storage", (event) => {

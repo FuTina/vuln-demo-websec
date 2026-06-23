@@ -8160,10 +8160,6 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-body.module-page {
-  padding-bottom: 132px;
-}
-
 body.module-page .app-header .header-inner {
   min-height: 54px;
 }
@@ -8887,10 +8883,6 @@ body.module-page .security-owl.is-collapsed .assistant-speech {
 }
 
 @media (max-width: 560px) {
-  body.module-page {
-    padding-bottom: 98px;
-  }
-
   body.module-page .lab-progress-bar {
     position: static;
     max-height: none;
@@ -9221,23 +9213,7 @@ body.network-page .packet-preview-toggle {
   }
 }
 
-/* Stable Security Owl widget. */
-body.module-page {
-  padding-bottom: max(132px, env(safe-area-inset-bottom));
-}
-
-body.landing {
-  padding-bottom: max(112px, env(safe-area-inset-bottom));
-}
-
-@media (min-width: 1180px) {
-  body.module-page .page {
-    width: min(1120px, calc(100% - 392px));
-    margin-right: auto;
-    margin-left: 16px;
-  }
-}
-
+/* Stable Security Owl overlay. */
 body.module-page .security-owl,
 body.module-page .security-owl.step-1,
 body.module-page .security-owl.step-2,
@@ -9331,7 +9307,6 @@ body.module-page .security-owl .owl-window-actions {
   gap: 4px;
 }
 
-.security-owl .guide-minimize,
 .security-owl .guide-close,
 body.landing .overview-sidekick .guide-close {
   position: static;
@@ -9355,15 +9330,12 @@ body.landing .overview-sidekick .guide-close {
   right: 6px;
 }
 
-.security-owl .guide-minimize:hover,
 .security-owl .guide-close:hover,
 body.landing .overview-sidekick .guide-close:hover {
   border-color: rgba(15, 118, 110, .42);
   background: #ffffff;
 }
 
-.security-owl .guide-minimize::before,
-.security-owl .guide-minimize::after,
 .security-owl .guide-close::before,
 .security-owl .guide-close::after,
 body.landing .overview-sidekick .guide-close::before,
@@ -9372,7 +9344,6 @@ body.landing .overview-sidekick .guide-close::after {
   display: none !important;
 }
 
-.security-owl .guide-minimize svg,
 .security-owl .guide-close svg,
 body.landing .overview-sidekick .guide-close svg {
   display: block;
@@ -9388,11 +9359,6 @@ body.landing .overview-sidekick .guide-close svg {
 }
 
 @media (max-width: 560px) {
-  body.module-page,
-  body.landing {
-    padding-bottom: max(104px, env(safe-area-inset-bottom));
-  }
-
   body.module-page .security-owl,
   body.module-page .security-owl.step-1,
   body.module-page .security-owl.step-2,

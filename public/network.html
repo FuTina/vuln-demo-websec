@@ -30,7 +30,7 @@
             <p class="module-kicker">Scenario</p>
           </div>
           <h1>Database Network Exposure</h1>
-          <p>Test who can reach the database before and after network protection is enabled.</p>
+          <p>Send a packet and see whether it reaches the database or gets blocked.</p>
         </div>
         <span id="network-badge" class="badge badge-warning">Review required</span>
       </div>
@@ -40,24 +40,24 @@
       <div class="network-panel-heading">
         <div>
           <p class="module-kicker">Security Controls</p>
-          <h2>Current exposure</h2>
+          <h2>Current Controls</h2>
         </div>
       </div>
       <div class="switch-grid security-status-grid" aria-label="Current security status">
-        <label class="switch-card security-status-chip is-risk-control">
-          <span><span>Database Exposure</span><strong>Public Port</strong></span>
+        <label class="switch-card security-status-chip is-risk-control" aria-label="Risk: Public Database Port">
+          <span><span>Risk</span><strong>Public Database Port</strong></span>
           <span class="switch"><input id="exposed-toggle" type="checkbox" checked /><span class="slider"></span></span>
         </label>
-        <label class="switch-card security-status-chip is-safe-control">
-          <span><span>Network</span><strong>Internal Network Only</strong></span>
+        <label class="switch-card security-status-chip is-safe-control" aria-label="Protection: Internal Network Only">
+          <span><span>Protection</span><strong>Internal Network Only</strong></span>
           <span class="switch"><input id="internal-toggle" type="checkbox" /><span class="slider"></span></span>
         </label>
-        <label class="switch-card security-status-chip is-safe-control">
-          <span><span>Firewall</span><strong>Enabled</strong></span>
+        <label class="switch-card security-status-chip is-safe-control" aria-label="Protection: Firewall Enabled">
+          <span><span>Protection</span><strong>Firewall Enabled</strong></span>
           <span class="switch"><input id="firewall-toggle" type="checkbox" /><span class="slider"></span></span>
         </label>
-        <label class="switch-card security-status-chip is-safe-control">
-          <span><span>Transport Security</span><strong>TLS Enabled</strong></span>
+        <label class="switch-card security-status-chip is-safe-control" aria-label="Protection: TLS Enabled">
+          <span><span>Protection</span><strong>TLS Enabled</strong></span>
           <span class="switch"><input id="tls-toggle" type="checkbox" checked /><span class="slider"></span></span>
         </label>
       </div>
@@ -65,137 +65,82 @@
       <div class="packet-simulator">
         <div class="packet-lab-head">
           <div>
-            <p class="module-kicker">Simulation</p>
-            <h2>Run the access test</h2>
-            <p class="muted">Validate whether this request can reach the database.</p>
+	            <p class="module-kicker">Simulation</p>
+	            <h2>Access test</h2>
           </div>
         </div>
         <div class="packet-controls">
           <div class="packet-choice-panel">
-            <h3>Step 1: Choose Source</h3>
+            <h3>Source</h3>
             <div class="packet-option-grid" role="group" aria-label="Packet source">
               <button type="button" data-packet-source="internet" aria-pressed="true"><strong>Internet</strong><span>Untrusted origin</span></button>
-              <button type="button" data-packet-source="api" aria-pressed="false"><strong>Application</strong><span>Expected app path</span></button>
-              <button type="button" data-packet-source="admin" aria-pressed="false"><strong>Administrator</strong><span>Break-glass path</span></button>
+              <button type="button" data-packet-source="api" aria-pressed="false"><strong>Application</strong><span>Approved service</span></button>
+              <button type="button" data-packet-source="admin" aria-pressed="false"><strong>Administrator</strong><span>Privileged access</span></button>
             </div>
           </div>
           <div class="packet-choice-panel">
-            <h3>Step 2: Choose Action</h3>
-            <div class="packet-option-grid" role="group" aria-label="Packet payload">
-              <button type="button" data-packet-payload="normal" aria-pressed="true"><strong>Read data</strong><span>Expected traffic</span></button>
-              <button type="button" data-packet-payload="dump" aria-pressed="false"><strong>Export data</strong><span>Large extraction</span></button>
-              <button type="button" data-packet-payload="sqli" aria-pressed="false"><strong>Login attempt</strong><span>Manipulated input</span></button>
+	            <h3>Action</h3>
+            <div class="packet-option-grid" role="group" aria-label="Packet action">
+              <button type="button" data-packet-payload="read" aria-pressed="true"><strong>Read Data</strong><span>Data request</span></button>
+              <button type="button" data-packet-payload="export" aria-pressed="false"><strong>Export Data</strong><span>Bulk transfer</span></button>
+              <button type="button" data-packet-payload="connect" aria-pressed="false"><strong>Connect</strong><span>Open session</span></button>
             </div>
           </div>
           <div class="packet-choice-panel packet-step-summary packet-test-step">
-            <h3>Step 3: Test Access</h3>
-            <button type="button" class="btn btn-primary" id="send-packet">Test Access</button>
-          </div>
-          <div class="packet-choice-panel packet-step-summary packet-review-step">
-            <h3>Step 4: Review Result</h3>
-            <p>Read the result and the control that caused it.</p>
-          </div>
-        </div>
-      </div>
+	            <h3>Test Access</h3>
+	            <button type="button" class="btn btn-primary" id="send-packet">Test Access</button>
+	          </div>
+	        </div>
+	        <article class="packet-preview-card" aria-label="Payload preview">
+	          <div class="packet-preview-head">
+	            <span>Payload Preview</span>
+	            <strong>Request package</strong>
+	          </div>
+	          <pre id="packet-payload-preview" class="query-box packet-payload-preview"></pre>
+            <details class="packet-expand">
+              <summary>Expand packet</summary>
+              <pre id="packet-payload-full" class="query-box packet-payload-full"></pre>
+            </details>
+	        </article>
+	      </div>
     </section>
 
     <section class="module-section result-card network-result-panel" data-demo-output aria-live="polite">
       <div class="result-card-head">
         <div>
-          <p class="module-kicker">Result</p>
-          <h2>Access Result</h2>
+	          <p class="module-kicker">Animated Result</p>
+	          <h2>Packet path</h2>
         </div>
       </div>
-      <div class="network-outcome" aria-live="polite">
-        <div><span>Source</span><strong id="outcome-source">Internet</strong></div>
-        <div><span>Action</span><strong id="outcome-action">Read data</strong></div>
-        <div><span>Result</span><strong id="outcome-result">Not tested</strong></div>
-        <div><span>Reason</span><strong id="outcome-reason">Test access to see the decision.</strong></div>
-        <div><span>Control</span><strong id="outcome-control">Waiting for test</strong></div>
-      </div>
-      <div class="network-path-visual" id="network-path-visual" aria-label="Network security path">
-        <div class="path-node path-source"><strong id="path-source-label">Internet</strong><span>Selected source</span></div>
-        <div class="path-arrow" aria-hidden="true"></div>
-        <div class="path-node path-firewall"><strong>Firewall</strong><span id="path-firewall-label">Decision point</span></div>
-        <div class="path-arrow path-arrow-db" aria-hidden="true"></div>
-        <div class="path-node path-database" id="path-database-node"><strong>Database</strong><span id="path-database-label">Waiting for test</span></div>
-        <div class="path-blocked" id="path-blocked-label" aria-live="polite">Blocked</div>
-      </div>
-      <article class="what-happened-card">
-        <h3>What happened?</h3>
-        <p id="what-happened-text">Choose a source and action, then test access to see the security decision.</p>
-      </article>
-      <div class="network-board" aria-label="Network architecture simulation">
-        <div class="network-row">
-          <div class="network-node"><strong>Internet</strong><span class="muted">Untrusted clients</span></div>
-          <div class="network-edge allowed" id="edge-web" aria-hidden="true"></div>
-          <div class="network-node"><strong>Web App</strong><span class="muted">Public entry point</span></div>
-          <div class="network-edge allowed" id="edge-api" aria-hidden="true"></div>
-          <div class="network-node"><strong>API</strong><span class="muted">Application service</span></div>
-          <div class="network-edge allowed" id="edge-db" aria-hidden="true"></div>
-          <div id="database-node" class="network-node database-node"><strong>Database</strong><span id="db-network-state" class="muted">Public port exposed</span></div>
-        </div>
-      </div>
-      <div class="packet-lane">
-        <div id="packet-source-label" class="lane-label">Internet client</div>
-        <div id="lane-track" class="lane-track">
-          <div id="packet" class="packet" aria-hidden="true"><span class="packet-icon">SQL</span></div>
-          <div class="packet-blocker">blocked</div>
-        </div>
-        <div class="lane-label">Database</div>
-      </div>
-      <p id="packet-status" class="packet-status">Test access to see whether the selected request reaches the database.</p>
-      <details class="packet-preview-toggle">
-        <summary>Payload preview</summary>
-        <pre id="packet-payload-preview" class="query-box packet-payload-preview"></pre>
-      </details>
+	      <div class="network-outcome" aria-live="polite">
+	        <div><span>Result</span><strong id="outcome-result">Not tested</strong></div>
+	        <div><span>Reason</span><strong id="outcome-reason">Test access to see the decision.</strong></div>
+	        <div><span>Control</span><strong id="outcome-control">Waiting for test</strong></div>
+	      </div>
+	      <div class="network-path-visual" id="network-path-visual" aria-label="Network security path">
+	        <div class="path-node path-source"><strong id="path-source-label">Internet</strong><span id="packet-source-label">Selected source</span></div>
+	        <div class="path-node path-firewall"><strong>Firewall</strong><span id="path-firewall-label">Network control</span></div>
+	        <div class="path-node path-database" id="path-database-node"><strong>Database</strong><span id="path-database-label">Waiting</span></div>
+	        <div id="lane-track" class="lane-track path-track">
+	          <div id="packet" class="packet" aria-hidden="true"><span class="packet-icon">PKT</span></div>
+	          <div class="packet-blocker" id="path-blocked-label" aria-live="polite">Blocked</div>
+	        </div>
+	      </div>
+	      <p id="packet-status" class="packet-status">Test access to see whether the request reaches the database.</p>
+	      <article class="what-happened-card">
+	        <h3>Reason</h3>
+	        <p id="what-happened-text">Choose a source and action, then test access.</p>
+	      </article>
     </section>
 
-    <details class="module-section info-disclosure explanation-card">
-      <summary><span><span class="module-kicker">Why</span><strong>Why does this matter?</strong></span></summary>
+    <details class="module-section info-disclosure explanation-card network-why-card">
+      <summary><strong>Why does this matter?</strong></summary>
       <div class="disclosure-body">
-      <div class="explain-layout">
-        <div class="explainer-visual" aria-hidden="true">
-          <div class="visual-title">Layered path</div>
-          <div class="visual-stack">
-            <div class="visual-node"><strong>Internet</strong><span>Untrusted source</span></div>
-            <div class="visual-arrow" aria-hidden="true"></div>
-            <div class="visual-node"><strong>API</strong><span>Expected service path</span></div>
-            <div class="visual-arrow" aria-hidden="true"></div>
-            <div class="visual-node"><strong>Database</strong><span>Private listener</span></div>
-            <div class="visual-pill-row">
-              <span class="visual-pill safe">Network path restricted</span>
-              <span class="visual-pill warn">Payload needs app controls</span>
-            </div>
-          </div>
-        </div>
-        <div class="split-note">
-          <div class="comparison-card">
-            <span class="badge badge-safe">Segmented</span>
-            <p>
-              The database should not be reachable directly from the internet. External users reach the web app and API;
-              only approved service traffic reaches the database network.
-            </p>
-          </div>
-          <div class="comparison-card">
-            <span class="badge badge-warning">Layered control</span>
-            <p>
-              A harmful request can still enter through the API because the API is the intended route. Prepared statements,
-              authorization, least privilege, and logging are the controls that keep that request from becoming a database compromise.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="takeaway-note">
-        <div>
-          <p class="module-kicker">Security takeaway</p>
-          <p>Network segmentation removes direct database exposure.</p>
-        </div>
-        <div>
-          <p class="module-kicker">Operational takeaway</p>
-          <p>Keep allowed paths explicit and testable.</p>
-        </div>
-      </div>
+        <ul class="network-why-list">
+          <li>A public database port exposes the service directly to attackers.</li>
+          <li>Network segmentation restricts access paths and reduces attack surface.</li>
+          <li>Firewalls enforce policy before traffic reaches the database.</li>
+        </ul>
       </div>
     </details>
 
@@ -232,18 +177,15 @@
       tls: document.getElementById("tls-toggle")
     };
     const badge = document.getElementById("network-badge");
-    const dbState = document.getElementById("db-network-state");
-    const edgeDb = document.getElementById("edge-db");
     const packetSourceButtons = Array.from(document.querySelectorAll("[data-packet-source]"));
     const packetPayloadButtons = Array.from(document.querySelectorAll("[data-packet-payload]"));
     const packetPayloadPreview = document.getElementById("packet-payload-preview");
+    const packetPayloadFull = document.getElementById("packet-payload-full");
     const packetSourceLabel = document.getElementById("packet-source-label");
     const packetStatus = document.getElementById("packet-status");
     const laneTrack = document.getElementById("lane-track");
     const packet = document.getElementById("packet");
     const nextStepButton = document.getElementById("network-next-step");
-	    const outcomeSource = document.getElementById("outcome-source");
-	    const outcomeAction = document.getElementById("outcome-action");
 	    const outcomeResult = document.getElementById("outcome-result");
 	    const outcomeReason = document.getElementById("outcome-reason");
 	    const outcomeControl = document.getElementById("outcome-control");
@@ -255,19 +197,17 @@
 	    const pathBlockedLabel = document.getElementById("path-blocked-label");
 	    const whatHappenedText = document.getElementById("what-happened-text");
     const packetPayloads = {
-      normal: "SELECT id, name FROM customers WHERE id = 42;",
-      sqli: "username = \"alice' --\"\npassword = \"anything\"",
-      dump: "SELECT * FROM customers;",
-      admin: "ALTER ROLE app_user WITH SUPERUSER;"
+      read: { action: "read_data", request: "read customer records" },
+      export: { action: "export_data", request: "bulk data export" },
+      connect: { action: "connect", request: "open database session" }
     };
 	    const packetPayloadLabels = {
-	      normal: "Read data",
-	      sqli: "Login attempt",
-	      dump: "Export data",
-	      admin: "Privilege change"
-	    };
+	      read: "Read Data",
+	      export: "Export Data",
+	      connect: "Connect",
+		    };
     let selectedPacketSource = "internet";
-    let selectedPacketPayload = "normal";
+    let selectedPacketPayload = "read";
     let packetRunId = 0;
     const outputPanels = Array.from(document.querySelectorAll("[data-demo-output]"));
     let savedControls = {};
@@ -342,43 +282,46 @@
 	      return "Administrator";
 	    }
 
+	    function conciseReason(evaluation) {
+	      if (evaluation.allowed) {
+	        if (selectedPacketSource === "api") return "The request reached the database because the application service path is approved.";
+	        if (selectedPacketSource === "internet") return "The request reached the database because the public database port is open.";
+	        return "The request reached the database because the administrator path is open.";
+	      }
+	      if (evaluation.control === "Internal Network Only") return "The request was blocked because the database is restricted to the internal network.";
+	      if (evaluation.control === "Firewall Enabled") return "The request was blocked because the firewall stopped traffic before the database.";
+	      if (evaluation.control === "TLS Required") return "The request was blocked because TLS is required for this path.";
+	      return "The request was blocked before it reached the database.";
+	    }
+
 	    function renderOutcome(evaluation, payloadName) {
-	      outcomeSource.textContent = sourceLabel(selectedPacketSource);
-	      outcomeAction.textContent = payloadName;
+	      const reason = conciseReason(evaluation);
 	      outcomeResult.textContent = evaluation.allowed ? "Allowed" : "Blocked";
 	      outcomeResult.className = evaluation.allowed ? "is-allowed" : "is-blocked";
-	      outcomeReason.textContent = evaluation.allowed
-	        ? evaluation.text
-	        : selectedPacketSource === "internet"
-		        ? evaluation.text
-		        : evaluation.text;
+	      outcomeReason.textContent = evaluation.text;
 	      outcomeControl.textContent = evaluation.control;
 	      pathVisual.classList.toggle("is-allowed", evaluation.allowed);
 	      pathVisual.classList.toggle("is-blocked", !evaluation.allowed);
 	      pathSourceLabel.textContent = sourceLabel(selectedPacketSource);
-	      pathFirewallLabel.textContent = evaluation.allowed ? "Permitted" : "Stopped here";
+	      pathFirewallLabel.textContent = evaluation.allowed ? "Allowed through" : "Stopped here";
 	      pathDatabaseNode.classList.toggle("is-muted", !evaluation.allowed);
 	      pathDatabaseLabel.textContent = evaluation.allowed ? "Reached" : "Not reached";
-	      pathBlockedLabel.textContent = evaluation.allowed ? "Allowed" : `Blocked: ${evaluation.control}`;
-	      whatHappenedText.textContent = evaluation.allowed
-	        ? `The request originated from ${sourceLabel(selectedPacketSource)}. The selected path was permitted, so the ${payloadName.toLowerCase()} request reached the database. Control: ${evaluation.control}.`
-	        : `The request originated from ${sourceLabel(selectedPacketSource)}. The connection was blocked before reaching the database. Control: ${evaluation.control}.`;
+	      pathBlockedLabel.textContent = evaluation.allowed ? "Allowed" : "Blocked";
+	      whatHappenedText.textContent = reason;
 	    }
 
 	    function resetOutcome(messageText = "Choose a source and action, then test access.") {
-	      outcomeSource.textContent = sourceLabel(selectedPacketSource);
-	      outcomeAction.textContent = packetPayloadLabels[selectedPacketPayload];
 	      outcomeResult.textContent = "Not tested";
 	      outcomeResult.className = "";
 	      outcomeReason.textContent = messageText;
 	      outcomeControl.textContent = "Waiting for test";
 	      pathVisual.classList.remove("is-allowed", "is-blocked");
 	      pathSourceLabel.textContent = sourceLabel(selectedPacketSource);
-	      pathFirewallLabel.textContent = "Decision point";
+	      pathFirewallLabel.textContent = "Network control";
 	      pathDatabaseNode.classList.remove("is-muted");
-	      pathDatabaseLabel.textContent = "Waiting for test";
+	      pathDatabaseLabel.textContent = "Waiting";
 	      pathBlockedLabel.textContent = "Blocked";
-	      whatHappenedText.textContent = "Choose a source and action, then test access to see the security decision.";
+	      whatHappenedText.textContent = "Choose a source and action, then test access.";
 	    }
 
     function markNetworkEvidence() {
@@ -394,19 +337,67 @@
       window.DBSEC?.renderPosture();
     }
 
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function highlightedJson(data) {
+      return escapeHtml(JSON.stringify(data, null, 2)).replace(
+        /("(?:\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?)/g,
+        (match, string, colon, bool, number) => {
+          if (string) {
+            return colon
+              ? `<span class="json-key">${string}</span>${colon}`
+              : `<span class="json-string">${string}</span>`;
+          }
+          if (bool) return `<span class="json-bool">${bool}</span>`;
+          if (number) return `<span class="json-number">${number}</span>`;
+          return match;
+        }
+      );
+    }
+
+    function packetPreviewData() {
+      const current = state();
+      const selectedAction = packetPayloads[selectedPacketPayload];
+      return {
+        source: sourceLabel(selectedPacketSource),
+        action: selectedAction.action,
+        target: "database",
+        protocol: current.tls ? "tls/tcp" : "tcp"
+      };
+    }
+
     function renderPayloadPreview() {
-      packetPayloadPreview.textContent = packetPayloads[selectedPacketPayload];
-      packet.classList.toggle("is-risk-payload", selectedPacketPayload !== "normal");
-      packet.querySelector(".packet-icon").textContent = selectedPacketPayload === "normal" ? "SQL" : "";
+      const preview = packetPreviewData();
+      const selectedAction = packetPayloads[selectedPacketPayload];
+      const current = state();
+      const fullPacket = {
+        ...preview,
+        port: 5432,
+        request: selectedAction.request,
+        controls: {
+          public_port: current.exposed,
+          internal_network_only: current.internal,
+          firewall_enabled: current.firewall,
+          tls_enabled: current.tls
+        }
+      };
+      packetPayloadPreview.innerHTML = highlightedJson(preview);
+      packetPayloadFull.innerHTML = highlightedJson(fullPacket);
+      packet.querySelector(".packet-icon").textContent = "PKT";
     }
 
     function resetPacket(messageText) {
       packetRunId += 1;
-      document.getElementById("database-node").classList.remove("is-impacted");
-      laneTrack.className = "lane-track";
-      packet.className = `packet ${selectedPacketPayload !== "normal" ? "is-risk-payload" : ""}`;
+      pathDatabaseNode.classList.remove("is-impacted");
+      laneTrack.className = "lane-track path-track";
+      packet.className = "packet";
       packet.style.left = "18px";
-      packet.querySelector(".packet-icon").textContent = selectedPacketPayload === "normal" ? "SQL" : "";
+      packet.querySelector(".packet-icon").textContent = "PKT";
 	      if (messageText) packetStatus.textContent = messageText;
     }
 
@@ -419,39 +410,24 @@
       showOutputs();
       const current = state();
       const source = selectedPacketSource;
-      const malicious = selectedPacketPayload !== "normal";
       const payloadName = packetPayloadLabels[selectedPacketPayload];
       const runId = ++packetRunId;
       const evaluation = evaluate(source, current);
       renderOutcome(evaluation, payloadName);
-      const databaseNode = document.getElementById("database-node");
-      databaseNode.classList.remove("is-impacted");
-      if (evaluation.allowed && malicious) {
-        databaseNode.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+      pathDatabaseNode.classList.remove("is-impacted");
 
       packetSourceLabel.textContent = sourceLabel(source);
-      laneTrack.className = `lane-track ${evaluation.allowed ? "allowed" : "blocked"}`;
-      packet.className = `packet ${malicious ? "is-risk-payload" : ""}`;
+      laneTrack.className = `lane-track path-track ${evaluation.allowed ? "allowed" : "blocked"}`;
+      packet.className = "packet";
       packet.style.left = "18px";
-      packet.querySelector(".packet-icon").textContent = malicious ? "" : "SQL";
+      packet.querySelector(".packet-icon").textContent = "PKT";
       void packet.offsetWidth;
       packet.classList.add("running", evaluation.allowed ? "allowed" : "blocked");
       window.setTimeout(() => {
         if (runId !== packetRunId) return;
-        if (evaluation.allowed && malicious) {
-          void databaseNode.offsetWidth;
-          databaseNode.classList.add("is-impacted");
-        }
-        if (evaluation.allowed && malicious && source === "api") {
-	          packetStatus.textContent = `${payloadName} reached the database through the application path.`;
-	        } else if (evaluation.allowed && malicious) {
-	          packetStatus.textContent = `${payloadName} reached the database. Direct exposure is still open.`;
-	        } else if (evaluation.allowed) {
-	          packetStatus.textContent = `${payloadName} reached the database through an allowed path.`;
-	        } else {
-	          packetStatus.textContent = `${payloadName} was blocked before the database: ${evaluation.text}`;
-	        }
+        packetStatus.textContent = evaluation.allowed
+          ? "Request reached database"
+          : "Blocked before reaching database";
       }, 1050);
     }
 
@@ -462,10 +438,10 @@
 
       badge.textContent = protectedState ? "Segmented" : highRisk ? "Exposed" : "Restricted";
       badge.className = protectedState ? "badge badge-safe" : highRisk ? "badge badge-danger" : "badge badge-warning";
-      dbState.textContent = highRisk ? "Public port exposed" : "Internal network only";
-      edgeDb.className = current.tls ? "network-edge allowed" : "network-edge warning";
+      pathDatabaseLabel.textContent = highRisk ? "Public port exposed" : "Internal network only";
 	      nextStepButton?.classList.toggle("hidden", !protectedState);
-	      document.getElementById("database-node").classList.remove("is-impacted");
+		      pathDatabaseNode.classList.remove("is-impacted");
+        renderPayloadPreview();
 	      resetPacket("Settings changed. Test access again to validate the path.");
 	      resetOutcome("Settings changed. Test access again to validate the path.");
 
@@ -485,10 +461,11 @@
     document.getElementById("send-packet").addEventListener("click", sendPacket);
     packetSourceButtons.forEach((button) => {
       button.addEventListener("click", () => {
-        selectedPacketSource = button.dataset.packetSource;
-	        packetSourceButtons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
-	        packetSourceLabel.textContent = sourceLabel(selectedPacketSource);
-	        resetPacket("Source changed. Test access again from the start.");
+	        selectedPacketSource = button.dataset.packetSource;
+		        packetSourceButtons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+		        packetSourceLabel.textContent = sourceLabel(selectedPacketSource);
+		        renderPayloadPreview();
+		        resetPacket("Source changed. Test access again from the start.");
 	        resetOutcome("Source changed. Test access again from the start.");
 	      });
 	    });

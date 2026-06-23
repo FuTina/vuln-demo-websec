@@ -9213,6 +9213,876 @@ body.network-page .packet-preview-toggle {
   }
 }
 
+/* Network Exposure: compact animated experiment */
+body.network-page .security-status-grid {
+  grid-template-columns: 1fr;
+}
+
+body.network-page .security-status-chip {
+  border-radius: 8px;
+}
+
+body.network-page .packet-preview-card {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+body.network-page .packet-preview-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+body.network-page .packet-preview-head span {
+  color: #64748b;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+body.network-page .packet-preview-head strong {
+  color: #0f172a;
+  font-size: .84rem;
+}
+
+body.network-page .packet-payload-preview {
+  min-height: 118px;
+  max-height: 160px;
+  margin: 0;
+  font-size: .76rem;
+  line-height: 1.35;
+}
+
+body.network-page .network-outcome {
+  grid-template-columns: 1fr;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+body.network-page .network-outcome div {
+  grid-template-columns: 70px minmax(0, 1fr);
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 7px 9px;
+}
+
+body.network-page .network-outcome div:last-child {
+  border-bottom: 1px solid #dbe4ef;
+}
+
+body.network-page .network-path-visual {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-items: start;
+  justify-content: stretch;
+  margin-top: 10px;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(239, 246, 255, .86), rgba(255, 255, 255, .96));
+  padding: 10px;
+}
+
+body.network-page .path-node {
+  min-height: 58px;
+  border-color: #dbe4ef;
+  text-align: center;
+}
+
+body.network-page .path-firewall {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+body.network-page .path-track {
+  grid-column: 1 / -1;
+  height: 48px;
+  margin-top: 2px;
+}
+
+body.network-page .path-track::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 33.333%;
+  width: 1px;
+  height: 32px;
+  border-left: 2px dashed rgba(37, 99, 235, .42);
+  transform: translateY(-50%);
+}
+
+body.network-page .packet-blocker {
+  left: calc(50% - 38px);
+  min-width: 86px;
+  color: #991b1b;
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+body.network-page .network-path-visual.is-allowed .path-track::before {
+  border-color: #22c55e;
+}
+
+body.network-page .network-path-visual.is-blocked .path-track::before {
+  border-color: #ef4444;
+  border-top-style: dashed;
+}
+
+body.network-page .network-path-visual.is-allowed .path-database {
+  border-color: #86efac;
+  background: #ecfdf5;
+}
+
+body.network-page .network-path-visual.is-blocked .path-database.is-muted {
+  display: grid;
+  opacity: .46;
+}
+
+body.network-page .network-path-visual.is-blocked .packet-blocker {
+  display: block;
+}
+
+body.network-page .packet-status {
+  display: block !important;
+  min-height: 0;
+  margin-top: 8px;
+  color: #334155;
+  font-size: .88rem;
+}
+
+body.network-page .what-happened-card {
+  border-color: #dbe4ef;
+  background: #ffffff;
+}
+
+body.network-page .what-happened-card h3 {
+  color: #64748b;
+  font-size: .72rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+body.network-page .network-board,
+body.network-page .packet-lane,
+body.network-page .packet-preview-toggle {
+  display: none !important;
+}
+
+body.network-page .packet-status,
+body.network-page .packet-preview-card {
+  display: grid !important;
+}
+
+@keyframes packetBlocked {
+  from { left: 18px; }
+  to { left: calc(50% - 14px); }
+}
+
+@media (max-width: 760px) {
+  body.network-page .network-path-visual {
+    grid-template-columns: 1fr;
+  }
+
+  body.network-page .path-track {
+    grid-column: 1;
+  }
+
+  body.network-page .path-track::after {
+    display: none;
+  }
+}
+
+/* Network Exposure: final visual polish */
+body.network-page .page,
+body.network-page.has-results .page {
+  grid-template-columns: minmax(340px, 42fr) minmax(0, 58fr);
+  column-gap: 24px;
+  row-gap: 14px;
+  align-items: start;
+}
+
+body.network-page .network-control-panel,
+body.network-page .network-result-panel {
+  align-self: start;
+  padding: 16px;
+}
+
+body.network-page .network-result-panel {
+  box-shadow: 0 14px 36px rgba(15, 23, 42, .07);
+}
+
+body.network-page .module-kicker {
+  font-size: 12px;
+  letter-spacing: .05em;
+}
+
+body.network-page .network-panel-heading,
+body.network-page .result-card-head,
+body.network-page .packet-lab-head {
+  margin-bottom: 10px;
+}
+
+body.network-page .packet-lab-head .module-kicker,
+body.network-page .packet-test-step h3 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+body.network-page .network-panel-heading h2,
+body.network-page .network-result-panel h2,
+body.network-page .packet-lab-head h2 {
+  font-size: 18px;
+  line-height: 1.18;
+}
+
+body.network-page .security-status-grid {
+  grid-template-columns: 1fr;
+  gap: 5px;
+  max-height: 160px;
+  margin: 0 0 12px;
+}
+
+body.network-page .security-status-chip {
+  grid-template-columns: 18px minmax(0, 1fr);
+  min-height: 30px;
+  max-height: 32px;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 4px 9px;
+}
+
+body.network-page .security-status-chip::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  align-self: center;
+  border-radius: 999px;
+  font-size: 0;
+}
+
+body.network-page .security-status-chip > span:first-child {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+body.network-page .security-status-chip > span:first-child > span {
+  flex: 0 0 62px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .05em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+body.network-page .security-status-chip strong {
+  min-width: 0;
+  color: #0f172a;
+  font-size: 13px;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.network-page .security-status-chip.is-risk-control:has(input:checked)::before {
+  background: #dc2626;
+}
+
+body.network-page .security-status-chip.is-risk-control:not(:has(input:checked))::before,
+body.network-page .security-status-chip.is-safe-control:has(input:checked)::before {
+  background: #16a34a;
+}
+
+body.network-page .security-status-chip.is-safe-control:not(:has(input:checked))::before {
+  background: #cbd5e1;
+}
+
+body.network-page .packet-simulator {
+  display: grid;
+  gap: 10px;
+}
+
+body.network-page .packet-controls {
+  gap: 10px;
+}
+
+body.network-page .packet-choice-panel h3 {
+  margin-bottom: 6px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+body.network-page .packet-option-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.network-page .packet-option-grid button {
+  display: grid;
+  min-width: 0;
+  min-height: 44px;
+  height: 44px;
+  align-content: center;
+  gap: 1px;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+body.network-page .packet-option-grid button strong {
+  color: #0f172a;
+  font-size: 14px;
+  line-height: 1.05;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.network-page .packet-option-grid button span {
+  display: block;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.network-page .packet-option-grid [data-packet-payload][aria-pressed="true"] {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  box-shadow: inset 4px 0 0 var(--blue);
+}
+
+body.network-page .packet-test-step .btn {
+  min-height: 44px;
+  font-size: 15px;
+}
+
+body.network-page .packet-test-step {
+  min-height: 44px;
+}
+
+body.network-page .packet-preview-card {
+  gap: 6px;
+  margin-top: 0;
+  padding: 10px;
+}
+
+body.network-page .packet-preview-head span {
+  font-size: 12px;
+}
+
+body.network-page .packet-preview-head strong {
+  font-size: 14px;
+}
+
+body.network-page .packet-payload-preview {
+  min-height: 0;
+  height: 104px;
+  max-height: 120px;
+  margin: 0;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+body.network-page .packet-payload-preview,
+body.network-page .packet-payload-full {
+  color: #334155;
+}
+
+body.network-page .json-key {
+  color: #1d4ed8;
+}
+
+body.network-page .json-string {
+  color: #0f766e;
+}
+
+body.network-page .json-bool,
+body.network-page .json-number {
+  color: #b45309;
+}
+
+body.network-page .packet-expand {
+  margin-top: 2px;
+}
+
+body.network-page .packet-expand summary {
+  cursor: pointer;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+body.network-page .packet-payload-full {
+  max-height: 220px;
+  margin: 6px 0 0;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+body.network-page .network-outcome {
+  display: grid;
+  gap: 0;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 7px 10px;
+}
+
+body.network-page .network-outcome div {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-bottom: 1px solid #edf1f6;
+  border-radius: 0;
+  background: transparent;
+  padding: 4px 0;
+}
+
+body.network-page .network-outcome div:last-child {
+  border-bottom: 0;
+}
+
+body.network-page .network-outcome span {
+  flex: 0 0 62px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+body.network-page .network-outcome strong {
+  min-width: 0;
+  margin: 0;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+body.network-page .network-outcome #outcome-result {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+body.network-page .network-outcome #outcome-result.is-allowed {
+  color: #166534;
+  background: #dcfce7;
+}
+
+body.network-page .network-outcome #outcome-result.is-blocked {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+body.network-page .network-path-visual {
+  position: relative;
+  max-height: 180px;
+  min-height: 124px;
+  margin-top: 12px;
+  gap: 8px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+body.network-page .path-node {
+  min-height: 52px;
+  padding: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+body.network-page .path-node strong {
+  font-size: 14px;
+  line-height: 1.15;
+}
+
+body.network-page .path-node span {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+body.network-page .path-track {
+  position: absolute;
+  right: 22px;
+  bottom: 16px;
+  left: 22px;
+  z-index: 1;
+  height: 44px;
+  margin-top: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+body.network-page .path-track::before {
+  right: 18px;
+  left: 18px;
+  border-top-width: 3px;
+}
+
+body.network-page .path-track::after {
+  display: none;
+}
+
+body.network-page .packet {
+  width: 26px;
+  height: 26px;
+  font-size: 10px;
+}
+
+body.network-page .packet-blocker {
+  top: 8px;
+  min-width: 76px;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+body.network-page .packet-status {
+  display: none !important;
+}
+
+body.network-page .what-happened-card {
+  display: grid !important;
+  gap: 2px;
+  margin-top: 10px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 9px 10px;
+}
+
+body.network-page .what-happened-card h3 {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+body.network-page .what-happened-card p {
+  margin: 0;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+body.network-page .network-why-card {
+  padding: 0;
+}
+
+body.network-page .network-why-card summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  padding: 0 14px;
+}
+
+body.network-page .network-why-card summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #64748b;
+  border-bottom: 2px solid #64748b;
+  transform: rotate(-45deg);
+  transition: transform .16s ease;
+}
+
+body.network-page .network-why-card[open] summary::after {
+  transform: rotate(45deg);
+}
+
+body.network-page .network-why-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 14px 14px 30px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+@media (max-width: 1050px) {
+  body.network-page .page,
+  body.network-page.has-results .page {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+  }
+}
+
+@media (max-width: 760px) {
+  body.network-page .network-control-panel,
+  body.network-page .network-result-panel {
+    padding: 14px;
+  }
+
+  body.network-page .security-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.network-page .security-status-chip {
+    min-height: 34px;
+    max-height: 36px;
+  }
+
+  body.network-page .security-status-chip > span:first-child {
+    gap: 2px;
+  }
+
+  body.network-page .security-status-chip > span:first-child > span {
+    min-width: 0;
+  }
+
+  body.network-page .packet-option-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.network-page .packet-option-grid button {
+    text-align: left;
+  }
+
+  body.network-page .network-outcome div {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  body.network-page .network-path-visual {
+    max-height: none;
+    grid-template-columns: 1fr;
+  }
+
+  body.network-page .path-track {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    grid-column: 1;
+  }
+}
+
+/* Secure Configuration: modern PostgreSQL builder */
+body.module-page .config-mode-toggle {
+  max-width: 620px;
+}
+
+body.module-page .config-mode-toggle button {
+  min-height: 54px;
+}
+
+body.module-page .config-builder-disclosure > summary {
+  border-radius: 8px;
+}
+
+body.module-page .config-builder {
+  gap: 14px;
+  border-color: #bfdbfe;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(239, 246, 255, .72), rgba(255, 255, 255, .98));
+  padding: 14px;
+}
+
+body.module-page .builder-head {
+  align-items: center;
+  border-bottom-color: #dbeafe;
+  padding-bottom: 10px;
+}
+
+body.module-page .builder-head h3 {
+  font-size: 1.02rem;
+}
+
+body.module-page .builder-head p {
+  max-width: 680px;
+  font-size: .84rem;
+  line-height: 1.35;
+}
+
+body.module-page .builder-stage {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+body.module-page .builder-workspace,
+body.module-page.has-results .config-builder .builder-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, .82fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+body.module-page.has-results .config-builder .builder-head {
+  display: flex;
+}
+
+body.module-page .builder-target-frame,
+body.module-page .builder-palette,
+body.module-page .live-config-preview {
+  border: 1px solid #dbe4ef;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, .06);
+}
+
+body.module-page .builder-target-frame {
+  min-height: 0;
+  gap: 10px;
+  padding: 12px;
+}
+
+body.module-page .builder-target-frame::before {
+  display: none;
+}
+
+body.module-page .builder-target-frame.is-drop-active {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, .14), 0 12px 28px rgba(15, 23, 42, .06);
+}
+
+body.module-page .builder-slots {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.module-page .builder-slot {
+  min-height: 78px;
+  align-content: start;
+  border-color: #93c5fd;
+  border-style: dashed;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 10px;
+}
+
+body.module-page .builder-slot.is-filled {
+  border-style: solid;
+  background: #ffffff;
+}
+
+body.module-page .builder-slot small {
+  display: block;
+  margin-top: 2px;
+}
+
+body.module-page .builder-palette {
+  max-height: 520px;
+  overflow: auto;
+  padding: 12px;
+}
+
+body.module-page .builder-palette .builder-blocks {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+body.module-page [data-builder-option] {
+  min-height: 56px;
+  padding: 10px 38px 10px 10px;
+}
+
+body.module-page [data-builder-option]::after {
+  content: "drag";
+  top: 10px;
+  right: 10px;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  padding: 2px 7px;
+}
+
+body.module-page [data-builder-option] span {
+  display: block;
+}
+
+body.module-page [data-builder-option] strong,
+body.module-page .builder-slot strong {
+  font-size: .86rem;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+body.module-page .live-config-preview {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+body.module-page .live-config-preview .builder-code {
+  min-height: 172px;
+  max-height: 240px;
+  margin: 0;
+  font-size: .78rem;
+  line-height: 1.38;
+}
+
+body.module-page .builder-review-area {
+  margin-top: 0;
+}
+
+body.module-page .builder-review-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 1050px) {
+  body.module-page .builder-workspace,
+  body.module-page.has-results .config-builder .builder-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  body.module-page .builder-palette {
+    max-height: none;
+  }
+}
+
+@media (max-width: 760px) {
+  body.module-page .config-mode-toggle,
+  body.module-page .builder-slots {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Stable Security Owl overlay. */
 body.module-page .security-owl,
 body.module-page .security-owl.step-1,

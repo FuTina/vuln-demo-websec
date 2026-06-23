@@ -66,9 +66,9 @@
     <section class="module-section lab-action-card">
 	      <div class="workbench-header config-workbench-header">
 	        <div>
-	          <p class="module-kicker">Action</p>
-	          <h2>Apply a safer database baseline</h2>
-	          <p class="muted">Use Beginner mode for the demo path, or switch to Advanced for raw configuration blocks.</p>
+		          <p class="module-kicker">Action</p>
+		          <h2>Build a secure PostgreSQL baseline</h2>
+		          <p class="muted">Use the guided baseline first, or inspect how the same controls become PostgreSQL configuration.</p>
 	        </div>
 	        <div class="toolbar-actions" data-config-advanced>
 	          <button type="button" class="btn btn-ghost" id="reset-builder">Reset builder</button>
@@ -77,8 +77,8 @@
 	        </div>
 	      </div>
 	      <div class="config-mode-toggle segmented" role="group" aria-label="Configuration mode">
-	        <button type="button" data-config-mode="beginner" aria-pressed="true"><strong>Beginner</strong><span>Secure baseline</span></button>
-	        <button type="button" data-config-mode="advanced" aria-pressed="false"><strong>Advanced</strong><span>Raw config blocks</span></button>
+		        <button type="button" data-config-mode="beginner" aria-pressed="true"><strong>Guided Baseline</strong><span>Demo path</span></button>
+		        <button type="button" data-config-mode="advanced" aria-pressed="false"><strong>Advanced PostgreSQL Builder</strong><span>Drag-and-drop config</span></button>
 	      </div>
 	      <div class="config-demo-panel" aria-live="polite">
 	        <article class="config-score-tile">
@@ -111,61 +111,68 @@
 	        <strong>Security Impact</strong>
 	        <span>Secure Configuration disabled: risky defaults can undermine otherwise good controls.</span>
 	      </div>
-	      <details class="config-builder-disclosure optional-details" data-config-advanced open>
-	        <summary><span><span class="module-kicker">Details</span><strong>Advanced config builder</strong></span></summary>
-      <div class="config-builder" id="config-builder">
-        <div class="builder-head">
-          <div>
-            <p class="module-kicker">Configuration builder</p>
-            <h3>Assemble the database config from building blocks</h3>
-            <p class="muted">Drag blocks into the framed target. The preview updates while you build; the review decides whether it is shippable.</p>
-          </div>
-          <span class="badge badge-warning" id="builder-badge">0/7 slots filled</span>
-        </div>
-        <div class="builder-stage">
-          <div class="builder-workspace">
-            <div class="builder-target-frame" id="builder-target-frame" aria-label="Configuration target slots">
-              <div class="builder-zone-head">
-                <div>
-                  <h3>Target config</h3>
-                  <p>Drop blocks here to assemble the baseline.</p>
-                </div>
-                <span>7 required slots</span>
-              </div>
-              <div class="builder-slots">
-                <div class="builder-slot" data-builder-slot="user"><strong>Database identity</strong><span>Drop identity block here</span></div>
-                <div class="builder-slot" data-builder-slot="privilege"><strong>Privileges</strong><span>Drop grants block here</span></div>
-                <div class="builder-slot" data-builder-slot="network"><strong>Network exposure</strong><span>Drop network block here</span></div>
-                <div class="builder-slot" data-builder-slot="tls"><strong>Transport policy</strong><span>Drop TLS/auth block here</span></div>
-                <div class="builder-slot" data-builder-slot="audit"><strong>Monitoring</strong><span>Drop audit block here</span></div>
-                <div class="builder-slot" data-builder-slot="backups"><strong>Recovery</strong><span>Drop backup block here</span></div>
-                <div class="builder-slot" data-builder-slot="secrets"><strong>Secrets</strong><span>Drop secrets block here</span></div>
-              </div>
-            </div>
-            <div class="builder-palette" aria-label="Available configuration blocks">
-              <div class="builder-zone-head">
-                <h3>Available blocks</h3>
-                <span>Drag only</span>
-              </div>
-              <div class="builder-blocks">
-                <button type="button" draggable="true" data-builder-option data-builder-key="user" data-builder-value="risk"><strong>POSTGRES_USER=root</strong><span>Default administrative identity</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="network" data-builder-value="safe"><strong>expose: 5432</strong><span>Backend network only</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="tls" data-builder-value="safe"><strong>hostssl + SCRAM</strong><span>TLS and stronger password auth</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="privilege" data-builder-value="risk"><strong>GRANT ALL PRIVILEGES</strong><span>Broad schema access</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="secrets" data-builder-value="risk"><strong>POSTGRES_PASSWORD=root</strong><span>Inline credential</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="audit" data-builder-value="safe"><strong>AUDIT_LOGGING=true</strong><span>Traceable security events</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="backups" data-builder-value="risk"><strong>BACKUPS=none</strong><span>No restore point</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="user" data-builder-value="safe"><strong>POSTGRES_USER=app_user</strong><span>Application-scoped identity</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="tls" data-builder-value="risk"><strong>ssl = off</strong><span>Plain host connection</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="privilege" data-builder-value="safe"><strong>GRANT SELECT, INSERT, UPDATE</strong><span>Task-scoped access</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="network" data-builder-value="risk"><strong>ports: 5432:5432</strong><span>Published database listener</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="backups" data-builder-value="safe"><strong>RESTORE_TEST=required</strong><span>Recoverable baseline</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="audit" data-builder-value="risk"><strong>AUDIT_LOGGING=false</strong><span>No security event trail</span></button>
-                <button type="button" draggable="true" data-builder-option data-builder-key="secrets" data-builder-value="safe"><strong>POSTGRES_PASSWORD_FILE</strong><span>Secret file reference</span></button>
-              </div>
-            </div>
-          </div>
-          <div class="builder-review-area result-card hidden" data-review-output aria-label="Live configuration findings">
+		      <details class="config-builder-disclosure optional-details" data-config-advanced open>
+		        <summary><span><span class="module-kicker">Advanced</span><strong>Advanced PostgreSQL Builder</strong></span></summary>
+	      <div class="config-builder" id="config-builder">
+	        <div class="builder-head">
+	          <div>
+	            <p class="module-kicker">PostgreSQL configuration builder</p>
+	            <h3>Build the secure baseline from required controls</h3>
+	            <p class="muted">Drag one PostgreSQL block into each control. The generated config updates live.</p>
+	          </div>
+	          <span class="badge badge-warning" id="builder-badge">0/7 slots filled</span>
+	        </div>
+	        <div class="builder-stage">
+	          <div class="builder-workspace">
+	            <div class="builder-target-frame" id="builder-target-frame" aria-label="Configuration target slots">
+	              <div class="builder-zone-head">
+	                <div>
+	                  <h3>Required controls</h3>
+	                  <p>A secure database baseline is built from multiple controls.</p>
+	                </div>
+	                <span>7 controls</span>
+	              </div>
+	              <div class="builder-slots">
+	                <div class="builder-slot" data-builder-slot="user"><strong>Identity</strong><span>Drop identity block here</span></div>
+	                <div class="builder-slot" data-builder-slot="secrets"><strong>Authentication</strong><span>Drop authentication block here</span></div>
+	                <div class="builder-slot" data-builder-slot="network"><strong>Network Exposure</strong><span>Drop network block here</span></div>
+	                <div class="builder-slot" data-builder-slot="tls"><strong>Transport Security</strong><span>Drop TLS block here</span></div>
+	                <div class="builder-slot" data-builder-slot="privilege"><strong>Privileges</strong><span>Drop privileges block here</span></div>
+	                <div class="builder-slot" data-builder-slot="audit"><strong>Audit Logging</strong><span>Drop audit block here</span></div>
+	                <div class="builder-slot" data-builder-slot="backups"><strong>Backup / Recovery</strong><span>Drop backup block here</span></div>
+	              </div>
+	            </div>
+	            <div class="builder-palette" aria-label="Available configuration blocks">
+	              <div class="builder-zone-head">
+	                <h3>Available PostgreSQL config blocks</h3>
+	                <span>Drag blocks</span>
+	              </div>
+	              <div class="builder-blocks">
+	                <button type="button" draggable="true" data-builder-option data-builder-key="user" data-builder-value="risk"><strong>POSTGRES_USER=root</strong><span>Default administrative identity</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="network" data-builder-value="safe"><strong>listen_addresses=internal</strong><span>Backend network only</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="tls" data-builder-value="safe"><strong>ssl=on</strong><span>TLS required</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="privilege" data-builder-value="risk"><strong>GRANT ALL PRIVILEGES</strong><span>Broad schema access</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="secrets" data-builder-value="risk"><strong>POSTGRES_PASSWORD=root</strong><span>Inline credential</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="audit" data-builder-value="safe"><strong>audit_logging=true</strong><span>Traceable security events</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="backups" data-builder-value="risk"><strong>BACKUPS=none</strong><span>No restore point</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="user" data-builder-value="safe"><strong>POSTGRES_USER=app_user</strong><span>Application-scoped identity</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="tls" data-builder-value="risk"><strong>ssl=off</strong><span>Plain host connection</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="privilege" data-builder-value="safe"><strong>revoke public privileges</strong><span>Task-scoped grants</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="network" data-builder-value="risk"><strong>ports: 5432:5432</strong><span>Published database listener</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="backups" data-builder-value="safe"><strong>backups=enabled</strong><span>Recoverable baseline</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="audit" data-builder-value="risk"><strong>audit_logging=false</strong><span>No security event trail</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="secrets" data-builder-value="safe"><strong>password_encryption=scram-sha-256</strong><span>Strong password authentication</span></button>
+	              </div>
+	            </div>
+	          </div>
+	          <div class="builder-preview-panel live-config-preview" aria-label="Generated PostgreSQL config preview">
+	            <div class="builder-zone-head">
+	              <h3>Generated PostgreSQL Config</h3>
+	              <span>Live preview</span>
+	            </div>
+	            <pre id="builder-code" class="query-box builder-code"></pre>
+	          </div>
+	          <div class="builder-review-area result-card hidden" data-review-output aria-label="Live configuration findings">
             <div class="builder-zone-head">
               <div>
                 <p class="module-kicker">Result</p>
@@ -174,15 +181,8 @@
               </div>
               <span>Review gate</span>
             </div>
-            <div class="builder-review-grid">
-              <div class="builder-preview-panel">
-                <div class="builder-zone-head">
-                  <h3>Generated configuration preview</h3>
-                  <span>Updates while building</span>
-                </div>
-                <pre id="builder-code" class="query-box builder-code"></pre>
-              </div>
-              <div id="config-result" class="result-box result-warning">
+	            <div class="builder-review-grid">
+	              <div id="config-result" class="result-box result-warning">
                 <h3 id="config-status">High risk configuration</h3>
                 <div class="risk-score" aria-live="polite"><strong id="config-score">100</strong><span class="muted">/ 100</span></div>
                 <div class="meter" aria-hidden="true"><span id="config-meter"></span></div>
@@ -428,7 +428,7 @@
 	    const policyTestButtons = Array.from(document.querySelectorAll("[data-policy-test]"));
     const riskyPolicyResult = document.getElementById("risky-policy-result");
     const hardenedPolicyResult = document.getElementById("hardened-policy-result");
-    const weights = { user: 14, privilege: 16, network: 16, tls: 10, audit: 10, backups: 12, secrets: 18 };
+    const weights = { user: 14, secrets: 18, network: 16, tls: 10, privilege: 16, audit: 10, backups: 12 };
     let activeFileId = "compose";
     let builderSelection = {};
     let reviewVisible = false;
@@ -436,83 +436,83 @@
     const reviewOutputs = Array.from(document.querySelectorAll("[data-review-output]"));
     const controls = {
       user: {
-        title: "Default/root user",
+        title: "Identity",
         risky: "Application connects as root/default user.",
         fixed: "Application connects as a dedicated app_user.",
         impact: "A leaked app credential can become full database control.",
         severity: "critical"
       },
       privilege: {
-        title: "Broad privileges",
+        title: "Privileges",
         risky: "App account has ALL PRIVILEGES.",
-        fixed: "App account has only required SELECT/INSERT/UPDATE grants.",
+        fixed: "Public privileges are revoked and app grants are task-scoped.",
         impact: "Broad grants increase damage from SQLi or credential theft.",
         severity: "critical"
       },
       network: {
-        title: "Public database port",
+        title: "Network Exposure",
         risky: "Database listener is reachable on a public port.",
         fixed: "Database listener is internal-only.",
         impact: "Internet exposure turns weak credentials or old services into direct attack paths.",
         severity: "critical"
       },
       tls: {
-        title: "Plaintext transport",
+        title: "Transport Security",
         risky: "TLS is not required for DB traffic.",
         fixed: "TLS is required for DB traffic.",
         impact: "Credentials and queries may be exposed on the network path.",
         severity: "medium"
       },
       audit: {
-        title: "No audit trail",
+        title: "Audit Logging",
         risky: "Security-relevant DB events are not logged.",
         fixed: "Authentication, access, export, and privilege events are logged.",
         impact: "Incidents become harder to investigate and prove.",
         severity: "medium"
       },
       backups: {
-        title: "No restore point",
+        title: "Backup / Recovery",
         risky: "No scheduled, restore-tested backup exists.",
         fixed: "Backups are scheduled and restore-tested.",
         impact: "Recovery from deletion, ransomware, or operator error is uncertain.",
         severity: "medium"
       },
       secrets: {
-        title: "Hardcoded credentials",
-        risky: "Password is stored in source/config as root.",
-        fixed: "Password is loaded from environment or a secret manager.",
-        impact: "Credentials leak through repositories, logs, images, or screenshots.",
+        title: "Authentication",
+        risky: "Password handling is weak or hardcoded.",
+        fixed: "SCRAM password authentication is required.",
+        impact: "Weak authentication increases the blast radius of leaked credentials.",
         severity: "critical"
       }
     };
     const builderSnippets = {
       user: {
-        risk: "DB_USER=root",
-        safe: "DB_USER=app_user"
+        risk: "POSTGRES_USER=root",
+        safe: "POSTGRES_USER=app_user"
       },
       privilege: {
-        risk: "GRANTS=ALL PRIVILEGES ON app.*",
-        safe: "GRANT SELECT, INSERT, UPDATE ON app.users TO app_user;"
+        risk: "GRANT ALL PRIVILEGES ON SCHEMA public TO app_user;",
+        safe: "REVOKE ALL ON SCHEMA public FROM PUBLIC;\nGRANT SELECT, INSERT, UPDATE ON app.users TO app_user;"
       },
       network: {
         risk: "ports:\n  - \"5432:5432\"",
-        safe: "expose:\n  - \"5432\"\nnetworks:\n  - backend_internal"
+        safe: "listen_addresses = 'internal'\n# Docker: expose 5432 only on backend_internal"
       },
       tls: {
-        risk: "ssl = off\nhost all all all md5",
-        safe: "ssl = on\nhostnossl all all all reject\nhostssl all all all scram-sha-256"
+        risk: "ssl=off\nhost all all all md5",
+        safe: "ssl=on\nhostnossl all all all reject\nhostssl all all all scram-sha-256"
       },
       audit: {
-        risk: "AUDIT_LOGGING=false",
-        safe: "AUDIT_LOGGING=true\nLOG_EVENTS=login,export,privilege"
+        risk: "audit_logging=false",
+        safe: "audit_logging=true\nlog_events=login,export,privilege"
       },
       backups: {
-        risk: "BACKUPS=not configured",
-        safe: "BACKUPS=scheduled\nRESTORE_TEST=required"
+        risk: "backups=disabled",
+        safe: "backups=enabled\nrestore_test=required"
       },
       secrets: {
         risk: "POSTGRES_PASSWORD=root",
-        safe: "POSTGRES_PASSWORD_FILE=/run/secrets/postgres_app_password"
+        safe: "password_encryption=scram-sha-256\nPOSTGRES_PASSWORD_FILE=/run/secrets/postgres_app_password"
       }
     };
     const policyTests = {
@@ -641,16 +641,16 @@
       builderBadge.className = safeCount === Object.keys(weights).length ? "badge badge-safe" : "badge badge-warning";
     }
 
-    function slotTitle(key) {
-      const labels = {
-        user: "Database identity",
-        privilege: "Privileges",
-        network: "Network exposure",
-        tls: "Transport policy",
-        audit: "Monitoring",
-        backups: "Recovery",
-        secrets: "Secrets"
-      };
+	    function slotTitle(key) {
+	      const labels = {
+	        user: "Identity",
+	        secrets: "Authentication",
+	        network: "Network Exposure",
+	        tls: "Transport Security",
+	        privilege: "Privileges",
+	        audit: "Audit Logging",
+	        backups: "Backup / Recovery"
+	      };
       return labels[key] || key;
     }
 

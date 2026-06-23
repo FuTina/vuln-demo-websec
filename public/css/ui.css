@@ -9733,8 +9733,8 @@ body.network-page .network-outcome #outcome-result.is-warning {
 
 body.network-page .network-path-visual {
   position: relative;
-  max-height: 180px;
-  min-height: 124px;
+  max-height: 196px;
+  min-height: 148px;
   margin-top: 12px;
   gap: 8px;
   padding: 10px;
@@ -9775,7 +9775,7 @@ body.network-page .path-track {
   --packet-size: 26px;
   position: absolute;
   right: 22px;
-  bottom: 16px;
+  bottom: 12px;
   left: 22px;
   z-index: 1;
   height: 44px;
@@ -9984,6 +9984,7 @@ body.network-page .network-why-list {
     bottom: auto;
     left: auto;
     grid-column: 1;
+    margin-top: 8px;
   }
 }
 

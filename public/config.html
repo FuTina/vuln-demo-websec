@@ -7,7 +7,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
-<body class="module-page">
+<body class="module-page config-page config-mode-advanced">
   <header class="app-header">
     <div class="header-inner">
       <a href="/" class="brand" aria-label="Database Security Playground home">
@@ -30,7 +30,7 @@
             <p class="module-kicker">Scenario</p>
           </div>
           <h1>Secure Database Configuration</h1>
-          <p>A release review should prove whether database hardening choices are shippable or blocked.</p>
+          <p>Assemble a PostgreSQL baseline and watch the risk score change as controls are added.</p>
         </div>
         <div class="module-actions">
           <span id="config-badge" class="badge badge-warning">Unsafe</span>
@@ -68,57 +68,44 @@
 	        <div>
 		          <p class="module-kicker">Action</p>
 		          <h2>Build a secure PostgreSQL baseline</h2>
-		          <p class="muted">Use the guided baseline first, or inspect how the same controls become PostgreSQL configuration.</p>
+	          <p class="muted">Use presets to compare risky and secure examples, or drag blocks into the target configuration.</p>
 	        </div>
-	        <div class="toolbar-actions" data-config-advanced>
-	          <button type="button" class="btn btn-ghost" id="reset-builder">Reset builder</button>
-	          <button type="button" class="btn btn-primary" id="review-config">Review configuration</button>
-	          <button type="button" class="btn btn-ghost" id="apply-risky">Load risky blocks</button>
+	        <div class="toolbar-actions builder-preset-actions" data-config-advanced>
+	          <button type="button" class="btn btn-ghost" id="load-insecure">Load Insecure Example</button>
+	          <button type="button" class="btn btn-primary" id="load-secure">Load Secure Example</button>
+	          <button type="button" class="btn btn-ghost" id="reset-builder">Reset</button>
+	          <button type="button" class="btn btn-ghost" id="review-config">Review configuration</button>
 	        </div>
-	      </div>
-	      <div class="config-mode-toggle segmented" role="group" aria-label="Configuration mode">
-		        <button type="button" data-config-mode="beginner" aria-pressed="true"><strong>Guided Baseline</strong><span>Demo path</span></button>
-		        <button type="button" data-config-mode="advanced" aria-pressed="false"><strong>Advanced PostgreSQL Builder</strong><span>Drag-and-drop config</span></button>
 	      </div>
 	      <div class="config-demo-panel" aria-live="polite">
 	        <article class="config-score-tile">
-	          <span>Current risk</span>
+	          <span>Risk score</span>
           <strong><span id="config-current-risk">100</span> / 100</strong>
         </article>
         <article class="config-issues-tile">
-          <span>Issues</span>
+          <span>Missing controls</span>
           <ul id="config-issue-list">
             <li>Public network access</li>
             <li>Root/default database user</li>
             <li>Hardcoded credentials</li>
           </ul>
         </article>
-        <button type="button" class="btn btn-safe" id="apply-hardened">Apply secure baseline</button>
 	        <article class="config-score-tile is-target">
-	          <span>Improved risk</span>
-	          <strong><span id="config-improved-risk">8</span> / 100</strong>
+	          <span>Protected controls</span>
+	          <strong><span id="config-improved-risk">0</span> / 7</strong>
 	        </article>
-	      </div>
-	      <div class="config-beginner-panel" data-config-beginner>
-	        <article class="baseline-control" data-config-key="user"><strong>Strong Authentication</strong><span>Needs baseline</span></article>
-	        <article class="baseline-control" data-config-key="audit"><strong>Audit Logging</strong><span>Needs baseline</span></article>
-	        <article class="baseline-control" data-config-key="tls"><strong>Encrypted Connections</strong><span>Needs baseline</span></article>
-	        <article class="baseline-control" data-config-key="network"><strong>Private Network</strong><span>Needs baseline</span></article>
-	        <article class="baseline-control" data-config-key="backups"><strong>Backups Enabled</strong><span>Needs baseline</span></article>
-	        <article class="baseline-control" data-config-key="privilege"><strong>Least Privilege Access</strong><span>Needs baseline</span></article>
 	      </div>
 	      <div id="security-impact" data-security-impact data-review-output class="security-impact impact-warning config-impact hidden">
 	        <strong>Security Impact</strong>
 	        <span>Secure Configuration disabled: risky defaults can undermine otherwise good controls.</span>
 	      </div>
-		      <details class="config-builder-disclosure optional-details" data-config-advanced open>
-		        <summary><span><span class="module-kicker">Advanced</span><strong>Advanced PostgreSQL Builder</strong></span></summary>
+		      <div class="config-builder-disclosure primary-builder" data-config-advanced open>
 	      <div class="config-builder" id="config-builder">
 	        <div class="builder-head">
 	          <div>
 	            <p class="module-kicker">PostgreSQL configuration builder</p>
-	            <h3>Build the secure baseline from required controls</h3>
-	            <p class="muted">Drag one PostgreSQL block into each control. The generated config updates live.</p>
+	            <h3>Assemble the deployment baseline</h3>
+	            <p class="muted">Drag one PostgreSQL block into each control. Risk, missing controls, and generated config update immediately.</p>
 	          </div>
 	          <span class="badge badge-warning" id="builder-badge">0/7 slots filled</span>
 	        </div>
@@ -158,7 +145,7 @@
 	                <button type="button" draggable="true" data-builder-option data-builder-key="user" data-builder-value="safe"><strong>POSTGRES_USER=app_user</strong><span>Application-scoped identity</span></button>
 	                <button type="button" draggable="true" data-builder-option data-builder-key="tls" data-builder-value="risk"><strong>ssl=off</strong><span>Plain host connection</span></button>
 	                <button type="button" draggable="true" data-builder-option data-builder-key="privilege" data-builder-value="safe"><strong>revoke public privileges</strong><span>Task-scoped grants</span></button>
-	                <button type="button" draggable="true" data-builder-option data-builder-key="network" data-builder-value="risk"><strong>ports: 5432:5432</strong><span>Published database listener</span></button>
+	                <button type="button" draggable="true" data-builder-option data-builder-key="network" data-builder-value="risk"><strong>expose=5432</strong><span>Published database listener</span></button>
 	                <button type="button" draggable="true" data-builder-option data-builder-key="backups" data-builder-value="safe"><strong>backups=enabled</strong><span>Recoverable baseline</span></button>
 	                <button type="button" draggable="true" data-builder-option data-builder-key="audit" data-builder-value="risk"><strong>audit_logging=false</strong><span>No security event trail</span></button>
 	                <button type="button" draggable="true" data-builder-option data-builder-key="secrets" data-builder-value="safe"><strong>password_encryption=scram-sha-256</strong><span>Strong password authentication</span></button>
@@ -205,7 +192,7 @@
           <label class="check-item"><input type="checkbox" data-key="secrets" /><span><strong>Secrets not hardcoded</strong><span>Move credentials to environment or a secret manager.</span></span></label>
         </div>
       </div>
-      </details>
+      </div>
     </section>
 
     <details class="module-section info-disclosure explanation-card">
@@ -495,24 +482,24 @@
         safe: "REVOKE ALL ON SCHEMA public FROM PUBLIC;\nGRANT SELECT, INSERT, UPDATE ON app.users TO app_user;"
       },
       network: {
-        risk: "ports:\n  - \"5432:5432\"",
-        safe: "listen_addresses = 'internal'\n# Docker: expose 5432 only on backend_internal"
+        risk: "# docker-compose.yml\nexpose=5432\nports=5432:5432",
+        safe: "# postgresql.conf\nlisten_addresses = 'internal'\n# docker-compose.yml\nnetworks = backend_internal"
       },
       tls: {
-        risk: "ssl=off\nhost all all all md5",
-        safe: "ssl=on\nhostnossl all all all reject\nhostssl all all all scram-sha-256"
+        risk: "# postgresql.conf\nssl=off\n# pg_hba.conf\nhost all all all md5",
+        safe: "# postgresql.conf\nssl=on\n# pg_hba.conf\nhostnossl all all all reject\nhostssl all app_user 10.0.0.0/8 scram-sha-256"
       },
       audit: {
-        risk: "audit_logging=false",
-        safe: "audit_logging=true\nlog_events=login,export,privilege"
+        risk: "# postgresql.conf\naudit_logging=false",
+        safe: "# postgresql.conf\naudit_logging=true\nlog_events=login,export,privilege"
       },
       backups: {
-        risk: "backups=disabled",
-        safe: "backups=enabled\nrestore_test=required"
+        risk: "# recovery policy\nbackups=disabled",
+        safe: "# recovery policy\nbackups=enabled\nrestore_test=required"
       },
       secrets: {
         risk: "POSTGRES_PASSWORD=root",
-        safe: "password_encryption=scram-sha-256\nPOSTGRES_PASSWORD_FILE=/run/secrets/postgres_app_password"
+        safe: "# postgresql.conf\npassword_encryption=scram-sha-256\nPOSTGRES_PASSWORD_FILE=/run/secrets/postgres_app_password"
       }
     };
     const policyTests = {
@@ -549,6 +536,11 @@
       reviewVisible = true;
       showReviewOutputs();
 	      render();
+	    }
+
+	    function loadPreset(type) {
+	      setAllControls(type === "secure");
+	      document.getElementById("config-builder")?.scrollIntoView({ behavior: "smooth", block: "start" });
 	    }
 
 	    function setConfigMode(mode) {
@@ -787,7 +779,7 @@
         badge.textContent = "Build";
       }
       configCurrentRisk.textContent = filledCount === 0 && !reviewVisible ? "100" : String(risk);
-      configImprovedRisk.textContent = reviewVisible && keys.length === Object.keys(weights).length ? String(risk) : "8";
+      configImprovedRisk.textContent = String(keys.length);
       const issueLabels = blockers.length
         ? blockers
         : Object.entries(controls)
@@ -1038,9 +1030,9 @@
       showReviewOutputs();
       render();
     });
-    document.getElementById("apply-hardened").addEventListener("click", () => setAllControls(true));
     document.getElementById("reset-builder").addEventListener("click", resetBuilder);
-	    document.getElementById("apply-risky").addEventListener("click", () => setAllControls(false));
+	    document.getElementById("load-insecure").addEventListener("click", () => loadPreset("insecure"));
+	    document.getElementById("load-secure").addEventListener("click", () => loadPreset("secure"));
 	    configModeButtons.forEach((button) => {
 	      button.addEventListener("click", () => setConfigMode(button.dataset.configMode));
 	    });
@@ -1057,7 +1049,7 @@
     if (location.hash === "#postgres" || location.hash === "#postgres-runtime") {
       openConfigTab("postgres", "postgres-runtime");
     }
-	    setConfigMode("beginner");
+	    setConfigMode("advanced");
 	    renderPolicyTest("local");
 	    render();
   </script>

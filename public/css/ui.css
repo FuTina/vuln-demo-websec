@@ -9452,19 +9452,20 @@ body.network-page .packet-lab-head h2 {
 }
 
 body.network-page .security-status-grid {
-  grid-template-columns: 1fr;
-  gap: 5px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   max-height: 160px;
   margin: 0 0 12px;
 }
 
 body.network-page .security-status-chip {
-  grid-template-columns: 18px minmax(0, 1fr);
-  min-height: 30px;
-  max-height: 32px;
+  grid-template-columns: 16px minmax(0, 1fr);
+  min-height: 70px;
+  height: 70px;
   gap: 8px;
+  align-items: center;
   border-radius: 8px;
-  padding: 4px 9px;
+  padding: 8px 10px;
 }
 
 body.network-page .security-status-chip::before {
@@ -9477,14 +9478,15 @@ body.network-page .security-status-chip::before {
 }
 
 body.network-page .security-status-chip > span:first-child {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto auto;
   min-width: 0;
-  align-items: center;
-  gap: 8px;
+  align-items: start;
+  row-gap: 2px;
 }
 
 body.network-page .security-status-chip > span:first-child > span {
-  flex: 0 0 62px;
   color: #64748b;
   font-size: 11px;
   font-weight: 900;
@@ -9496,11 +9498,22 @@ body.network-page .security-status-chip > span:first-child > span {
 body.network-page .security-status-chip strong {
   min-width: 0;
   color: #0f172a;
-  font-size: 13px;
+  font-size: 13.5px;
+  line-height: 1.12;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+body.network-page .security-status-chip small {
+  min-width: 0;
+  color: #64748b;
+  font-size: 11.5px;
+  font-weight: 750;
   line-height: 1.15;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 body.network-page .security-status-chip.is-risk-control:has(input:checked)::before {
@@ -9641,7 +9654,7 @@ body.network-page .packet-expand summary {
 }
 
 body.network-page .packet-payload-full {
-  max-height: 220px;
+  max-height: 170px;
   margin: 6px 0 0;
   overflow: auto;
   font-size: 13px;
@@ -9674,7 +9687,7 @@ body.network-page .network-outcome div:last-child {
 }
 
 body.network-page .network-outcome span {
-  flex: 0 0 62px;
+  flex: 0 0 92px;
   color: #64748b;
   font-size: 12px;
   font-weight: 900;
@@ -9713,6 +9726,11 @@ body.network-page .network-outcome #outcome-result.is-blocked {
   background: #fee2e2;
 }
 
+body.network-page .network-outcome #outcome-result.is-warning {
+  color: #92400e;
+  background: #fef3c7;
+}
+
 body.network-page .network-path-visual {
   position: relative;
   max-height: 180px;
@@ -9723,8 +9741,19 @@ body.network-page .network-path-visual {
   overflow: hidden;
 }
 
+body.network-page .network-path-visual.is-warning .path-track::before {
+  border-color: #f59e0b;
+}
+
+body.network-page .network-path-visual.is-warning .path-database {
+  border-color: #fbbf24;
+  background: #fffbeb;
+}
+
 body.network-page .path-node {
-  min-height: 52px;
+  display: grid;
+  min-height: 60px;
+  align-content: center;
   padding: 8px;
   position: relative;
   z-index: 2;
@@ -9738,9 +9767,12 @@ body.network-page .path-node strong {
 body.network-page .path-node span {
   font-size: 12px;
   line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 body.network-page .path-track {
+  --blocked-badge-left: calc(50% - 10px);
+  --packet-size: 26px;
   position: absolute;
   right: 22px;
   bottom: 16px;
@@ -9767,13 +9799,66 @@ body.network-page .packet {
   width: 26px;
   height: 26px;
   font-size: 10px;
+  z-index: 4;
 }
 
 body.network-page .packet-blocker {
+  display: none;
+  align-items: center;
+  justify-content: center;
   top: 8px;
+  left: var(--blocked-badge-left);
+  z-index: 5;
   min-width: 76px;
+  min-height: 26px;
   padding: 6px 9px;
   font-size: 12px;
+  line-height: 1;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+body.network-page .network-path-visual.is-blocked .packet-blocker {
+  display: inline-flex;
+}
+
+body.network-page .path-database.is-impacted {
+  border-color: #fca5a5;
+  color: #991b1b;
+  background: #fef2f2;
+  animation: dbImpact .7s ease both;
+}
+
+body.network-page .path-database.is-impacted::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 2px solid rgba(220, 38, 38, .35);
+  border-radius: inherit;
+  animation: impactRing .7s ease-out both;
+}
+
+body.network-page .path-database.is-impacted::before {
+  content: "\26A1";
+  position: absolute;
+  top: -10px;
+  right: -8px;
+  z-index: 3;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #dc2626;
+  font-size: 13px;
+  box-shadow: 0 10px 22px rgba(220, 38, 38, .25);
+  animation: impactIcon .7s ease both;
+}
+
+@keyframes packetBlocked {
+  from { left: 18px; }
+  to { left: calc(var(--blocked-badge-left) - var(--packet-size)); }
 }
 
 body.network-page .packet-status {
@@ -9863,8 +9948,8 @@ body.network-page .network-why-list {
   }
 
   body.network-page .security-status-chip {
-    min-height: 34px;
-    max-height: 36px;
+    min-height: 64px;
+    height: auto;
   }
 
   body.network-page .security-status-chip > span:first-child {
@@ -9885,7 +9970,7 @@ body.network-page .network-why-list {
 
   body.network-page .network-outcome div {
     display: grid;
-    grid-template-columns: 76px minmax(0, 1fr);
+    grid-template-columns: 96px minmax(0, 1fr);
   }
 
   body.network-page .network-path-visual {
@@ -9903,6 +9988,56 @@ body.network-page .network-why-list {
 }
 
 /* Secure Configuration: modern PostgreSQL builder */
+body.config-page .toolbar-actions.builder-preset-actions {
+  justify-content: flex-end;
+}
+
+body.config-page .primary-builder {
+  display: block !important;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+body.config-page .config-demo-panel {
+  grid-template-columns: minmax(160px, .72fr) minmax(220px, 1fr) minmax(160px, .72fr);
+  align-items: stretch;
+}
+
+body.config-page .config-score-tile {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+}
+
+body.config-page .config-score-tile strong,
+body.config-page .config-score-tile.is-target strong {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 0;
+  color: #0f172a;
+  font-size: 1.35rem;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+body.config-page .config-score-tile.is-target strong {
+  color: #166534;
+}
+
+body.config-page .config-score-tile strong span {
+  display: inline;
+}
+
+body.config-page .config-issues-tile ul {
+  margin-bottom: 0;
+}
+
+body.config-page .builder-preset-actions .btn {
+  white-space: nowrap;
+}
+
 body.module-page .config-mode-toggle {
   max-width: 620px;
 }
@@ -10066,6 +10201,14 @@ body.module-page .builder-review-grid {
 }
 
 @media (max-width: 1050px) {
+  body.config-page .toolbar-actions.builder-preset-actions {
+    justify-content: flex-start;
+  }
+
+  body.config-page .config-demo-panel {
+    grid-template-columns: 1fr;
+  }
+
   body.module-page .builder-workspace,
   body.module-page.has-results .config-builder .builder-workspace {
     grid-template-columns: 1fr;

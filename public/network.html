@@ -45,19 +45,19 @@
       </div>
       <div class="switch-grid security-status-grid" aria-label="Current security status">
         <label class="switch-card security-status-chip is-risk-control" aria-label="Risk: Public Database Port">
-          <span><span>Risk</span><strong>Public Database Port</strong></span>
+          <span><span>Risk</span><strong>Public Database Port</strong><small>Direct internet access</small></span>
           <span class="switch"><input id="exposed-toggle" type="checkbox" checked /><span class="slider"></span></span>
         </label>
         <label class="switch-card security-status-chip is-safe-control" aria-label="Protection: Internal Network Only">
-          <span><span>Protection</span><strong>Internal Network Only</strong></span>
+          <span><span>Protection</span><strong>Internal Network Only</strong><small>Private service path</small></span>
           <span class="switch"><input id="internal-toggle" type="checkbox" /><span class="slider"></span></span>
         </label>
         <label class="switch-card security-status-chip is-safe-control" aria-label="Protection: Firewall Enabled">
-          <span><span>Protection</span><strong>Firewall Enabled</strong></span>
+          <span><span>Protection</span><strong>Firewall Enabled</strong><small>Policy enforcement</small></span>
           <span class="switch"><input id="firewall-toggle" type="checkbox" /><span class="slider"></span></span>
         </label>
         <label class="switch-card security-status-chip is-safe-control" aria-label="Protection: TLS Enabled">
-          <span><span>Protection</span><strong>TLS Enabled</strong></span>
+          <span><span>Protection</span><strong>TLS Enabled</strong><small>Encrypted transport</small></span>
           <span class="switch"><input id="tls-toggle" type="checkbox" checked /><span class="slider"></span></span>
         </label>
       </div>
@@ -114,8 +114,8 @@
       </div>
 	      <div class="network-outcome" aria-live="polite">
 	        <div><span>Result</span><strong id="outcome-result">Not tested</strong></div>
-	        <div><span>Reason</span><strong id="outcome-reason">Test access to see the decision.</strong></div>
 	        <div><span>Control</span><strong id="outcome-control">Waiting for test</strong></div>
+	        <div><span>Explanation</span><strong id="outcome-reason">Test access to see the decision.</strong></div>
 	      </div>
 	      <div class="network-path-visual" id="network-path-visual" aria-label="Network security path">
 	        <div class="path-node path-source"><strong id="path-source-label">Internet</strong><span id="packet-source-label">Selected source</span></div>
@@ -128,7 +128,7 @@
 	      </div>
 	      <p id="packet-status" class="packet-status">Test access to see whether the request reaches the database.</p>
 	      <article class="what-happened-card">
-	        <h3>Reason</h3>
+	        <h3>Security impact</h3>
 	        <p id="what-happened-text">Choose a source and action, then test access.</p>
 	      </article>
     </section>
@@ -226,40 +226,60 @@
     }
 
 	    function evaluate(source, current) {
-	      if (source === "internet") {
-	        const allowed = current.exposed && !current.internal && !current.firewall;
-		        return {
-		          allowed,
-		          level: allowed ? "danger" : "safe",
-		          title: allowed ? "Allowed" : "Blocked",
-		          control: allowed ? "Public Database Port" : current.internal ? "Internal Network Only" : "Firewall Enabled",
-		          text: allowed
-		            ? "Public database port is enabled."
-		            : current.internal ? "Database is private." : "Firewall blocked access."
-		        };
+	      const isInternet = source === "internet";
+	      const isAllowedByFirewall = source === "api";
+
+	      if (!current.exposed && !current.internal) {
+	        return {
+	          allowed: false,
+	          control: "Network Exposure",
+	          text: "No reachable database listener.",
+	          impact: "No route is available to the database.",
+	          pathLabel: "No route"
+	        };
 	      }
-	      if (source === "api") {
-	        const allowed = current.tls;
-		        return {
-		          allowed,
-		          level: allowed ? "safe" : "blocked",
-		          title: allowed ? "Allowed" : "Blocked",
-		          control: allowed ? "TLS Enabled" : "TLS Required",
-		          text: allowed
-		            ? "Application path is allowed."
-		            : "TLS required."
-		        };
+
+	      if (current.internal && isInternet) {
+	        return {
+	          allowed: false,
+	          control: "Internal Network Only",
+	          text: "Database restricted to internal network.",
+	          impact: "Internet access is prevented through segmentation.",
+	          pathLabel: "Private network"
+	        };
 	      }
-	      const allowed = !current.internal && !current.firewall;
-		      return {
-		        allowed,
-		        level: allowed ? "warning" : "blocked",
-		        title: allowed ? "Allowed" : "Blocked",
-		        control: allowed ? "Administrator path open" : current.internal ? "Internal Network Only" : "Firewall Enabled",
-		        text: allowed
-		          ? "Administrator path is open."
-		          : current.internal ? "Database is private." : "Firewall blocked access."
-		      };
+
+	      if (current.firewall && !isAllowedByFirewall) {
+	        return {
+	          allowed: false,
+	          control: "Firewall Enabled",
+	          text: "Firewall policy denied this source.",
+	          impact: "Access stopped before reaching the database.",
+	          pathLabel: "Policy denied"
+	        };
+	      }
+
+	      if (!current.tls) {
+	        return {
+	          allowed: true,
+	          insecure: true,
+	          control: "TLS Disabled",
+	          text: "The request reached the database without encrypted transport.",
+	          impact: "Traffic is allowed, but credentials and data are exposed on the network path.",
+	          pathLabel: "Allowed, unencrypted"
+	        };
+	      }
+
+	      const publicExposure = current.exposed && !current.internal;
+	      return {
+	        allowed: true,
+	        control: "TLS Enabled",
+	        text: "The request reached the database. Transport encryption was enabled.",
+	        impact: publicExposure
+	          ? "Traffic is encrypted, but the service remains exposed."
+	          : "The request used an approved private path.",
+	        pathLabel: "Allowed through"
+	      };
 		    }
 
 	    function sourceLabel(source) {
@@ -268,32 +288,24 @@
 	      return "Administrator";
 	    }
 
-	    function conciseReason(evaluation) {
-	      if (evaluation.allowed) {
-	        if (selectedPacketSource === "api") return "The request reached the database because the application service path is approved.";
-	        if (selectedPacketSource === "internet") return "The request reached the database because the public database port is open.";
-	        return "The request reached the database because the administrator path is open.";
-	      }
-	      if (evaluation.control === "Internal Network Only") return "The request was blocked because the database is restricted to the internal network.";
-	      if (evaluation.control === "Firewall Enabled") return "The request was blocked because the firewall stopped traffic before the database.";
-	      if (evaluation.control === "TLS Required") return "The request was blocked because TLS is required for this path.";
-	      return "The request was blocked before it reached the database.";
+	    function isDangerousRequest() {
+	      return selectedPacketPayload === "export";
 	    }
 
 	    function renderOutcome(evaluation, payloadName) {
-	      const reason = conciseReason(evaluation);
-	      outcomeResult.textContent = evaluation.allowed ? "Allowed" : "Blocked";
-	      outcomeResult.className = evaluation.allowed ? "is-allowed" : "is-blocked";
+	      outcomeResult.textContent = evaluation.allowed ? evaluation.insecure ? "Allowed, insecure" : "Allowed" : "Blocked";
+	      outcomeResult.className = evaluation.allowed ? evaluation.insecure ? "is-warning" : "is-allowed" : "is-blocked";
 	      outcomeReason.textContent = evaluation.text;
 	      outcomeControl.textContent = evaluation.control;
 	      pathVisual.classList.toggle("is-allowed", evaluation.allowed);
+	      pathVisual.classList.toggle("is-warning", Boolean(evaluation.allowed && evaluation.insecure));
 	      pathVisual.classList.toggle("is-blocked", !evaluation.allowed);
 	      pathSourceLabel.textContent = sourceLabel(selectedPacketSource);
-	      pathFirewallLabel.textContent = evaluation.allowed ? "Allowed through" : "Stopped here";
+	      pathFirewallLabel.textContent = evaluation.pathLabel;
 	      pathDatabaseNode.classList.toggle("is-muted", !evaluation.allowed);
 	      pathDatabaseLabel.textContent = evaluation.allowed ? "Reached" : "Not reached";
-	      pathBlockedLabel.textContent = evaluation.allowed ? "Allowed" : "Blocked";
-	      whatHappenedText.textContent = reason;
+	      pathBlockedLabel.textContent = "Blocked";
+	      whatHappenedText.textContent = evaluation.impact;
 	    }
 
 	    function resetOutcome(messageText = "Choose a source and action, then test access.") {
@@ -302,12 +314,12 @@
           : "The packet path will explain the control after you test access.";
 	      outcomeResult.textContent = "Not tested";
 	      outcomeResult.className = "";
-	      outcomeReason.textContent = messageText;
 	      outcomeControl.textContent = "Waiting for test";
-	      pathVisual.classList.remove("is-allowed", "is-blocked");
+	      outcomeReason.textContent = messageText;
+	      pathVisual.classList.remove("is-allowed", "is-warning", "is-blocked");
 	      pathSourceLabel.textContent = sourceLabel(selectedPacketSource);
 	      pathFirewallLabel.textContent = "Network control";
-	      pathDatabaseNode.classList.remove("is-muted");
+	      pathDatabaseNode.classList.remove("is-muted", "is-impacted");
 	      pathDatabaseLabel.textContent = "Waiting";
 	      pathBlockedLabel.textContent = "Blocked";
 	      whatHappenedText.textContent = waitingExplanation;
@@ -355,7 +367,8 @@
       return {
         source: sourceLabel(selectedPacketSource),
         action: selectedAction.action,
-        target: "database",
+        target: "postgres.internal",
+        port: 5432,
         protocol: current.tls ? "tls/tcp" : "tcp"
       };
     }
@@ -366,7 +379,6 @@
       const current = state();
       const fullPacket = {
         ...preview,
-        port: 5432,
         request: selectedAction.request,
         controls: {
           public_port: current.exposed,
@@ -377,6 +389,7 @@
       };
       packetPayloadPreview.innerHTML = highlightedJson(preview);
       packetPayloadFull.innerHTML = highlightedJson(fullPacket);
+      packet.classList.toggle("is-risk-payload", isDangerousRequest());
       packet.querySelector(".packet-icon").textContent = "PKT";
     }
 
@@ -384,7 +397,7 @@
       packetRunId += 1;
       pathDatabaseNode.classList.remove("is-impacted");
       laneTrack.className = "lane-track path-track";
-      packet.className = "packet";
+      packet.className = `packet ${isDangerousRequest() ? "is-risk-payload" : ""}`;
       packet.style.left = "18px";
       packet.querySelector(".packet-icon").textContent = "PKT";
 	      if (messageText) packetStatus.textContent = messageText;
@@ -407,13 +420,17 @@
 
       packetSourceLabel.textContent = sourceLabel(source);
       laneTrack.className = `lane-track path-track ${evaluation.allowed ? "allowed" : "blocked"}`;
-      packet.className = "packet";
+      packet.className = `packet ${isDangerousRequest() ? "is-risk-payload" : ""}`;
       packet.style.left = "18px";
       packet.querySelector(".packet-icon").textContent = "PKT";
       void packet.offsetWidth;
       packet.classList.add("running", evaluation.allowed ? "allowed" : "blocked");
       window.setTimeout(() => {
         if (runId !== packetRunId) return;
+        if (evaluation.allowed && isDangerousRequest()) {
+          void pathDatabaseNode.offsetWidth;
+          pathDatabaseNode.classList.add("is-impacted");
+        }
         packetStatus.textContent = evaluation.allowed
           ? "Request reached database"
           : "Blocked before reaching database";

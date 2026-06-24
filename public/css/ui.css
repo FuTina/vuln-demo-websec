@@ -11874,6 +11874,71 @@ body.landing .overview-sidekick .guide-close svg {
     width: 58px !important;
     max-width: 58px !important;
   }
+
+  body.module-page .security-owl .owl-window-actions,
+  body.landing .overview-sidekick .owl-window-actions {
+    top: 8px;
+    right: 8px;
+    gap: 0;
+  }
+
+  body.module-page .security-owl .guide-close,
+  body.landing .overview-sidekick .guide-close {
+    display: grid;
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    padding: 0;
+    place-items: center;
+  }
+
+  body.module-page .security-owl .guide-close svg,
+  body.landing .overview-sidekick .guide-close svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  body.network-page .network-control-panel,
+  body.network-page .packet-simulator,
+  body.network-page .packet-controls,
+  body.network-page .packet-choice-panel {
+    min-width: 0;
+    overflow: visible;
+  }
+
+  body.network-page .security-status-grid {
+    max-height: none;
+    overflow: visible;
+    margin-bottom: 12px;
+  }
+
+  body.network-page .security-status-chip {
+    height: auto;
+    min-height: 66px;
+  }
+
+  body.network-page .packet-simulator {
+    margin-top: 0;
+  }
+
+  body.network-page .packet-controls {
+    gap: 10px;
+  }
+
+  body.network-page .security-owl,
+  body.network-page .security-owl.step-1,
+  body.network-page .security-owl.step-2,
+  body.network-page .security-owl.step-3,
+  body.network-page .security-owl.step-4,
+  body.network-page .security-owl.step-5,
+  body.network-page .security-owl.step-6,
+  body.network-page .security-owl.step-complete {
+    bottom: max(72px, calc(env(safe-area-inset-bottom) + 72px)) !important;
+  }
+
+  body.network-page .security-owl .assistant-speech {
+    bottom: calc(144px + env(safe-area-inset-bottom));
+  }
 }
 
 html[lang="de"] .info-disclosure summary::after,
@@ -11890,6 +11955,37 @@ html[lang="de"] body.network-page .packet-expand[open] summary::after {
 
 html[lang="de"] body.module-page [data-builder-option]::after {
   content: "ziehen" !important;
+}
+
+body.network-page .network-why-card summary::after {
+  content: "Open";
+  flex: 0 0 auto;
+  width: auto;
+  height: auto;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  padding: 5px 10px;
+  font-size: .74rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  transform: none !important;
+  transition: none;
+}
+
+body.network-page .network-why-card[open] summary::after {
+  content: "Close";
+  transform: none !important;
+}
+
+html[lang="de"] body.network-page .network-why-card summary::after {
+  content: "Öffnen" !important;
+}
+
+html[lang="de"] body.network-page .network-why-card[open] summary::after {
+  content: "Schließen" !important;
 }
 
 @media (max-width: 767px), (pointer: coarse) {

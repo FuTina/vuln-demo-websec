@@ -712,7 +712,7 @@
     "Current": "Aktuell",
     "Done": "Erledigt",
     "Back to start": "Zurück zum Start",
-    "Insecure active": "Unsicher aktiv",
+    "Insecure baseline": "Unsichere Baseline",
     "Try bypass, then protect.": "Bypass testen, dann schützen.",
     "Post payload, then protect.": "Payload posten, dann schützen.",
     "Compare raw and protected data.": "Rohdaten und geschützte Daten vergleichen.",

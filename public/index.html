@@ -533,7 +533,7 @@
       const baselineStarted = localStorage.getItem(baselineStorageKey) === "true" || missing.length > 0;
       const hasCompletedModule = completedControls > 0;
       baselineState.hidden = false;
-      baselineState.textContent = baselineStarted ? "Insecure active" : "Ready";
+      baselineState.textContent = baselineStarted ? "Insecure baseline" : "Ready";
       baselineState.className = baselineStarted ? "badge badge-danger" : "badge badge-warning";
       heroInsecure.textContent = "Start demo";
       heroInsecure.hidden = false;

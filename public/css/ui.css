@@ -96,11 +96,23 @@ video {
 }
 
 .header-inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 18px;
   min-height: 72px;
+}
+
+.header-inner .brand {
+  justify-self: start;
+}
+
+.header-inner .app-nav {
+  justify-self: center;
+}
+
+.header-inner .language-switcher {
+  justify-self: end;
 }
 
 .brand {
@@ -8238,6 +8250,21 @@ body.module-page .action-card .icon {
   height: 16px;
 }
 
+body.audit-page .action-grid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+body.audit-page .action-card,
+body.audit-page .action-card strong {
+  min-width: 0;
+}
+
+body.audit-page .action-card strong {
+  white-space: normal;
+  overflow-wrap: normal;
+  line-height: 1.15;
+}
+
 body.module-page .config-builder-disclosure[open] > summary {
   border-color: rgba(37, 99, 235, .24);
   background: #eff6ff;
@@ -8932,11 +8959,7 @@ body.module-page .security-owl.is-collapsed .assistant-speech {
 
   body.module-page .table-wrap thead,
   body.module-page .policy-table-wrap thead {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+    display: none;
   }
 
   body.module-page .table-wrap tbody,
@@ -9657,20 +9680,21 @@ body.network-page .packet-option-grid button {
   display: grid;
   min-width: 0;
   min-height: 44px;
-  height: 44px;
+  height: auto;
   align-content: center;
-  gap: 1px;
-  padding: 6px 8px;
+  gap: 2px;
+  padding: 7px 8px;
   text-align: center;
 }
 
 body.network-page .packet-option-grid button strong {
   color: #0f172a;
   font-size: 14px;
-  line-height: 1.05;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.12;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 body.network-page .packet-option-grid button span {
@@ -9679,9 +9703,10 @@ body.network-page .packet-option-grid button span {
   font-size: 11px;
   font-weight: 800;
   line-height: 1.15;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 body.network-page .packet-option-grid [data-packet-payload][aria-pressed="true"] {
@@ -10000,13 +10025,18 @@ body.network-page .network-why-card {
 body.network-page .network-why-card summary {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
   min-height: 44px;
   cursor: pointer;
   padding: 0 14px;
+  overflow-wrap: anywhere;
 }
 
 body.network-page .network-why-card summary::after {
   content: "";
+  flex: 0 0 auto;
   width: 8px;
   height: 8px;
   border-right: 2px solid #64748b;
@@ -10913,11 +10943,7 @@ body.landing .overview-sidekick .guide-close svg {
 
   body.module-page .table-wrap thead,
   body.module-page .policy-table-wrap thead {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+    display: none;
   }
 
   body.module-page .table-wrap tbody,

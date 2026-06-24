@@ -19,6 +19,7 @@
       </nav>
     </div>
   </header>
+  <script src="/i18n.js"></script>
   <script src="/security-state.js"></script>
 
   <main class="page">
@@ -266,7 +267,7 @@
       protectedDataCard.setAttribute("aria-current", protectedState && comparisonView === "protected" ? "true" : "false");
       lensRecords.textContent = rbacEnabled ? "Role scoped" : "All records";
       lensFields.textContent = maskingEnabled ? "Masked" : "Raw values";
-      lensBoundary.textContent = rbacEnabled ? "Enforced" : "Open";
+      lensBoundary.textContent = rbacEnabled ? "Enforced" : "Unrestricted";
       rawSample.textContent = `${sample.revenue} · ${sample.email} · ${sample.phone}`;
       protectedSample.textContent = [
         valueFor(sample, "revenue", currentRole, true, true),

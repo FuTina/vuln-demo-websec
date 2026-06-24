@@ -228,8 +228,68 @@ video {
   box-shadow: 0 8px 22px rgba(14, 165, 233, .16);
 }
 
+.language-switcher {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 2px;
+  align-items: center;
+  border: 1px solid rgba(203, 213, 225, .22);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+  padding: 3px;
+}
+
+.language-switcher button {
+  display: inline-flex;
+  min-width: 34px;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #cbd5e1;
+  background: transparent;
+  cursor: pointer;
+  font-size: .74rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.language-switcher button[aria-pressed="true"] {
+  border-color: rgba(125, 211, 252, .55);
+  color: #ffffff;
+  background: rgba(255, 255, 255, .12);
+}
+
 .page {
   padding: 34px 0 48px;
+}
+
+html[lang="de"] .details-toggle::after,
+html[lang="de"] .posture-details summary::after {
+  content: "Details anzeigen";
+}
+
+html[lang="de"] .details-toggle[aria-expanded="true"]::after,
+html[lang="de"] .posture-details[open] summary::after {
+  content: "Details ausblenden";
+}
+
+html[lang="de"] .info-disclosure summary::after,
+html[lang="de"] body.module-page .explanation-card summary::after,
+html[lang="de"] body.network-page .packet-expand summary::after {
+  content: "Öffnen";
+}
+
+html[lang="de"] .info-disclosure[open] > summary::after,
+html[lang="de"] body.module-page .explanation-card[open] > summary::after,
+html[lang="de"] body.network-page .packet-expand[open] summary::after {
+  content: "Schließen";
+}
+
+html[lang="de"] body.module-page [data-builder-option]::after {
+  content: "ziehen";
 }
 
 .global-posture {
@@ -11547,6 +11607,21 @@ body.landing .overview-sidekick .guide-close svg {
     white-space: normal;
   }
 
+  .header-inner {
+    grid-template-columns: 44px minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+  }
+
+  .language-switcher {
+    justify-self: end;
+  }
+
+  .language-switcher button {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0 7px;
+  }
+
   body.landing .executive-demo-page {
     gap: 12px;
     padding-top: 14px !important;
@@ -11772,5 +11847,27 @@ body.landing .overview-sidekick .guide-close svg {
   body.landing .overview-sidekick.is-collapsed {
     width: 58px !important;
     max-width: 58px !important;
+  }
+}
+
+html[lang="de"] .info-disclosure summary::after,
+html[lang="de"] body.module-page .explanation-card summary::after,
+html[lang="de"] body.network-page .packet-expand summary::after {
+  content: "Öffnen" !important;
+}
+
+html[lang="de"] .info-disclosure[open] > summary::after,
+html[lang="de"] body.module-page .explanation-card[open] > summary::after,
+html[lang="de"] body.network-page .packet-expand[open] summary::after {
+  content: "Schließen" !important;
+}
+
+html[lang="de"] body.module-page [data-builder-option]::after {
+  content: "ziehen" !important;
+}
+
+@media (max-width: 767px), (pointer: coarse) {
+  html[lang="de"] body.module-page [data-builder-option]::after {
+    content: "tippen" !important;
   }
 }

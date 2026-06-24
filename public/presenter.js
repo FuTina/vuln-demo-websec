@@ -35,11 +35,11 @@
     "/users.html": {
       step: 3,
       title: "Step 3: Data Masking",
-      text: "Compare a role in Raw data and Protected mode.",
+      text: "See the exposed data first, then enable RBAC and masking.",
       primary: "Continue with RBAC + masking enabled",
       nextStep: 4,
       control: "rbac",
-      evidenceText: "Change a role or toggle RBAC/masking to observe the data exposure before continuing.",
+      evidenceText: "Select a role, review the exposed data, then enable protection to compare the result.",
       clickAll: ["#protected-access-mode"],
       href: "/audit.html",
       completeLabel: "Continue to Audit"
@@ -140,8 +140,8 @@
       hint: "Protected mode shows the same input as text instead of active HTML."
     },
     rbac: {
-      prompt: "Compare what the selected role sees in Raw data and Protected mode.",
-      hint: "RBAC decides access. Masking reduces what is displayed."
+      prompt: "Start with the exposed records. Then enable RBAC and masking to compare the same role.",
+      hint: "RBAC decides access. Masking reduces sensitive values."
     },
     audit: {
       prompt: "Trigger an event and check whether evidence is generated.",
@@ -457,7 +457,7 @@
     const tips = {
       prepared: "Try the bypass payload first. Then enable protection and compare the result.",
       encoding: "Post a payload and see how the browser renders it. Then switch to Protected.",
-      rbac: "Compare what the selected role sees before and after protection.",
+      rbac: "Start with exposed data, then compare the protected result.",
       audit: "Trigger an event and check whether evidence is generated.",
       network: "Test access while exposed, then make the database private.",
 	      config: "Build the PostgreSQL baseline and watch the risk change."

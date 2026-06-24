@@ -7,7 +7,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/css/ui.css" />
 </head>
-<body class="module-page">
+<body class="module-page users-page">
   <header class="app-header">
     <div class="header-inner">
       <a href="/" class="brand" aria-label="Database Security Playground home">
@@ -50,9 +50,9 @@
       </div>
 
       <div class="controls demo-mode-controls" style="margin-top:14px">
-        <div class="segmented demo-mode-toggle" role="group" aria-label="Data access mode">
-          <button type="button" class="danger-option" id="raw-access-mode" aria-pressed="false">Raw data</button>
-          <button type="button" class="safe-option" id="protected-access-mode" aria-pressed="true">Protected</button>
+        <div class="segmented demo-mode-toggle" role="group" aria-label="Security state">
+          <button type="button" class="danger-option" id="raw-access-mode" aria-pressed="false">Vulnerable</button>
+          <button type="button" class="safe-option" id="protected-access-mode" aria-pressed="true">Enable RBAC + masking</button>
         </div>
         <input id="rbac-toggle" type="checkbox" checked hidden />
         <input id="mask-toggle" type="checkbox" checked hidden />
@@ -71,6 +71,11 @@
         <span>RBAC and masking enabled: records and sensitive fields are restricted by role.</span>
       </div>
 
+      <div id="comparison-tabs" class="segmented data-comparison-tabs" role="group" aria-label="Before and after data view" hidden>
+        <button type="button" class="danger-option" id="comparison-raw" aria-pressed="false">Raw Data</button>
+        <button type="button" class="safe-option" id="comparison-protected" aria-pressed="true">Protected Data</button>
+      </div>
+
       <div class="data-lens" aria-live="polite">
         <div><span>Records</span><strong id="lens-records">Role scoped</strong></div>
         <div><span>Fields</span><strong id="lens-fields">Masked</strong></div>
@@ -78,12 +83,12 @@
       </div>
 
       <div class="masking-compare" aria-live="polite">
-        <article>
-          <span>Raw data</span>
+        <article id="raw-data-card">
+          <span>Raw Data</span>
           <strong id="raw-sample">alice@example.com · +49 151 000000</strong>
         </article>
-        <article>
-          <span>Protected data</span>
+        <article id="protected-data-card">
+          <span>Protected Data</span>
           <strong id="protected-sample">al***@example.com · +49 *** **0000</strong>
         </article>
       </div>
@@ -96,7 +101,9 @@
         </p>
       </div>
 
-      <div class="table-wrap" style="margin-top:14px">
+      <p id="table-state-note" class="data-state-note">Raw Data: sensitive customer information is fully exposed.</p>
+
+      <div class="table-wrap" style="margin-top:10px">
         <table>
           <thead>
             <tr>
@@ -203,6 +210,9 @@
     const maskToggle = document.getElementById("mask-toggle");
     const rawAccessButton = document.getElementById("raw-access-mode");
     const protectedAccessButton = document.getElementById("protected-access-mode");
+    const comparisonTabs = document.getElementById("comparison-tabs");
+    const comparisonRawButton = document.getElementById("comparison-raw");
+    const comparisonProtectedButton = document.getElementById("comparison-protected");
     const rows = document.getElementById("customer-rows");
     const roleBadge = document.getElementById("role-badge");
     const warning = document.getElementById("rbac-warning");
@@ -212,6 +222,10 @@
     const lensBoundary = document.getElementById("lens-boundary");
     const rawSample = document.getElementById("raw-sample");
     const protectedSample = document.getElementById("protected-sample");
+    const rawDataCard = document.getElementById("raw-data-card");
+    const protectedDataCard = document.getElementById("protected-data-card");
+    const maskingCompare = document.querySelector(".masking-compare");
+    const tableStateNote = document.getElementById("table-state-note");
     const policyRole = document.getElementById("policy-role");
     const policySummary = document.getElementById("policy-summary");
     const policyFields = document.getElementById("policy-fields");
@@ -220,6 +234,7 @@
     const outputPanels = Array.from(document.querySelectorAll("[data-demo-output]"));
     let currentRole = "app_user";
     let resultsVisible = true;
+    let comparisonView = "protected";
     const savedControls = window.DBSEC?.readControls();
     if (savedControls && Object.prototype.hasOwnProperty.call(savedControls, "rbac")) {
       rbacToggle.checked = Boolean(savedControls.rbac);
@@ -238,6 +253,17 @@
       const sample = customers[0];
       rawAccessButton.setAttribute("aria-pressed", String(!protectedState));
       protectedAccessButton.setAttribute("aria-pressed", String(protectedState));
+      protectedAccessButton.textContent = protectedState ? "Protected mode enabled" : "Enable RBAC + masking";
+      comparisonTabs.hidden = !protectedState;
+      comparisonRawButton.setAttribute("aria-pressed", String(protectedState && comparisonView === "raw"));
+      comparisonProtectedButton.setAttribute("aria-pressed", String(protectedState && comparisonView === "protected"));
+      protectedDataCard.hidden = !protectedState;
+      maskingCompare.classList.toggle("is-vulnerable-only", !protectedState);
+      maskingCompare.classList.toggle("is-before-after", protectedState);
+      rawDataCard.querySelector("span").textContent = protectedState ? "Raw Data - Before protection" : "Raw Data";
+      protectedDataCard.querySelector("span").textContent = "Protected Data - After RBAC + masking";
+      rawDataCard.setAttribute("aria-current", protectedState && comparisonView === "raw" ? "true" : "false");
+      protectedDataCard.setAttribute("aria-current", protectedState && comparisonView === "protected" ? "true" : "false");
       lensRecords.textContent = rbacEnabled ? "Role scoped" : "All records";
       lensFields.textContent = maskingEnabled ? "Masked" : "Raw values";
       lensBoundary.textContent = rbacEnabled ? "Enforced" : "Open";
@@ -252,14 +278,15 @@
       lensBoundary.parentElement.className = rbacEnabled ? "is-safe" : "is-danger";
       securityImpact.className = `security-impact ${protectedState ? "impact-safe" : "impact-danger"}`;
       securityImpact.querySelector("span").textContent = protectedState
-        ? "Protected mode: role boundaries are enforced and sensitive fields are masked."
-        : "Raw mode: role boundaries or masking are off, so sensitive data can leak.";
+        ? "Protected mode: RBAC and masking changed what this role can see. Compare the before and after views."
+        : "Vulnerable mode: sensitive customer information is fully exposed for this role.";
     }
 
     function setAccessMode(protectedState, showResults = true) {
       rbacToggle.checked = protectedState;
       maskToggle.checked = protectedState;
       resultsVisible = showResults;
+      comparisonView = protectedState ? "protected" : "raw";
       window.DBSEC?.updateControl(
         "rbac",
         protectedState,
@@ -352,10 +379,20 @@
       });
       document.body.classList.toggle("has-results", resultsVisible);
       outputPanels.forEach((panel) => panel.classList.toggle("hidden", !resultsVisible));
-      warning.classList.toggle("hidden", rbacEnabled || !resultsVisible);
+      warning.classList.toggle("hidden", rbacEnabled || !maskingEnabled || !resultsVisible);
       roleCards.forEach((card) => card.setAttribute("aria-pressed", String(card.dataset.role === role)));
       renderAccessMode(rbacEnabled, maskingEnabled);
       renderPolicyVisual(role, rbacEnabled, maskingEnabled);
+
+      const protectedState = rbacEnabled && maskingEnabled;
+      const tableUsesProtection = protectedState && comparisonView === "protected";
+      const tableRbacEnabled = tableUsesProtection;
+      const tableMaskingEnabled = tableUsesProtection;
+      tableStateNote.textContent = protectedState
+        ? tableUsesProtection
+          ? "Protected Data: RBAC limits records and masking reduces sensitive fields."
+          : "Raw Data before protection: the same role could see the unprotected dataset."
+        : "Raw Data: sensitive customer information is fully exposed.";
 
       rows.innerHTML = "";
       const fieldLabels = {
@@ -370,7 +407,7 @@
         const row = document.createElement("tr");
         ["name", "segment", "revenue", "email", "phone", "notes"].forEach((field) => {
           const cell = document.createElement("td");
-          const value = valueFor(record, field, role, rbacEnabled, maskingEnabled);
+          const value = valueFor(record, field, role, tableRbacEnabled, tableMaskingEnabled);
           cell.textContent = value;
           cell.dataset.label = fieldLabels[field];
           if (value === "Hidden by RBAC" || value === "Restricted") {
@@ -410,6 +447,14 @@
     }));
     rawAccessButton.addEventListener("click", () => setAccessMode(false));
     protectedAccessButton.addEventListener("click", () => setAccessMode(true));
+    comparisonRawButton.addEventListener("click", () => {
+      comparisonView = "raw";
+      render();
+    });
+    comparisonProtectedButton.addEventListener("click", () => {
+      comparisonView = "protected";
+      render();
+    });
     render();
   </script>
   <script src="/presenter.js"></script>
